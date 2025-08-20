@@ -1,0 +1,653 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Tempo de geração: 11/08/2025 às 22:44
+-- Versão do servidor: 10.4.32-MariaDB
+-- Versão do PHP: 8.2.12
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Banco de dados: `bd_servicos`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_avaliacao`
+--
+
+CREATE TABLE `tb_avaliacao` (
+  `id` int(11) NOT NULL,
+  `solicitacao_id` int(11) NOT NULL,
+  `avaliador_id` int(11) NOT NULL,
+  `avaliado_id` int(11) NOT NULL,
+  `nota` decimal(2,1) NOT NULL,
+  `comentario` text DEFAULT NULL,
+  `data_avaliacao` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_avaliacao`
+--
+
+INSERT INTO `tb_avaliacao` (`id`, `solicitacao_id`, `avaliador_id`, `avaliado_id`, `nota`, `comentario`, `data_avaliacao`) VALUES
+(1, 1, 1, 4, 5.0, 'Excelente profissional! Muito pontual e trabalho bem feito.', '2025-06-28 00:41:02'),
+(2, 2, 2, 5, 4.5, 'Bom trabalho, resolveu o problema rapidamente.', '2025-06-28 00:41:02');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_endereco`
+--
+
+CREATE TABLE `tb_endereco` (
+  `id` int(11) NOT NULL,
+  `pessoa_id` int(11) DEFAULT NULL,
+  `cep` varchar(10) NOT NULL,
+  `logradouro` varchar(100) NOT NULL,
+  `numero` varchar(20) NOT NULL,
+  `complemento` varchar(100) DEFAULT NULL,
+  `bairro` varchar(50) NOT NULL,
+  `cidade` varchar(50) NOT NULL,
+  `estado` varchar(2) NOT NULL,
+  `principal` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_endereco`
+--
+
+INSERT INTO `tb_endereco` (`id`, `pessoa_id`, `cep`, `logradouro`, `numero`, `complemento`, `bairro`, `cidade`, `estado`, `principal`) VALUES
+(1, 2, '01310-100', 'Av. Paulista', '1500', NULL, 'Bela Vista', 'São Paulo', 'SP', 1),
+(2, 3, '04038-001', 'Rua Vergueiro', '2000', NULL, 'Vila Mariana', 'São Paulo', 'SP', 1),
+(3, 4, '05407-002', 'Rua Teodoro Sampaio', '500', NULL, 'Pinheiros', 'São Paulo', 'SP', 1),
+(4, 5, '03307-000', 'Av. Celso Garcia', '1000', NULL, 'Tatuapé', 'São Paulo', 'SP', 1),
+(5, 6, '02071-000', 'Av. Cruzeiro do Sul', '800', NULL, 'Santana', 'São Paulo', 'SP', 1),
+(6, 7, '04567-000', 'Av. Faria Lima', '1200', NULL, 'Itaim Bibi', 'São Paulo', 'SP', 1),
+(7, 4, '72236800', 'casa 34', '25', '34', 'sol', 'ceilandia', 'DF', 0),
+(8, 4, '72236800', 'casa 34', '25', '34', 'sol', 'ceilandia', 'DF', 0),
+(9, 1, '72236-800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
+(10, 1, '72236-800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
+(11, 1, '72236-800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
+(12, 1, '72927-128', 'Quadra 14B', '3', 'd', 'Mansões Odisséia', 'Águas Lindas de Goiás', 'GO', 0),
+(13, 2, '72236-800', 'Setor Habitacional Sol Nascente', '22', '34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
+(14, 12, '72236-80', 'res.pinheiros quadra 22 l', '22', 'AP 03', 'sjsn', 'ceilândia', 'DF', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_imagem_solicitacao`
+--
+
+CREATE TABLE `tb_imagem_solicitacao` (
+  `id` int(11) NOT NULL,
+  `solicitacao_id` int(11) NOT NULL,
+  `caminho_imagem` varchar(255) NOT NULL,
+  `data_upload` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_imagem_solicitacao`
+--
+
+INSERT INTO `tb_imagem_solicitacao` (`id`, `solicitacao_id`, `caminho_imagem`, `data_upload`) VALUES
+(1, 4, 'solicitacoes/ysVDRjy8Kofsn7jkL755ru0zCLI5djV4mG7d3B5A.png', '2025-07-02 23:53:47'),
+(2, 5, 'solicitacoes/8KZOl4iJjCrzyIiTFsyZsniVM3HhwmzbryLC06dE.png', '2025-07-02 23:57:50'),
+(3, 12, 'servico_12_1751586091_0.png', '2025-07-03 20:41:31'),
+(4, 13, 'servico_13_1751634957_0.jpg', '2025-07-04 10:15:57'),
+(5, 15, 'servico_15_1751640608_0.jpg', '2025-07-04 11:50:08'),
+(6, 16, 'servico_16_1751640613_0.jpg', '2025-07-04 11:50:13'),
+(8, 18, 'servico_18_1751640663_0.jpg', '2025-07-04 11:51:03'),
+(11, 22, 'servico_22_1754482508_0.jpg', '2025-08-06 09:15:08');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_mensagem`
+--
+
+CREATE TABLE `tb_mensagem` (
+  `id` int(11) NOT NULL,
+  `remetente_id` int(11) NOT NULL,
+  `destinatario_id` int(11) NOT NULL,
+  `solicitacao_id` int(11) NOT NULL,
+  `mensagem` text NOT NULL,
+  `data_envio` datetime DEFAULT current_timestamp(),
+  `lida` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_mensagem`
+--
+
+INSERT INTO `tb_mensagem` (`id`, `remetente_id`, `destinatario_id`, `solicitacao_id`, `mensagem`, `data_envio`, `lida`) VALUES
+(1, 1, 4, 1, 'Olá Carlos, quando você pode fazer a instalação?', '2025-06-28 00:41:02', 0),
+(2, 4, 1, 1, 'Oi Maria! Posso ir amanhã pela manhã, por volta das 9h. Tudo bem?', '2025-06-28 00:41:02', 0),
+(3, 2, 5, 2, 'Roberto, é urgente! A torneira está vazando muito.', '2025-06-28 00:41:02', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_negociacao_proposta`
+--
+
+CREATE TABLE `tb_negociacao_proposta` (
+  `id` int(11) NOT NULL,
+  `proposta_id` int(11) NOT NULL,
+  `tipo` enum('contra_proposta','resposta_prestador','recusa') NOT NULL,
+  `valor` decimal(10,2) DEFAULT NULL,
+  `prazo` int(11) DEFAULT NULL,
+  `observacoes` text DEFAULT NULL,
+  `data_negociacao` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_notificacao`
+--
+
+CREATE TABLE `tb_notificacao` (
+  `id` int(11) NOT NULL,
+  `pessoa_id` int(11) NOT NULL,
+  `titulo` varchar(100) NOT NULL,
+  `mensagem` text NOT NULL,
+  `data_notificacao` datetime DEFAULT current_timestamp(),
+  `lida` tinyint(1) DEFAULT 0,
+  `tipo` varchar(50) DEFAULT NULL,
+  `referencia_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_pessoa`
+--
+
+CREATE TABLE `tb_pessoa` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `cpf` varchar(14) DEFAULT NULL,
+  `telefone` varchar(20) DEFAULT NULL,
+  `dt_nascimento` date DEFAULT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
+  `data_cadastro` datetime DEFAULT current_timestamp(),
+  `ultimo_acesso` datetime DEFAULT NULL,
+  `ativo` tinyint(1) DEFAULT 1,
+  `tipo` enum('cliente','prestador','ambos') NOT NULL DEFAULT 'cliente' COMMENT 'Tipo de perfil do usuário'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_pessoa`
+--
+
+INSERT INTO `tb_pessoa` (`id`, `nome`, `email`, `senha`, `cpf`, `telefone`, `dt_nascimento`, `foto_perfil`, `data_cadastro`, `ultimo_acesso`, `ativo`, `tipo`) VALUES
+(1, 'Usuário Teste', 'teste@sistema.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '04783079188', '61992992708', '2015-04-05', 'perfil_4_1751502779.jpg', '2025-06-28 00:39:43', '2025-07-03 20:00:24', 1, 'cliente'),
+(2, 'Marian Mendes da Silva', 'contatoerivan.ms@gmail.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '11122233344', '61 992992709', '2012-10-15', 'view/prestador/uploads/perfil_2_1753818032.png', '2025-06-28 00:41:02', '2025-08-11 11:38:36', 1, 'prestador'),
+(3, 'Pedro Oliveira', 'pedro.oliveira@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '22233344455', '(11) 92222-2222', NULL, NULL, '2025-06-28 00:41:02', '2025-07-01 21:55:00', 1, 'prestador'),
+(4, 'Ana Costa', 'ana.costa@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '33344455566', '(11) 93333-3333', NULL, 'perfil_4_1751502779.jpg', '2025-06-28 00:41:02', '2025-07-03 20:28:28', 1, 'cliente'),
+(5, 'Carlos Eletricista', 'carlos.eletricista@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '44455566677', '(11) 94444-4444', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente'),
+(6, 'Roberto Encanador', 'roberto.encanador@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '55566677788', '(11) 95555-5555', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente'),
+(7, 'José Pintor', 'jose.pintor@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '66677788899', '(11) 96666-6666', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente'),
+(8, 'ERIVAN MENDES DA SILVA', 'mendesilva16@gmail.com', '$2y$12$RhVx53CVedN1nvIFxvmTxeN7l8i0XkqnI5f8YVJj5CvX1GAt1rzHG', NULL, NULL, NULL, NULL, '2025-06-30 22:23:02', '2025-06-30 22:23:25', 0, 'cliente'),
+(9, 'Teste Usuario', 'teste@email.com', '$2y$12$YgxIFf5AMkhi1bfuHymL/uMHXVRgAm5CJ9FyQsAJep3r32aWEyXAu', NULL, NULL, NULL, NULL, '2025-07-03 19:47:12', NULL, 1, 'cliente'),
+(10, 'João Prestador', 'prestador@email.com', '$2y$12$3IQ5AeifdmDV5Dk6a9ETDOFGVfwi4Y.ZbkTwzYOrZvF9Nv0LlYdQK', NULL, '61992992708', NULL, 'view/prestador/uploads/perfil_10_1754510364.png', '2025-07-03 20:08:29', '2025-07-03 20:09:37', 1, 'prestador'),
+(11, 'Maria Ambos', 'ambos@email.com', '$2y$12$l4lbdN2risQhHrgdIucrm.4X1Q27WpgcU3pJwwdWqEUl91ggR/0ti', NULL, NULL, NULL, NULL, '2025-07-03 20:08:30', NULL, 1, 'ambos'),
+(12, 'Ana Cliente', 'cliente@email.com', '$2y$12$YYlqRXQWY4/fd1P79YefEeCxEPbHc.uOY4Q4h56NZmvx05x.LAlgC', NULL, NULL, NULL, NULL, '2025-07-03 20:08:30', '2025-07-03 20:15:09', 1, 'cliente');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_proposta`
+--
+
+CREATE TABLE `tb_proposta` (
+  `id` int(11) NOT NULL,
+  `solicitacao_id` int(11) NOT NULL,
+  `prestador_id` int(11) NOT NULL,
+  `valor` decimal(10,2) NOT NULL,
+  `descricao` text DEFAULT NULL,
+  `prazo_execucao` int(11) DEFAULT NULL,
+  `data_proposta` datetime DEFAULT current_timestamp(),
+  `status` enum('pendente','aceita','recusada','cancelada') DEFAULT 'pendente',
+  `data_aceite` datetime DEFAULT NULL,
+  `data_recusa` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_proposta`
+--
+
+INSERT INTO `tb_proposta` (`id`, `solicitacao_id`, `prestador_id`, `valor`, `descricao`, `prazo_execucao`, `data_proposta`, `status`, `data_aceite`, `data_recusa`) VALUES
+(1, 1, 4, 180.00, 'Instalação completa com teste de funcionamento e garantia de 6 meses.', 1, '2025-06-28 00:41:02', 'aceita', NULL, NULL),
+(13, 11, 10, 300.00, 'eu faço em três dias e divido no cartão ', 3, '2025-08-06 09:38:53', 'pendente', NULL, NULL),
+(14, 22, 10, 150.00, 'favor entrar em contato comigo 6199....', 1, '2025-08-06 11:38:45', 'pendente', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_solicita_servico`
+--
+
+CREATE TABLE `tb_solicita_servico` (
+  `id` int(11) NOT NULL,
+  `cliente_id` int(11) NOT NULL,
+  `tipo_servico_id` int(11) NOT NULL,
+  `endereco_id` int(11) NOT NULL,
+  `titulo` varchar(100) NOT NULL,
+  `descricao` text NOT NULL,
+  `orcamento_estimado` decimal(10,2) DEFAULT NULL,
+  `data_solicitacao` datetime DEFAULT current_timestamp(),
+  `data_atendimento` datetime DEFAULT NULL,
+  `status_id` int(11) NOT NULL,
+  `urgencia` enum('baixa','media','alta') DEFAULT 'media',
+  `data_cancelamento` datetime DEFAULT NULL,
+  `motivo_cancelamento` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_solicita_servico`
+--
+
+INSERT INTO `tb_solicita_servico` (`id`, `cliente_id`, `tipo_servico_id`, `endereco_id`, `titulo`, `descricao`, `orcamento_estimado`, `data_solicitacao`, `data_atendimento`, `status_id`, `urgencia`, `data_cancelamento`, `motivo_cancelamento`) VALUES
+(1, 1, 1, 1, 'Instalação de chuveiro elétrico', 'Preciso instalar um chuveiro elétrico novo no banheiro. Já tenho o chuveiro.', 200.00, '2025-06-28 00:41:02', NULL, 3, 'media', NULL, NULL),
+(2, 2, 2, 2, 'Vazamento na torneira da cozinha', 'Torneira da cozinha está vazando. Precisa de reparo urgente.', 150.00, '2025-06-28 00:41:02', NULL, 3, 'alta', NULL, NULL),
+(3, 3, 4, 3, 'Pintura de quarto', 'Pintura completa de um quarto de 12m². Tinta já comprada.', 400.00, '2025-06-28 00:41:02', NULL, 1, 'baixa', NULL, NULL),
+(4, 4, 6, 7, 'Orientação para o Portfolio', 'teste', 300.00, '2025-07-02 23:53:47', '2025-07-10 16:53:00', 1, 'media', NULL, NULL),
+(5, 4, 6, 8, 'Orientação para o Portfolio', 'teste', 300.00, '2025-07-02 23:57:50', NULL, 1, 'media', NULL, NULL),
+(7, 1, 3, 9, 'Orientação para teste', 'teste de', NULL, '2025-07-03 20:06:20', NULL, 6, 'alta', '2025-07-04 09:17:53', 'Propostas muito caras'),
+(8, 1, 3, 10, 'Orientação para teste', 'teste de', NULL, '2025-07-03 20:07:41', NULL, 6, 'alta', '2025-07-04 09:18:15', 'Não preciso mais do serviço'),
+(9, 1, 3, 11, 'Orientação para teste', 'teste de', NULL, '2025-07-03 20:07:43', NULL, 6, 'alta', '2025-07-04 16:43:16', ''),
+(10, 1, 6, 9, 'carol e só um teste', 'bora pra cima', 800.00, '2025-07-03 20:23:27', '2025-07-11 11:00:00', 6, 'media', '2025-07-04 09:17:27', ''),
+(11, 1, 6, 12, 'pintar', 'sei la', 7999.99, '2025-07-03 20:35:46', '2025-08-15 14:00:00', 1, 'alta', NULL, NULL),
+(12, 1, 3, 12, 'cano furado teste', 'preciso de remendar um cano furado', 100.00, '2025-07-03 20:41:31', '2025-07-04 09:00:00', 1, 'media', NULL, NULL),
+(13, 2, 6, 13, 'Orientação para o Portfolio', 'teste', 200.00, '2025-07-04 10:15:57', '2025-07-18 09:00:00', 6, 'media', '2025-07-04 10:20:54', 'Propostas muito caras'),
+(14, 2, 2, 13, 'preciso de instalar um quadro eletrico', 'preciso de instalar um quadro eletrico no quarto', 500.00, '2025-07-04 10:21:46', '2025-07-12 09:00:00', 1, 'alta', NULL, NULL),
+(15, 1, 6, 10, 'Orientação para o Portfolio teste', 'bora faz', 400.00, '2025-07-04 11:50:08', '2025-08-08 09:00:00', 1, 'alta', NULL, NULL),
+(16, 1, 6, 10, 'Orientação para o Portfolio teste', 'bora faz', 700.00, '2025-07-04 11:50:13', '2025-07-30 09:00:00', 6, 'alta', '2025-08-05 21:13:22', ''),
+(18, 1, 6, 9, 'Abóbora ', 'fddg', 500.00, '2025-07-04 11:51:03', '2025-07-11 10:00:00', 6, 'media', '2025-07-04 16:43:38', 'Quero refazer com detalhes diferentes'),
+(22, 12, 3, 14, 'cano furado', 'estou com vazamento de agua na minha residencia', 200.00, '2025-08-06 09:15:08', '2025-08-09 10:00:00', 1, 'alta', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_status_solicitacao`
+--
+
+CREATE TABLE `tb_status_solicitacao` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(50) NOT NULL,
+  `descricao` text DEFAULT NULL,
+  `cor` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_status_solicitacao`
+--
+
+INSERT INTO `tb_status_solicitacao` (`id`, `nome`, `descricao`, `cor`) VALUES
+(1, 'Aguardando Propostas', 'Solicitação aberta aguardando propostas de prestadores', '#FFC107'),
+(2, 'Em Análise', 'Propostas em análise pelo cliente', '#2196F3'),
+(3, 'Proposta Aceita', 'Proposta aceita, aguardando início do serviço', '#4CAF50'),
+(4, 'Em Andamento', 'Serviço em execução', '#FF9800'),
+(5, 'Concluído', 'Serviço finalizado com sucesso', '#009688'),
+(6, 'Cancelado', 'Serviço cancelado pelo cliente', '#F44336'),
+(7, 'Expirado', 'Prazo expirado sem propostas', '#9E9E9E'),
+(8, 'Reagendado', 'Serviço reagendado para outra data', '#673AB7'),
+(9, 'Aguardando Pagamento', 'Serviço concluído aguardando pagamento', '#3F51B5'),
+(10, 'Pagamento Confirmado', 'Pagamento do serviço confirmado', '#4CAF50'),
+(11, 'Aguardando Avaliação', 'Serviço concluído aguardando avaliação', '#FF5722'),
+(12, 'Em Disputa', 'Disputa aberta entre cliente e prestador', '#E91E63'),
+(13, 'Finalizado', 'Serviço completamente finalizado e avaliado', '#607D8B'),
+(14, 'Rejeitado', 'Serviço rejeitado por incompatibilidade', '#795548'),
+(15, 'Suspenso', 'Serviço temporariamente suspenso', '#9C27B0'),
+(16, 'Aguardando Materiais', 'Serviço aguardando materiais para continuidade', '#00BCD4'),
+(17, 'Inspeção', 'Serviço em fase de inspeção', '#8BC34A'),
+(18, 'Orçamento', 'Fase de orçamentação detalhada', '#CDDC39'),
+(19, 'Garantia', 'Serviço em período de garantia', '#03A9F4'),
+(20, 'Arquivado', 'Serviço arquivado (histórico)', '#9E9E9E');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_tipo_servico`
+--
+
+CREATE TABLE `tb_tipo_servico` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `nome` varchar(255) NOT NULL,
+  `descricao` text DEFAULT NULL,
+  `categoria` varchar(255) DEFAULT NULL,
+  `preco_medio` decimal(10,2) DEFAULT NULL,
+  `ativo` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `tb_tipo_servico`
+--
+
+INSERT INTO `tb_tipo_servico` (`id`, `nome`, `descricao`, `categoria`, `preco_medio`, `ativo`, `created_at`, `updated_at`) VALUES
+(1, 'Limpeza Residencial', 'Serviços de limpeza completa para residências', 'Limpeza', 80.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(2, 'Serviços Elétricos', 'Instalações e reparos elétricos residenciais', 'Elétrica', 120.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(3, 'Encanamento', 'Serviços de instalação e reparo hidráulico', 'Hidráulica', 100.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(4, 'Pintura teste', 'Serviços de pintura residencial e comercial', 'Reforma', 150.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(5, 'Jardinagem', 'Manutenção e cuidados com jardins', 'Jardinagem', 70.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(6, 'Ar Condicionado', 'Instalação e manutenção de ar condicionado', 'Climatização', 180.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(7, 'Mudanças', 'Serviços de mudança residencial e comercial', 'Transporte', 300.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(8, 'Montagem de Móveis', 'Montagem e desmontagem de móveis', 'Montagem', 60.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_usuario`
+--
+
+CREATE TABLE `tb_usuario` (
+  `id` int(11) NOT NULL,
+  `nome` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `nivel` enum('admin','moderador','suporte') NOT NULL,
+  `ultimo_acesso` datetime DEFAULT NULL,
+  `ativo` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tb_usuario`
+--
+
+INSERT INTO `tb_usuario` (`id`, `nome`, `email`, `senha`, `nivel`, `ultimo_acesso`, `ativo`) VALUES
+(1, 'Admin Sistema', 'admin@chamaservico.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', 'admin', '2025-08-08 16:30:00', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `users`
+--
+
+CREATE TABLE `users` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `tipo` varchar(255) NOT NULL DEFAULT 'cliente',
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `remember_token` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `tipo`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
+(1, 'João Cliente', 'cliente@exemplo.com', 'cliente', NULL, '$2y$12$9nKfBPgSgvCjcqhzKUDvSevBv7gtvALN8XUvRUvxrBbi39S5k1WO2', NULL, '2025-06-28 00:14:17', '2025-06-28 00:14:17'),
+(2, 'Maria Prestadora', 'prestador@exemplo.com', 'prestador', NULL, '$2y$12$R4tiTxocGM8kutZxE29nce53JgNgHktRi2vmFoOrxCvesbqQ3giiC', NULL, '2025-06-28 00:14:17', '2025-06-28 00:14:17'),
+(3, 'Carlos Ambos', 'ambos@exemplo.com', 'ambos', NULL, '$2y$12$rDrbnmVsDenCJtCO0jGDQOFTYggPW53r2Wp4DA5CCsWGLMD7NCA.m', NULL, '2025-06-28 00:14:17', '2025-06-28 00:14:17'),
+(4, 'Ana Silva', 'joao@exemplo.com', 'cliente', NULL, '$2y$12$T5g7riKUVm6aKRNDNEQq4.MoQ3tdK60BVpsLwUPaT1PSjLFAY80tK', NULL, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(5, 'Pedro Santos', 'pedro@exemplo.com', 'prestador', NULL, '$2y$12$edmXvMHFOt/wdbc/SfFqJOUFpdcSQmrlKaoS3.A4Q7Sis81WIAhjK', NULL, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
+(6, 'Erivan Mendes', 'contatoerivan.ms@gmail.com', 'prestador', NULL, '$2y$12$XjyY6Ik4FTZezSL5kTtRGODM8K46yaCWZUvyrkDCn6IMXENgTf0rS', NULL, '2025-06-28 02:29:44', '2025-06-28 02:29:44');
+
+--
+-- Índices para tabelas despejadas
+--
+
+--
+-- Índices de tabela `tb_avaliacao`
+--
+ALTER TABLE `tb_avaliacao`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `solicitacao_id` (`solicitacao_id`),
+  ADD KEY `avaliador_id` (`avaliador_id`),
+  ADD KEY `avaliado_id` (`avaliado_id`);
+
+--
+-- Índices de tabela `tb_endereco`
+--
+ALTER TABLE `tb_endereco`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pessoa_id` (`pessoa_id`);
+
+--
+-- Índices de tabela `tb_imagem_solicitacao`
+--
+ALTER TABLE `tb_imagem_solicitacao`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `solicitacao_id` (`solicitacao_id`);
+
+--
+-- Índices de tabela `tb_mensagem`
+--
+ALTER TABLE `tb_mensagem`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `remetente_id` (`remetente_id`),
+  ADD KEY `destinatario_id` (`destinatario_id`),
+  ADD KEY `solicitacao_id` (`solicitacao_id`);
+
+--
+-- Índices de tabela `tb_negociacao_proposta`
+--
+ALTER TABLE `tb_negociacao_proposta`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `proposta_id` (`proposta_id`);
+
+--
+-- Índices de tabela `tb_notificacao`
+--
+ALTER TABLE `tb_notificacao`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pessoa_id` (`pessoa_id`);
+
+--
+-- Índices de tabela `tb_pessoa`
+--
+ALTER TABLE `tb_pessoa`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `cpf` (`cpf`);
+
+--
+-- Índices de tabela `tb_proposta`
+--
+ALTER TABLE `tb_proposta`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `solicitacao_id` (`solicitacao_id`),
+  ADD KEY `prestador_id` (`prestador_id`);
+
+--
+-- Índices de tabela `tb_solicita_servico`
+--
+ALTER TABLE `tb_solicita_servico`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `cliente_id` (`cliente_id`),
+  ADD KEY `tipo_servico_id` (`tipo_servico_id`),
+  ADD KEY `endereco_id` (`endereco_id`),
+  ADD KEY `status_id` (`status_id`);
+
+--
+-- Índices de tabela `tb_status_solicitacao`
+--
+ALTER TABLE `tb_status_solicitacao`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices de tabela `tb_tipo_servico`
+--
+ALTER TABLE `tb_tipo_servico`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices de tabela `tb_usuario`
+--
+ALTER TABLE `tb_usuario`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Índices de tabela `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `users_email_unique` (`email`);
+
+--
+-- AUTO_INCREMENT para tabelas despejadas
+--
+
+--
+-- AUTO_INCREMENT de tabela `tb_avaliacao`
+--
+ALTER TABLE `tb_avaliacao`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de tabela `tb_endereco`
+--
+ALTER TABLE `tb_endereco`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT de tabela `tb_imagem_solicitacao`
+--
+ALTER TABLE `tb_imagem_solicitacao`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT de tabela `tb_mensagem`
+--
+ALTER TABLE `tb_mensagem`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de tabela `tb_negociacao_proposta`
+--
+ALTER TABLE `tb_negociacao_proposta`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `tb_notificacao`
+--
+ALTER TABLE `tb_notificacao`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `tb_pessoa`
+--
+ALTER TABLE `tb_pessoa`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT de tabela `tb_proposta`
+--
+ALTER TABLE `tb_proposta`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT de tabela `tb_solicita_servico`
+--
+ALTER TABLE `tb_solicita_servico`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
+-- AUTO_INCREMENT de tabela `tb_status_solicitacao`
+--
+ALTER TABLE `tb_status_solicitacao`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT de tabela `tb_tipo_servico`
+--
+ALTER TABLE `tb_tipo_servico`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT de tabela `tb_usuario`
+--
+ALTER TABLE `tb_usuario`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de tabela `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Restrições para tabelas despejadas
+--
+
+--
+-- Restrições para tabelas `tb_avaliacao`
+--
+ALTER TABLE `tb_avaliacao`
+  ADD CONSTRAINT `fk_avaliacao_avaliado` FOREIGN KEY (`avaliado_id`) REFERENCES `tb_pessoa` (`id`),
+  ADD CONSTRAINT `fk_avaliacao_avaliador` FOREIGN KEY (`avaliador_id`) REFERENCES `tb_pessoa` (`id`),
+  ADD CONSTRAINT `fk_avaliacao_solicitacao` FOREIGN KEY (`solicitacao_id`) REFERENCES `tb_solicita_servico` (`id`);
+
+--
+-- Restrições para tabelas `tb_endereco`
+--
+ALTER TABLE `tb_endereco`
+  ADD CONSTRAINT `fk_endereco_pessoa` FOREIGN KEY (`pessoa_id`) REFERENCES `tb_pessoa` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `tb_imagem_solicitacao`
+--
+ALTER TABLE `tb_imagem_solicitacao`
+  ADD CONSTRAINT `fk_imagem_solicitacao` FOREIGN KEY (`solicitacao_id`) REFERENCES `tb_solicita_servico` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `tb_mensagem`
+--
+ALTER TABLE `tb_mensagem`
+  ADD CONSTRAINT `fk_mensagem_destinatario` FOREIGN KEY (`destinatario_id`) REFERENCES `tb_pessoa` (`id`),
+  ADD CONSTRAINT `fk_mensagem_remetente` FOREIGN KEY (`remetente_id`) REFERENCES `tb_pessoa` (`id`),
+  ADD CONSTRAINT `fk_mensagem_solicitacao` FOREIGN KEY (`solicitacao_id`) REFERENCES `tb_solicita_servico` (`id`);
+
+--
+-- Restrições para tabelas `tb_negociacao_proposta`
+--
+ALTER TABLE `tb_negociacao_proposta`
+  ADD CONSTRAINT `tb_negociacao_proposta_ibfk_1` FOREIGN KEY (`proposta_id`) REFERENCES `tb_proposta` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `tb_notificacao`
+--
+ALTER TABLE `tb_notificacao`
+  ADD CONSTRAINT `fk_notificacao_pessoa` FOREIGN KEY (`pessoa_id`) REFERENCES `tb_pessoa` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `tb_proposta`
+--
+ALTER TABLE `tb_proposta`
+  ADD CONSTRAINT `fk_proposta_prestador` FOREIGN KEY (`prestador_id`) REFERENCES `tb_pessoa` (`id`),
+  ADD CONSTRAINT `fk_proposta_solicitacao` FOREIGN KEY (`solicitacao_id`) REFERENCES `tb_solicita_servico` (`id`);
+
+--
+-- Restrições para tabelas `tb_solicita_servico`
+--
+ALTER TABLE `tb_solicita_servico`
+  ADD CONSTRAINT `fk_solicitacao_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `tb_pessoa` (`id`),
+  ADD CONSTRAINT `fk_solicitacao_endereco` FOREIGN KEY (`endereco_id`) REFERENCES `tb_endereco` (`id`),
+  ADD CONSTRAINT `fk_solicitacao_status` FOREIGN KEY (`status_id`) REFERENCES `tb_status_solicitacao` (`id`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

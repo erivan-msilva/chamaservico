@@ -1,0 +1,13 @@
+/* =========================
+   Paleta de Cores ChamaServiço
+   ========================= */
+:root {
+    --color-bg-main: #0a112e;         /* Fundo principal */
+    --color-primary: #283579;         /* Azul médio */
+    --color-accent: #f5a522;          /* Amarelo ouro (ação/destaque) */
+    --color-white: #ffffff;           /* Texto principal */
+    --color-dark-gray: #4e5264;       /* Cinza chumbo (texto secundário/bordas) */
+    --color-danger: #b02a37;          /* Vermelho escuro (perigo) */
+    --color-card-bg: #141a36;         /* Fundo dos cards */
+    --color-shadow: rgba(10, 17, 46, 0.15); /* Sombra sutil para cards */
+}

@@ -1,0 +1,175 @@
+/* ======= Estilos Globais ======= */
+body {
+    background: var(--color-bg-main);
+    color: var(--color-white);
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    min-height: 100vh;
+}
+
+/* Tipografia */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-white);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+p, label, .form-label, .form-text {
+    color: var(--color-white);
+    opacity: 0.95;
+}
+
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+a:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+/* ======= Layout ======= */
+.navbar {
+    background: var(--color-primary) !important;
+    border-bottom: 2px solid var(--color-accent);
+    box-shadow: 0 2px 8px var(--color-shadow);
+}
+.navbar-brand, .navbar-nav .nav-link {
+    color: var(--color-white) !important;
+}
+.navbar-nav .nav-link.active, .navbar-nav .nav-link:hover {
+    color: var(--color-accent) !important;
+}
+
+footer {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border-top: 2px solid var(--color-accent);
+    padding: 1rem 0;
+    font-size: 0.95rem;
+}
+
+/* ======= Cards ======= */
+.card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-dark-gray);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px var(--color-shadow);
+    color: var(--color-white);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.card:hover {
+    box-shadow: 0 8px 24px var(--color-shadow);
+    transform: translateY(-2px);
+}
+.card-header, .card-footer {
+    background: transparent;
+    border-bottom: 1px solid var(--color-dark-gray);
+    color: var(--color-white);
+}
+
+/* ======= Botões ======= */
+.btn {
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+/* Botão primário: Amarelo Ouro */
+.btn-primary, .btn-primary:focus {
+    background: var(--color-accent);
+    color: var(--color-bg-main);
+    border: none;
+    box-shadow: 0 2px 8px var(--color-shadow);
+}
+.btn-primary:hover, .btn-primary:active {
+    background: #e09c1b;
+    color: var(--color-bg-main);
+}
+
+/* Botão secundário: Cinza Chumbo */
+.btn-secondary, .btn-secondary:focus {
+    background: var(--color-dark-gray);
+    color: var(--color-white);
+    border: none;
+}
+.btn-secondary:hover, .btn-secondary:active {
+    background: #36394a;
+    color: var(--color-accent);
+}
+
+/* Botão de perigo: Vermelho escuro */
+.btn-danger, .btn-danger:focus {
+    background: var(--color-danger);
+    color: var(--color-white);
+    border: none;
+}
+.btn-danger:hover, .btn-danger:active {
+    background: #8a1f2a;
+    color: var(--color-accent);
+}
+
+/* ======= Formulários ======= */
+.form-control {
+    background: #1a2240;
+    color: var(--color-white);
+    border: 1px solid var(--color-dark-gray);
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(245, 165, 34, 0.2);
+    background: #222a4a;
+    color: var(--color-white);
+}
+.form-label {
+    color: var(--color-accent);
+    font-weight: 500;
+}
+
+/* ======= Badges/Etiquetas ======= */
+.badge {
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+    letter-spacing: 0.01em;
+}
+.badge.bg-primary, .badge.bg-info {
+    background: var(--color-primary) !important;
+    color: var(--color-white) !important;
+}
+.badge.bg-accent, .badge.bg-warning {
+    background: var(--color-accent) !important;
+    color: var(--color-bg-main) !important;
+}
+.badge.bg-secondary {
+    background: var(--color-dark-gray) !important;
+    color: var(--color-white) !important;
+}
+.badge.bg-danger {
+    background: var(--color-danger) !important;
+    color: var(--color-white) !important;
+}
+.badge.bg-success {
+    background: #2ecc40 !important;
+    color: var(--color-bg-main) !important;
+}
+
+/* ======= Sombra para modais e dropdowns ======= */
+.modal-content, .dropdown-menu {
+    background: var(--color-card-bg);
+    color: var(--color-white);
+    border: 1px solid var(--color-dark-gray);
+    box-shadow: 0 8px 32px var(--color-shadow);
+}
+
+/* ======= Efeito hover para links e botões ======= */
+.btn, a {
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.btn:focus, .btn:active {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-accent);
+}

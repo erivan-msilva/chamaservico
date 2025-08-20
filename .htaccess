@@ -1,0 +1,20 @@
+
+RewriteEngine On
+
+# Permitir acesso direto aos arquivos de upload
+RewriteCond %{REQUEST_URI} ^/chamaservico/uploads/
+RewriteRule ^(.*)$ - [L]
+
+# Permitir acesso a arquivos estáticos existentes
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^(.*)$ - [L]
+
+# Permitir acesso a diretórios existentes
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^(.*)$ - [L]
+
+# Redirecionar todas as outras requisições para index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
