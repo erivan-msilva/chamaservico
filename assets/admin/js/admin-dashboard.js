@@ -587,6 +587,67 @@ class AdminDashboard {
         window.removeEventListener('resize', this.setupResponsive);
         document.removeEventListener('keydown', this.handleKeyboard);
     }
+
+    alterarTipoGrafico(tipo) {
+        if (chartTemporal) {
+            chartTemporal.config.type = tipo;
+            chartTemporal.update();
+            // Atualizar botões ativos
+            document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        }
+    }
+
+    exportarRelatorio(formato) {
+        const tipo = document.getElementById('relatorioTipo').value;
+        const periodo = document.getElementById('relatorioPeriodo').value;
+        const params = new URLSearchParams({
+            acao: 'exportar_relatorio',
+            formato,
+            tipo,
+            periodo,
+            data_inicio: document.getElementById('relatorioDataInicio').value,
+            data_fim: document.getElementById('relatorioDataFim').value
+        });
+
+        // Criar link de download
+        const link = document.createElement('a');
+        link.href = `../controllers/AdminController.class.php?${params}`;
+        link.download = `relatorio_${tipo}_${new Date().toISOString().split('T')[0]}.${formato}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    imprimirRelatorio() {
+        const conteudo = document.getElementById('content-body').innerHTML;
+        const janela = window.open('', '_blank');
+        janela.document.write(`
+            <html>
+                <head>
+                    <title>Relatório - ${document.getElementById('relatorioTipo').value}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        @media print {
+                            .btn, .card-header .btn-group { display: none !important; }
+                            canvas { max-height: 400px !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container-fluid">
+                        <h1>Relatório - ${document.getElementById('relatorioTipo').value}</h1>
+                        <hr>
+                        ${conteudo}
+                    </div>
+                </body>
+            </html>
+        `);
+        janela.document.close();
+        janela.print();
+    }
 }
 
 // Export para uso global

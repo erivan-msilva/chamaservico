@@ -1,103 +1,42 @@
-<!-- Modal para criar usuário admin -->
-<div class="modal fade" id="modalCriarAdmin" tabindex="-1" aria-labelledby="modalCriarAdminLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<!-- Modal Criar Novo Admin -->
+<div class="modal fade" id="modalCriarAdmin" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="modalCriarAdminLabel">
-                    <i class="bi bi-shield-plus me-2"></i>Criar Usuário Administrador
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-shield-plus me-2"></i>Novo Administrador
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formCriarAdmin">
+            <form id="formCriarAdmin" onsubmit="criarAdmin(event)">
                 <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Atenção:</strong> Usuários administradores têm acesso total ao sistema.
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="adminNome" class="form-label">
-                                    <i class="bi bi-person me-1"></i>Nome Completo
-                                </label>
-                                <input type="text" class="form-control" id="adminNome" name="nome" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="adminEmail" class="form-label">
-                                    <i class="bi bi-envelope me-1"></i>E-mail
-                                </label>
-                                <input type="email" class="form-control" id="adminEmail" name="email" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="adminSenha" class="form-label">
-                                    <i class="bi bi-lock me-1"></i>Senha
-                                </label>
-                                <input type="password" class="form-control" id="adminSenha" name="senha" required minlength="6">
-                                <div class="form-text">Mínimo de 6 caracteres</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="adminConfirmarSenha" class="form-label">
-                                    <i class="bi bi-lock-fill me-1"></i>Confirmar Senha
-                                </label>
-                                <input type="password" class="form-control" id="adminConfirmarSenha" name="confirmar_senha" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="adminTelefone" class="form-label">
-                                    <i class="bi bi-telephone me-1"></i>Telefone
-                                </label>
-                                <input type="tel" class="form-control" id="adminTelefone" name="telefone">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="adminNivel" class="form-label">
-                                    <i class="bi bi-shield me-1"></i>Nível de Acesso
-                                </label>
-                                <select class="form-select" id="adminNivel" name="nivel_admin">
-                                    <option value="admin">Administrador</option>
-                                    <option value="super_admin">Super Administrador</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="adminAtivo" name="ativo" checked>
-                            <label class="form-check-label" for="adminAtivo">
-                                Usuário ativo
-                            </label>
-                        </div>
+                        <label class="form-label">Nome Completo *</label>
+                        <input type="text" class="form-control" name="nome" required>
                     </div>
-                    
                     <div class="mb-3">
-                        <label for="adminObservacoes" class="form-label">
-                            <i class="bi bi-chat-left-text me-1"></i>Observações
-                        </label>
-                        <textarea class="form-control" id="adminObservacoes" name="observacoes" rows="3" placeholder="Informações adicionais sobre o administrador..."></textarea>
+                        <label class="form-label">E-mail *</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Senha *</label>
+                        <input type="password" class="form-control" name="senha" required minlength="6">
+                        <div class="form-text">Mínimo 6 caracteres</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nível de Acesso *</label>
+                        <select class="form-select" name="nivel_admin" required>
+                            <option value="">Selecione...</option>
+                            <option value="admin">Administrador</option>
+                            <option value="moderador">Moderador</option>
+                            <option value="suporte">Suporte</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x me-1"></i>Cancelar
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i>Criar Administrador
+                        <i class="bi bi-shield-check me-1"></i>Criar Admin
                     </button>
                 </div>
             </form>
@@ -105,13 +44,74 @@
     </div>
 </div>
 
-<!-- Modal de confirmação de logout -->
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<!-- Modal Confirmação de Exclusão -->
+<div class="modal fade" id="modalConfirmarExclusao" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="logoutModalLabel">
-                    <i class="bi bi-box-arrow-right"></i> Sair do Sistema
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este item?</p>
+                <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+                <div id="itemExclusaoDetalhes"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarExclusao()">
+                    <i class="bi bi-trash me-1"></i>Confirmar Exclusão
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function criarAdmin(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/chamaservico/admin/api/criar-admin', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            showToast(data.mensagem, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('modalCriarAdmin')).hide();
+            form.reset();
+        } else {
+            showToast(data.mensagem, 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao criar administrador', 'error');
+    }
+}
+
+let itemParaExcluir = null;
+
+function mostrarConfirmacaoExclusao(item, detalhes = '') {
+    itemParaExcluir = item;
+    document.getElementById('itemExclusaoDetalhes').innerHTML = detalhes;
+    new bootstrap.Modal(document.getElementById('modalConfirmarExclusao')).show();
+}
+
+function confirmarExclusao() {
+    if (itemParaExcluir && typeof itemParaExcluir.callback === 'function') {
+        itemParaExcluir.callback();
+        bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusao')).hide();
+        itemParaExcluir = null;
+    }
+}
+</script>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>

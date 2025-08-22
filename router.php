@@ -213,12 +213,16 @@ if (class_exists('AdminController')) {
     $router->get('/admin/monitor', 'AdminController', 'monitor');
     $router->get('/admin/monitor/dados', 'AdminController', 'getDadosMonitor');
 
-    // API do Admin (para requisições AJAX)
+    // APIs do Admin (para requisições AJAX)
     $router->get('/admin/api/dashboard', 'AdminController', 'apiDashboard');
     $router->get('/admin/api/usuarios', 'AdminController', 'apiUsuarios');
+    $router->get('/admin/api/usuario', 'AdminController', 'apiUsuario');
+    $router->post('/admin/api/criar-usuario', 'AdminController', 'apiCriarUsuario');
+    $router->post('/admin/api/editar-usuario', 'AdminController', 'apiEditarUsuario');
+    $router->post('/admin/api/deletar-usuario', 'AdminController', 'apiDeletarUsuario');
+    $router->get('/admin/api/exportar-usuarios', 'AdminController', 'apiExportarUsuarios');
     $router->post('/admin/api/criar-admin', 'AdminController', 'apiCriarAdmin');
     $router->post('/admin/toggle-status-usuario', 'AdminController', 'toggleStatusUsuario');
-    $router->get('/admin/api/estatisticas', 'AdminController', 'apiEstatisticas');
 } else {
     // Rotas de fallback se AdminController não estiver disponível
     $router->get('/admin', 'HomeController', 'acessoNegado');

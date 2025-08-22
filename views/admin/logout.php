@@ -1,18 +1,18 @@
 <?php
+// Destruir sessão admin
 session_start();
+unset($_SESSION['admin_id']);
+unset($_SESSION['admin_nome']);
+unset($_SESSION['admin_nivel']);
+unset($_SESSION['is_admin']);
 
-// Destruir todas as variáveis de sessão
-$_SESSION = array();
+// Regenerar ID da sessão por segurança
+session_regenerate_id(true);
 
-// Se desejar destruir a sessão completamente, apague também o cookie de sessão
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
-    setcookie(session_name(), '', time() - 42000,
-        $params["path"], $params["domain"],
-        $params["secure"], $params["httponly"]
-    );
-}
-
+// Redirecionar para login admin
+header('Location: /chamaservico/admin/login');
+exit;
+?>
 // Destruir a sessão
 session_destroy();
 

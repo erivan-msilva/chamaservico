@@ -2,51 +2,38 @@
 require_once 'core/Database.php';
 
 class Notificacao {
-    private $db;
-
+    public $db;
+    
     public function __construct() {
         $this->db = Database::getInstance();
     }
-
-    public function criarNotificacao($pessoaId, $titulo, $mensagem, $tipo = null, $referenciaId = null) {
-        try {
-            $sql = "INSERT INTO tb_notificacao (pessoa_id, titulo, mensagem, tipo, referencia_id) 
-                    VALUES (?, ?, ?, ?, ?)";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([$pessoaId, $titulo, $mensagem, $tipo, $referenciaId]);
-        } catch (Exception $e) {
-            error_log("Erro ao criar notificação: " . $e->getMessage());
-            return false;
-        }
+    
+    public function criarNotificacao($pessoaId, $titulo, $mensagem, $tipo = 'info', $referenciaId = null) {
+        $sql = "INSERT INTO tb_notificacao (pessoa_id, titulo, mensagem, tipo, referencia_id) 
+                VALUES (?, ?, ?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$pessoaId, $titulo, $mensagem, $tipo, $referenciaId]);
     }
     
-    public function buscarPorUsuario($pessoaId, $filtros = []) {
+    public function buscarPorUsuario($pessoaId, $limit = 20) {
+        $sql = "SELECT * FROM tb_notificacao 
+                WHERE pessoa_id = ? 
+                ORDER BY data_notificacao DESC 
+                LIMIT ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$pessoaId, $limit]);
+        return $stmt->fetchAll();
+    }
+    
+    public function contarNaoLidas($pessoaId) {
         try {
-            $sql = "SELECT * FROM tb_notificacao WHERE pessoa_id = ?";
-            $params = [$pessoaId];
-            
-            if (isset($filtros['lida'])) {
-                $sql .= " AND lida = ?";
-                $params[] = $filtros['lida'] ? 1 : 0;
-            }
-            
-            if (!empty($filtros['tipo'])) {
-                $sql .= " AND tipo = ?";
-                $params[] = $filtros['tipo'];
-            }
-            
-            $sql .= " ORDER BY data_notificacao DESC";
-            
-            if (!empty($filtros['limit'])) {
-                $sql .= " LIMIT " . (int)$filtros['limit'];
-            }
-            
+            $sql = "SELECT COUNT(*) FROM tb_notificacao WHERE pessoa_id = ? AND lida = 0";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-            return $stmt->fetchAll();
+            $stmt->execute([$pessoaId]);
+            return $stmt->fetchColumn();
         } catch (Exception $e) {
-            error_log("Erro ao buscar notificações: " . $e->getMessage());
-            return [];
+            error_log("Erro ao contar notificações não lidas: " . $e->getMessage());
+            return 0;
         }
     }
     
@@ -89,18 +76,6 @@ class Notificacao {
         }
     }
     
-    public function contarNaoLidas($pessoaId) {
-        try {
-            $sql = "SELECT COUNT(*) FROM tb_notificacao WHERE pessoa_id = ? AND lida = 0";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$pessoaId]);
-            return $stmt->fetchColumn();
-        } catch (Exception $e) {
-            error_log("Erro ao contar notificações não lidas: " . $e->getMessage());
-            return 0;
-        }
-    }
-    
     public function deletarNotificacao($notificacaoId, $pessoaId) {
         try {
             $sql = "DELETE FROM tb_notificacao WHERE id = ? AND pessoa_id = ?";
@@ -123,27 +98,27 @@ class Notificacao {
             return [];
         }
     }
-
-    // Adicione este método para evitar o erro fatal
+    
     public function buscarNotificacoesPorUsuario($userId, $filtros = []) {
         $sql = "SELECT * FROM tb_notificacao WHERE pessoa_id = ?";
         $params = [$userId];
-
+        
         // Filtros opcionais
         if (!empty($filtros['lida'])) {
             $sql .= " AND lida = ?";
             $params[] = $filtros['lida'];
         }
+        
         if (!empty($filtros['tipo'])) {
             $sql .= " AND tipo = ?";
             $params[] = $filtros['tipo'];
         }
-
+        
         $sql .= " ORDER BY data_notificacao DESC";
-
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
 }
 ?>
+      

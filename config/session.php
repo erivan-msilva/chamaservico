@@ -74,7 +74,16 @@ class Session {
         }
     }
 
-    // Novo: Verificar se pode acessar área do prestador
+    // CORRIGIDO: Novo método para verificar se pode acessar área do prestador
+    public static function requirePrestadorLogin() {
+        self::requireClientLogin();
+        if (!self::isPrestador()) {
+            header('Location: /chamaservico/acesso-negado');
+            exit();
+        }
+    }
+
+    // Novo: Verificar se pode acessar área do prestador (método alternativo)
     public static function requirePrestadorAccess() {
         self::requireClientLogin();
         if (!self::isPrestador()) {
