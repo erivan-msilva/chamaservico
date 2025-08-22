@@ -970,6 +970,31 @@ class Proposta {
         $stmt->execute([$propostaId, $clienteId]);
         return $stmt->fetch();
     }
+
+    // Novo método: Conta propostas por id de solicitação
+    public function contarPropostasPorSolicitacao($solicitacaoId) {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("SELECT COUNT(*) as total FROM tb_proposta WHERE solicitacao_id = ?");
+        $stmt->execute([$solicitacaoId]);
+        $row = $stmt->fetch();
+        return $row ? (int)$row['total'] : 0;
+    }
+
+    // Novo método: Enviar proposta
+    public function enviarProposta($solicitacaoId, $prestadorId, $valor, $descricao, $prazoExecucao = null)
+    {
+        $db = Database::getInstance()->getConnection();
+        $sql = "INSERT INTO tb_proposta (solicitacao_id, prestador_id, valor, descricao, prazo_execucao, status, data_proposta)
+                VALUES (?, ?, ?, ?, ?, 'pendente', NOW())";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            $solicitacaoId,
+            $prestadorId,
+            $valor,
+            $descricao,
+            $prazoExecucao
+        ]);
+    }
 }
 ?>
 

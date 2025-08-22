@@ -48,7 +48,6 @@ O **ChamaServiço** é uma plataforma web desenvolvida em PHP que facilita a con
 
 ### Ferramentas
 - **XAMPP** - Ambiente de desenvolvimento
-- **Composer** - Gerenciador de dependências (futuro)
 - **Git** - Controle de versão
 
 ## 📦 Instalação

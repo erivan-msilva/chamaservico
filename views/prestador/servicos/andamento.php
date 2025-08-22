@@ -36,10 +36,10 @@ ob_start();
                 <div class="card h-100 shadow-sm border-success">
                     <div class="card-header d-flex justify-content-between align-items-center py-2 bg-success text-white">
                         <small>
-                            <i class="bi bi-person me-1"></i><?= htmlspecialchars($servico['cliente_nome']) ?>
+                            <i class="bi bi-person me-1"></i><?= htmlspecialchars($servico['cliente_nome'] ?? 'Não informado') ?>
                         </small>
                         <span class="badge" style="background-color: <?= htmlspecialchars($servico['status_cor']) ?>;">
-                            <?= htmlspecialchars($servico['status_nome']) ?>
+                            <?= htmlspecialchars($servico['status_nome'] ?? 'Não informado') ?>
                         </span>
                     </div>
                     <div class="card-body">
@@ -47,7 +47,7 @@ ob_start();
                         <p class="card-text">
                             <small class="text-primary">
                                 <i class="bi bi-tools me-1"></i>
-                                <?= htmlspecialchars($servico['tipo_servico_nome']) ?>
+                                <?= htmlspecialchars($servico['tipo_servico_nome'] ?? 'Não informado') ?>
                             </small>
                         </p>
                         <p class="card-text"><?= htmlspecialchars(substr($servico['descricao'], 0, 100)) ?>...</p>
@@ -77,8 +77,8 @@ ob_start();
                                 </small>
                             </div>
                             
-                            <span class="badge bg-<?= $servico['urgencia'] === 'alta' ? 'danger' : ($servico['urgencia'] === 'media' ? 'warning' : 'info') ?>">
-                                <?= ucfirst($servico['urgencia']) ?>
+                            <span class="badge bg-<?= ($servico['urgencia'] ?? 'baixa') === 'alta' ? 'danger' : (($servico['urgencia'] ?? 'baixa') === 'media' ? 'warning' : 'info') ?>">
+                                <?= ucfirst($servico['urgencia'] ?? 'baixa') ?>
                             </span>
                         </div>
                         

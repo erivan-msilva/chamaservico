@@ -11,9 +11,21 @@ if (!defined('APP_NAME')) {
     define('ASSETS_URL', BASE_URL . '/assets');
     define('UPLOADS_URL', BASE_URL . '/uploads');
 
-    // Configurações de upload
+    // Configurações de upload aprimoradas
     define('UPLOAD_MAX_SIZE', 5 * 1024 * 1024); // 5MB
-    define('UPLOAD_ALLOWED_TYPES', ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']);
+    define('UPLOAD_ALLOWED_TYPES', ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']);
+    define('UPLOAD_DIR_PERFIL', __DIR__ . '/../uploads/perfil/');
+    define('UPLOAD_DIR_SOLICITACOES', __DIR__ . '/../uploads/solicitacoes/');
+    define('UPLOAD_URL_PERFIL', BASE_URL . '/uploads/perfil/');
+    define('UPLOAD_URL_SOLICITACOES', BASE_URL . '/uploads/solicitacoes/');
+
+    // Criar diretórios se não existirem
+    if (!file_exists(UPLOAD_DIR_PERFIL)) {
+        mkdir(UPLOAD_DIR_PERFIL, 0755, true);
+    }
+    if (!file_exists(UPLOAD_DIR_SOLICITACOES)) {
+        mkdir(UPLOAD_DIR_SOLICITACOES, 0755, true);
+    }
 
     // Configurações de sessão
     define('SESSION_TIMEOUT', 1800); // 30 minutos
@@ -50,13 +62,31 @@ if (!defined('APP_NAME')) {
     }
 }
 
-// Definindo constantes de banco de dados para manter compatibilidade
+// CONFIGURAÇÃO INTELIGENTE: Detectar ambiente automaticamente
 if (!defined('DB_HOST')) {
-    define('DB_HOST', 'localhost');
-    define('DB_NAME', 'td187899_chamaservico');
-    define('DB_USER', 'td187899_chamaservico');
-    define('DB_PASS', 'XHRmnbDHgMVP4sk45N5Z');
-    define('DB_CHARSET', 'utf8mb4');
-    define('DB_PORT', 3306);
+    // Verificar se estamos em localhost (desenvolvimento)
+    $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8083']);
+    
+    if ($isLocalhost) {
+        // CORREÇÃO: Configurações para desenvolvimento local (XAMPP) com mesmo nome do banco de produção
+        define('DB_HOST', 'localhost');
+        define('DB_NAME', 'td187899_chamaservico'); // Mesmo nome do banco de produção
+        define('DB_USER', 'root');                   // Usuário padrão do XAMPP
+        define('DB_PASS', '');                       // Senha vazia no XAMPP
+        define('DB_CHARSET', 'utf8mb4');
+        define('DB_PORT', 3306);
+        
+        error_log("Usando configuração LOCAL do banco de dados: td187899_chamaservico");
+    } else {
+        // Configurações para servidor hospedado
+        define('DB_HOST', 'h63.servidorhh.com');
+        define('DB_NAME', 'td187899_chamaservico');
+        define('DB_USER', 'td187899_chamaservico');
+        define('DB_PASS', 'XHRmnbDHgMVP4sk45N5Z');
+        define('DB_CHARSET', 'utf8mb4');
+        define('DB_PORT', 3306);
+        
+        error_log("Usando configuração HOSPEDADA do banco de dados");
+    }
 }
 ?>

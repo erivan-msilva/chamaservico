@@ -128,16 +128,24 @@ class PrestadorController {
                 header('Location: /chamaservico/prestador/solicitacoes');
                 exit;
             }
-            
-            $dados = [
-                'solicitacao_id' => $_POST['solicitacao_id'],
-                'prestador_id' => Session::getUserId(),
-                'valor' => $_POST['valor'],
-                'descricao' => $_POST['descricao'],
-                'prazo_execucao' => $_POST['prazo_execucao']
-            ];
-            
-            if ($this->propostaModel->enviarProposta($dados)) {
+
+            // Exemplo de obtenção dos dados do formulário POST
+            $solicitacaoId = $_POST['solicitacao_id'] ?? null;
+            $prestadorId = Session::getUserId();
+            $valor = $_POST['valor'] ?? null;
+            $descricao = $_POST['descricao'] ?? '';
+            $prazoExecucao = $_POST['prazo_execucao'] ?? null;
+
+            // Chamada correta do método usando $propostaModel
+            $resultado = $this->propostaModel->enviarProposta(
+                $solicitacaoId,
+                $prestadorId,
+                $valor,
+                $descricao,
+                $prazoExecucao
+            );
+
+            if ($resultado) {
                 Session::setFlash('success', 'Proposta enviada com sucesso!', 'success');
                 header('Location: /chamaservico/prestador/propostas');
             } else {

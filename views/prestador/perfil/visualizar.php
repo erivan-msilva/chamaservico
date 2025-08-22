@@ -63,42 +63,6 @@ ob_start();
                     </div>
                 </div>
 
-                <!-- Informações Profissionais -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="mb-0" style="color: #f5a522;"><i class="bi bi-briefcase me-2"></i>Informações Profissionais</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Especialidades:</strong></p>
-                                <?php
-                                $especialidades = isset($usuario['especialidades']) ? explode(',', $usuario['especialidades']) : [];
-                                if (!empty($especialidades) && !empty($especialidades[0])):
-                                ?>
-                                    <?php foreach ($especialidades as $esp): ?>
-                                        <span class="badge bg-secondary me-1"><?= htmlspecialchars(trim($esp)) ?></span>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <span class="text-muted">Nenhuma especialidade cadastrada</span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Área de Atuação:</strong></p>
-                                <span class="text-muted"><?= htmlspecialchars($usuario['area_atuacao'] ?? 'Não informada') ?></span>
-                            </div>
-                        </div>
-
-                        <hr style="border-color: #4e5264;">
-
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            <strong>Dica:</strong> Complete seu perfil profissional para receber mais propostas!
-                            Clientes confiam mais em prestadores com perfis completos.
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Atividade Recente -->
                 <div class="card mt-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -130,20 +94,19 @@ ob_start();
                     <div class="card-body">
                         <div class="mb-3">
                             <?php
-                            // Verificar foto do perfil
+                            // Corrigir verificação de existência do arquivo para ambiente restrito
                             $fotoPerfil = $usuario['foto_perfil'];
                             if ($fotoPerfil) {
-                                // Remover qualquer prefixo de pasta
+                                // Se o caminho já contém 'uploads/perfil/', pega só o nome do arquivo
                                 $fotoPerfil = basename($fotoPerfil);
-                                // Verificar se o arquivo realmente existe
-                                $caminhoArquivo = "uploads/perfil/" . $fotoPerfil;
-                                $arquivoExiste = file_exists($caminhoArquivo);
+                                $caminhoArquivoRelativo = "uploads/perfil/" . $fotoPerfil;
+                                $arquivoExiste = is_file($caminhoArquivoRelativo);
                             }
                             ?>
                             <?php if ($fotoPerfil && $arquivoExiste): ?>
                                 <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
                                     class="rounded-circle profile-img" alt="Foto do perfil"
-                                    onerror="console.log('Erro ao carregar imagem: <?= $fotoPerfil ?>'); this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                 <div class="rounded-circle profile-img bg-light d-flex align-items-center justify-content-center mx-auto"
                                     style="border-color: #4e5264; display: none;">
                                     <i class="bi bi-person" style="font-size: 4rem; color: #4e5264;"></i>

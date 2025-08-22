@@ -11,10 +11,23 @@ class NotificacaoController {
     }
     
     public function index() {
-        $userId = Session::getUserId();
-        $notificacoes = $this->model->buscarPorUsuario($userId);
-        
-        include 'views/notificacoes/index.php';
+        try {
+            $userId = Session::getUserId();
+            if (!$userId) {
+                throw new Exception('Usuário não autenticado.');
+            }
+            
+            // Buscar notificações simples
+            $notificacoes = $this->model->buscarPorUsuario($userId, 20);
+            
+            // Incluir a ÚNICA view de notificações
+            include 'views/notificacoes/index.php';
+        } catch (Exception $e) {
+            error_log("Erro ao carregar notificações: " . $e->getMessage());
+            Session::setFlash('error', 'Erro ao carregar notificações: ' . $e->getMessage(), 'danger');
+            header('Location: /chamaservico/');
+            exit;
+        }
     }
     
     public function contador() {
@@ -104,4 +117,3 @@ class NotificacaoController {
     }
 }
 ?>
-        

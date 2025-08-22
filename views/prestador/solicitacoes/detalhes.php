@@ -42,7 +42,12 @@ ob_start();
                                         <div class="card h-100 shadow-sm">
                                             <div class="position-relative">
                                                 <?php 
-                                                $imagemPath = "/chamaservico/uploads/solicitacoes/" . htmlspecialchars($imagem['caminho_imagem']);
+                                                // CORREÇÃO: garantir subpasta solicitacoes/
+                                                $imgFile = ltrim($imagem['caminho_imagem'], '/');
+                                                if (strpos($imgFile, 'solicitacoes/') !== 0) {
+                                                    $imgFile = 'solicitacoes/' . $imgFile;
+                                                }
+                                                $imagemPath = "/chamaservico/uploads/" . $imgFile;
                                                 ?>
                                                 <img src="<?= $imagemPath ?>" 
                                                      class="card-img-top" 
@@ -78,9 +83,20 @@ ob_start();
                             </div>
                         </div>
                         
+                        <?php
+                        // Adicionar esta lógica no início do arquivo após receber $outrasPropostas
+                        $outrasPropostasMsg = '';
+                        if ($outrasPropostas == 0) {
+                            $outrasPropostasMsg = 'Nenhuma proposta enviada ainda para esta solicitação. Seja o primeiro!';
+                        } elseif ($outrasPropostas == 1) {
+                            $outrasPropostasMsg = '1 prestador já enviou uma proposta para esta solicitação.';
+                        } else {
+                            $outrasPropostasMsg = "$outrasPropostas prestadores já enviaram propostas para esta solicitação.";
+                        }
+                        ?>
                         <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            <strong>Outras propostas:</strong> <?= $outrasPropostas ?> prestador<?= $outrasPropostas != 1 ? 'es' : '' ?> já enviou<?= $outrasPropostas != 1 ? 'aram' : '' ?> proposta<?= $outrasPropostas != 1 ? 's' : '' ?> para esta solicitação.
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Outras propostas:</strong> <?= $outrasPropostasMsg ?>
                         </div>
                     </div>
                     

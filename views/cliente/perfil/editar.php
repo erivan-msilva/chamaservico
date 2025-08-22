@@ -29,7 +29,6 @@ ob_start();
                             <?php 
                             $fotoPerfil = $usuario['foto_perfil'];
                             if ($fotoPerfil) {
-                                // Remover qualquer prefixo de pasta e usar apenas o nome do arquivo
                                 $fotoPerfil = basename($fotoPerfil);
                             }
                             if ($fotoPerfil && file_exists("uploads/perfil/" . $fotoPerfil)): ?>

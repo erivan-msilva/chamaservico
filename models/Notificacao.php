@@ -1,21 +1,25 @@
 <?php
 require_once 'core/Database.php';
 
-class Notificacao {
+class Notificacao
+{
     public $db;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->db = Database::getInstance();
     }
-    
-    public function criarNotificacao($pessoaId, $titulo, $mensagem, $tipo = 'info', $referenciaId = null) {
+
+    public function criarNotificacao($pessoaId, $titulo, $mensagem, $tipo = 'info', $referenciaId = null)
+    {
         $sql = "INSERT INTO tb_notificacao (pessoa_id, titulo, mensagem, tipo, referencia_id) 
                 VALUES (?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$pessoaId, $titulo, $mensagem, $tipo, $referenciaId]);
     }
-    
-    public function buscarPorUsuario($pessoaId, $limit = 20) {
+
+    public function buscarPorUsuario($pessoaId, $limit = 20)
+    {
         $sql = "SELECT * FROM tb_notificacao 
                 WHERE pessoa_id = ? 
                 ORDER BY data_notificacao DESC 
@@ -24,8 +28,9 @@ class Notificacao {
         $stmt->execute([$pessoaId, $limit]);
         return $stmt->fetchAll();
     }
-    
-    public function contarNaoLidas($pessoaId) {
+
+    public function contarNaoLidas($pessoaId)
+    {
         try {
             $sql = "SELECT COUNT(*) FROM tb_notificacao WHERE pessoa_id = ? AND lida = 0";
             $stmt = $this->db->prepare($sql);
@@ -36,8 +41,9 @@ class Notificacao {
             return 0;
         }
     }
-    
-    public function marcarComoLida($notificacaoId, $pessoaId) {
+
+    public function marcarComoLida($notificacaoId, $pessoaId)
+    {
         try {
             $sql = "UPDATE tb_notificacao SET lida = 1 WHERE id = ? AND pessoa_id = ?";
             $stmt = $this->db->prepare($sql);
@@ -50,8 +56,9 @@ class Notificacao {
             return false;
         }
     }
-    
-    public function marcarTodasComoLidas($pessoaId) {
+
+    public function marcarTodasComoLidas($pessoaId)
+    {
         try {
             $sql = "UPDATE tb_notificacao SET lida = 1 WHERE pessoa_id = ? AND lida = 0";
             $stmt = $this->db->prepare($sql);
@@ -64,8 +71,9 @@ class Notificacao {
             return false;
         }
     }
-    
-    public function deletar($notificacaoId, $pessoaId) {
+
+    public function deletar($notificacaoId, $pessoaId)
+    {
         try {
             $sql = "DELETE FROM tb_notificacao WHERE id = ? AND pessoa_id = ?";
             $stmt = $this->db->prepare($sql);
@@ -75,8 +83,9 @@ class Notificacao {
             return false;
         }
     }
-    
-    public function deletarNotificacao($notificacaoId, $pessoaId) {
+
+    public function deletarNotificacao($notificacaoId, $pessoaId)
+    {
         try {
             $sql = "DELETE FROM tb_notificacao WHERE id = ? AND pessoa_id = ?";
             $stmt = $this->db->prepare($sql);
@@ -86,8 +95,9 @@ class Notificacao {
             return false;
         }
     }
-    
-    public function buscarPorTipo($pessoaId, $tipo, $limit = 5) {
+
+    public function buscarPorTipo($pessoaId, $tipo, $limit = 5)
+    {
         try {
             $sql = "SELECT * FROM tb_notificacao WHERE pessoa_id = ? AND tipo = ? ORDER BY data_notificacao DESC LIMIT ?";
             $stmt = $this->db->prepare($sql);
@@ -98,27 +108,26 @@ class Notificacao {
             return [];
         }
     }
-    
-    public function buscarNotificacoesPorUsuario($userId, $filtros = []) {
+
+    public function buscarNotificacoesPorUsuario($userId, $filtros = [])
+    {
         $sql = "SELECT * FROM tb_notificacao WHERE pessoa_id = ?";
         $params = [$userId];
-        
+
         // Filtros opcionais
         if (!empty($filtros['lida'])) {
             $sql .= " AND lida = ?";
             $params[] = $filtros['lida'];
         }
-        
+
         if (!empty($filtros['tipo'])) {
             $sql .= " AND tipo = ?";
             $params[] = $filtros['tipo'];
         }
-        
+
         $sql .= " ORDER BY data_notificacao DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
 }
-?>
-      

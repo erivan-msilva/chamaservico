@@ -17,8 +17,16 @@ ob_start();
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <?php if ($usuario['foto_perfil'] && file_exists("uploads/perfil/" . basename($usuario['foto_perfil']))): ?>
-                                <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars(basename($usuario['foto_perfil'])) ?>" 
+                            <?php
+                            $fotoPerfil = $usuario['foto_perfil'];
+                            if ($fotoPerfil) {
+                                $fotoPerfil = basename($fotoPerfil);
+                                $caminhoArquivoRelativo = "uploads/perfil/" . $fotoPerfil;
+                                $arquivoExiste = is_file($caminhoArquivoRelativo);
+                            }
+                            ?>
+                            <?php if ($fotoPerfil && $arquivoExiste): ?>
+                                <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>" 
                                     class="rounded-circle profile-img" alt="Foto do perfil">
                             <?php else: ?>
                                 <div class="rounded-circle profile-img bg-light d-flex align-items-center justify-content-center mx-auto" 
@@ -42,10 +50,6 @@ ob_start();
                     <a href="#dadosPessoais" class="list-group-item list-group-item-action d-flex align-items-center active" 
                        data-bs-toggle="list">
                         <i class="bi bi-person me-2"></i>Dados Pessoais
-                    </a>
-                    <a href="#dadosProfissionais" class="list-group-item list-group-item-action d-flex align-items-center" 
-                       data-bs-toggle="list">
-                        <i class="bi bi-briefcase me-2"></i>Informações Profissionais
                     </a>
                     <a href="#seguranca" class="list-group-item list-group-item-action d-flex align-items-center" 
                        data-bs-toggle="list">
@@ -123,86 +127,6 @@ ob_start();
                                     <div class="d-flex">
                                         <button type="submit" class="btn btn-primary">
                                             <i class="bi bi-check-circle me-1"></i>Salvar Alterações
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                            
-                            <!-- Informações Profissionais -->
-                            <div class="tab-pane fade" id="dadosProfissionais">
-                                <h4 class="mb-4"><i class="bi bi-briefcase me-2"></i>Informações Profissionais</h4>
-                                
-                                <form method="POST" action="/chamaservico/prestador/perfil/editar">
-                                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                                    <input type="hidden" name="acao" value="dados_profissionais">
-                                    
-                                    <div class="mb-3">
-                                        <label class="form-label">Especialidades/Serviços</label>
-                                        
-                                        <div class="row g-2">
-                                            <?php 
-                                            $especialidadesUsuario = isset($usuario['especialidades']) ? 
-                                                explode(',', $usuario['especialidades']) : [];
-                                            
-                                            foreach ($tiposServico as $tipo): 
-                                            ?>
-                                            <div class="col-md-4">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" 
-                                                           name="especialidades[]" 
-                                                           id="tipo_<?= $tipo['id'] ?>" 
-                                                           value="<?= htmlspecialchars($tipo['nome']) ?>"
-                                                           <?= in_array($tipo['nome'], $especialidadesUsuario) ? 'checked' : '' ?>>
-                                                    <label class="form-check-label" for="tipo_<?= $tipo['id'] ?>">
-                                                        <?= htmlspecialchars($tipo['nome']) ?>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <?php endforeach; ?>
-                                            
-                                            <!-- Opção "Outro" -->
-                                            <div class="col-md-4">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" 
-                                                           name="especialidade_outro" 
-                                                           id="tipo_outro" 
-                                                           value="1" 
-                                                           onclick="toggleOutroInput()">
-                                                    <label class="form-check-label" for="tipo_outro">
-                                                        Outro (especificar)
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="col-12" id="outroInputContainer" style="display: none;">
-                                                <input type="text" class="form-control mt-2" 
-                                                       name="especialidade_outro_texto" 
-                                                       id="especialidade_outro_texto"
-                                                       placeholder="Digite outra especialidade">
-                                            </div>
-                                        </div>
-                                        
-                                        <small class="text-muted">Selecione os tipos de serviço que você oferece. Isso ajudará os clientes a encontrarem você!</small>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="area_atuacao" class="form-label">Área de Atuação</label>
-                                        <input type="text" class="form-control" id="area_atuacao" name="area_atuacao" 
-                                               value="<?= htmlspecialchars($usuario['area_atuacao'] ?? '') ?>" 
-                                               placeholder="Ex: Toda Grande São Paulo">
-                                        <small class="text-muted">Informe as regiões onde você atende</small>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <label for="descricao_profissional" class="form-label">Descrição Profissional</label>
-                                        <textarea class="form-control" id="descricao_profissional" name="descricao_profissional" 
-                                                  rows="4" placeholder="Conte um pouco sobre sua experiência, trabalhos anteriores e diferenciais..."><?= htmlspecialchars($usuario['descricao_profissional'] ?? '') ?></textarea>
-                                        <small class="text-muted">Uma boa descrição aumenta significativamente suas chances de conseguir trabalhos!</small>
-                                    </div>
-                                    
-                                    <div class="d-flex">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-check-circle me-1"></i>Salvar Informações Profissionais
                                         </button>
                                     </div>
                                 </form>

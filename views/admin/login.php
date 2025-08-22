@@ -1,24 +1,61 @@
 <?php
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+session_start();
 
-// Se já está logado como admin, redirecionar
-if (isset($_SESSION['admin_id']) && $_SESSION['is_admin']) {
-    header('Location: /chamaservico/admin/dashboard');
+// Se já estiver logado, redirecionar
+if (isset($_SESSION['admin_id'])) {
+    header('Location: dashboard.php');
     exit;
 }
 
-$erro = $_SESSION['erro_login'] ?? '';
-unset($_SESSION['erro_login']);
+// Processar login
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once '../config/database.php';
+    
+    $email = $_POST['email'] ?? '';
+    $senha = $_POST['senha'] ?? '';
+    
+    try {
+        $database = new Database();
+        $conn = $database->getConnection();
+        
+        $stmt = $conn->prepare("SELECT id, nome, email, senha FROM tb_usuario WHERE email = :email AND ativo = 1");
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($usuario && password_verify($senha, $usuario['senha'])) {
+            $_SESSION['admin_id'] = $usuario['id'];
+            $_SESSION['admin_nome'] = $usuario['nome'];
+            $_SESSION['admin_email'] = $usuario['email'];
+            $_SESSION['admin_login_time'] = time();
+            
+            // Atualizar último acesso
+            $updateStmt = $conn->prepare("UPDATE tb_usuario SET ultimo_acesso = NOW() WHERE id = :id");
+            $updateStmt->bindParam(':id', $usuario['id']);
+            $updateStmt->execute();
+            
+            header('Location: dashboard.php');
+            exit;
+        } else {
+            $erro = "Email ou senha inválidos";
+        }
+    } catch (Exception $e) {
+        $erro = "Erro no sistema. Tente novamente.";
+    }
+}
+
+// Verificar parâmetros de URL para mensagens
+$mensagem_logout = isset($_GET['logout']) ? 'Logout realizado com sucesso!' : '';
+$mensagem_sessao = isset($_GET['sessao_expirada']) ? 'Sua sessão expirou. Faça login novamente.' : '';
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - ChamaServiço</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Login - Painel Administrativo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         body {
@@ -26,162 +63,148 @@ unset($_SESSION['erro_login']);
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
         }
-        .admin-login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+        .login-card {
+            border: none;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
         }
-        .admin-logo {
+        .login-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .form-floating > label {
+            color: #6c757d;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+        .alert {
+            border-radius: 10px;
+        }
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .floating-shapes::before,
+        .floating-shapes::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        .floating-shapes::before {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        .floating-shapes::after {
+            width: 150px;
+            height: 150px;
+            bottom: 10%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
         }
     </style>
 </head>
 <body>
-    <div class="admin-login-card">
-        <div class="card-body p-5">
-            <div class="text-center mb-4">
-                <div class="admin-logo">
-                    <i class="bi bi-shield-check" style="font-size: 3rem;"></i>
-                    <h3 class="mt-2 fw-bold">Admin Panel</h3>
-                </div>
-                <p class="text-muted">Acesso ao painel administrativo</p>
-            </div>
-            
-            <?php if (Session::hasFlash('error')): ?>
-                <?php $flash = Session::getFlash('error'); ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i><?= htmlspecialchars($flash['message']) ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-            
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="email" class="form-label">E-mail</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="senha" class="form-label">Senha</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" class="form-control" id="senha" name="senha" required>
-                    </div>
-                </div>
-                
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
-                    </button>
-                </div>
-            </form>
-            
-            <div class="text-center mt-4">
-                <a href="/chamaservico/" class="text-decoration-none">
-                    <i class="bi bi-arrow-left me-1"></i>Voltar ao site
-                </a>
-            </div>
-        </div>
-    </div>
+    <div class="floating-shapes"></div>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-                                    </span>
-                                    <input type="email" class="form-control border-start-0" id="email" name="email" 
-                                           placeholder="Digite seu e-mail" required value="admin@chamaservico.com">
-                                </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="card login-card">
+                    <div class="login-header">
+                        <i class="bi bi-shield-lock-fill fs-1"></i>
+                        <h3 class="mt-2">Painel Admin</h3>
+                        <p class="mb-0">Chama Serviço</p>
+                    </div>
+                    
+                    <div class="p-4">
+                        <?php if (isset($erro)): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle"></i> <?php echo $erro; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
-
-                            <div class="mb-4">
-                                <label for="senha" class="form-label fw-bold">Senha</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="bi bi-lock text-muted"></i>
-                                    </span>
-                                    <input type="password" class="form-control border-start-0" id="senha" name="senha" 
-                                           placeholder="Digite sua senha" required value="admin123">
-                                    <button class="btn btn-outline-secondary border-start-0" type="button" onclick="togglePassword()">
-                                        <i class="bi bi-eye" id="toggleIcon"></i>
-                                    </button>
-                                </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($mensagem_logout): ?>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle"></i> <?php echo $mensagem_logout; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
-
-                            <div class="d-grid mb-3">
-                                <button type="submit" class="btn btn-admin text-white" id="btnLogin">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i>
-                                    Entrar no Sistema
+                        <?php endif; ?>
+                        
+                        <?php if ($mensagem_sessao): ?>
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                <i class="bi bi-clock"></i> <?php echo $mensagem_sessao; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <form method="POST" id="loginForm">
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                                <label for="email"><i class="bi bi-envelope"></i> Email</label>
+                            </div>
+                            
+                            <div class="form-floating mb-4">
+                                <input type="password" class="form-control" id="senha" name="senha" placeholder="Password" required>
+                                <label for="senha"><i class="bi bi-lock"></i> Senha</label>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-login" type="submit" id="btnLogin">
+                                    <i class="bi bi-box-arrow-in-right"></i> Entrar
                                 </button>
                             </div>
                         </form>
-
-                        <div class="text-center">
+                        
+                        <div class="text-center mt-4">
                             <small class="text-muted">
-                                <i class="bi bi-shield-check me-1"></i>
+                                <i class="bi bi-info-circle"></i> 
                                 Acesso restrito a administradores
                             </small>
                         </div>
-
+                        
                         <hr class="my-4">
-
+                        
                         <div class="text-center">
-                            <a href="/chamaservico/" class="btn btn-outline-secondary btn-sm">
-                                <i class="bi bi-arrow-left me-1"></i>
-                                Voltar ao Site
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card de informações baseado na estrutura real -->
-                <div class="card mt-3 bg-info bg-opacity-10 border-info">
-                    <div class="card-body p-3">
-                        <h6 class="card-title text-info">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Credenciais de Acesso
-                        </h6>
-                        <div class="small">
-                            <strong>E-mail:</strong> admin@chamaservico.com<br>
-                            <strong>Senha:</strong> admin123<br><br>
-                            
-                            <div class="alert alert-warning alert-sm p-2 mb-2">
-                                <i class="bi bi-exclamation-triangle me-1"></i>
-                                <strong>Estrutura do seu banco:</strong><br>
-                                • Admins: tabela <code>tb_usuario</code><br>
-                                • Usuários: tabela <code>tb_pessoa</code><br>
-                                • Serviços: tabela <code>tb_solicita_servico</code>
-                            </div>
-                            
-                            <button class="btn btn-outline-info btn-sm" onclick="testarConexao()">
-                                <i class="bi bi-database me-1"></i>Testar Conexão
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="verificarEstrutura()">
-                                <i class="bi bi-list-check me-1"></i>Ver Estatísticas
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card de resultado dos testes -->
-                <div class="card mt-3 bg-light border-0" id="resultadoTestes" style="display: none;">
-                    <div class="card-body p-3">
-                        <h6 class="card-title text-dark">
-                            <i class="bi bi-terminal me-1"></i>
-                            Resultado dos Testes
-                        </h6>
-                        <div class="small" id="conteudoTestes">
-                            <!-- Resultado será mostrado aqui -->
+                            <small class="text-muted">
+                                <strong>Credenciais de teste:</strong><br>
+                                <code>admin@chamaservico.com</code><br>
+                                <code>123456</code>
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -189,40 +212,38 @@ unset($_SESSION['erro_login']);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function togglePassword() {
-            const senhaInput = document.getElementById('senha');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            if (senhaInput.type === 'password') {
-                senhaInput.type = 'text';
-                toggleIcon.className = 'bi bi-eye-slash';
-            } else {
-                senhaInput.type = 'password';
-                toggleIcon.className = 'bi bi-eye';
-            }
-        }
-
-        // Melhorar UX do formulário
+        // Melhorar UX do formulário de login
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const btnLogin = document.getElementById('btnLogin');
-            const originalText = btnLogin.innerHTML;
-            
-            btnLogin.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Entrando...';
+            btnLogin.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Entrando...';
             btnLogin.disabled = true;
             
-            // Se houver erro, reativar o botão após 3 segundos
+            // Se houver erro, reativar o botão após 2 segundos
             setTimeout(() => {
                 if (btnLogin.disabled) {
-                    btnLogin.innerHTML = originalText;
+                    btnLogin.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar';
                     btnLogin.disabled = false;
                 }
-            }, 3000);
+            }, 2000);
         });
 
-        // Auto-focus no campo email
-        document.getElementById('email').focus();
+        // Autocompletar credenciais de teste em ambiente de desenvolvimento
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se está em ambiente local
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                const emailField = document.getElementById('email');
+                const senhaField = document.getElementById('senha');
+                
+                // Adicionar evento duplo clique para preencher automaticamente
+                emailField.addEventListener('dblclick', function() {
+                    emailField.value = 'admin@chamaservico.com';
+                    senhaField.value = '123456';
+                    senhaField.focus();
+                });
+            }
+        });
 
         // Auto-remover alertas após 5 segundos
         setTimeout(function() {
@@ -234,123 +255,16 @@ unset($_SESSION['erro_login']);
                 }
             });
         }, 5000);
-
-        // Função para testar conexão
-        function testarConexao() {
-            const resultado = document.getElementById('resultadoTestes');
-            const conteudo = document.getElementById('conteudoTestes');
-            
-            conteudo.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Testando conexão...';
-            resultado.style.display = 'block';
-            
-            fetch('/chamaservico/admin/api/dashboard')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        conteudo.innerHTML = `
-                            <div class="alert alert-success p-2 mb-2">
-                                <i class="bi bi-check-circle me-1"></i>
-                                <strong>Conexão OK!</strong> Banco conectado com sucesso.
-                            </div>
-                            <strong>Estatísticas:</strong><br>
-                            • Total de usuários: ${data.dados.total_usuarios}<br>
-                            • Usuários ativos: ${data.dados.usuarios_ativos}<br>
-                            • Administradores: ${data.dados.total_admins || 0}
-                        `;
-                    } else {
-                        conteudo.innerHTML = `
-                            <div class="alert alert-danger p-2">
-                                <i class="bi bi-x-circle me-1"></i>
-                                <strong>Erro:</strong> ${data.erro}
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    conteudo.innerHTML = `
-                        <div class="alert alert-danger p-2">
-                            <i class="bi bi-x-circle me-1"></i>
-                            <strong>Erro de conexão:</strong> ${error.message}
-                        </div>
-                    `;
-                });
-        }
-
-        // Função para verificar estrutura da tabela
-        function verificarEstrutura() {
-            const resultado = document.getElementById('resultadoTestes');
-            const conteudo = document.getElementById('conteudoTestes');
-            
-            conteudo.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Verificando estrutura...';
-            resultado.style.display = 'block';
-            
-            // Verificar estatísticas reais do banco
-            fetch('/chamaservico/admin/api/dashboard')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        conteudo.innerHTML = `
-                            <div class="alert alert-success p-2 mb-2">
-                                <i class="bi bi-check-circle me-1"></i>
-                                <strong>Banco conectado com sucesso!</strong>
-                            </div>
-                            <strong>Estatísticas do seu sistema:</strong><br>
-                            • Total de usuários (tb_pessoa): ${data.dados.total_usuarios}<br>
-                            • Total de clientes: ${data.dados.total_clientes}<br>
-                            • Total de prestadores: ${data.dados.total_prestadores}<br>
-                            • Total de admins (tb_usuario): ${data.dados.total_admins}<br>
-                            • Solicitações hoje: ${data.dados.solicitacoes_hoje}<br>
-                            • Cadastros hoje: ${data.dados.cadastros_hoje}<br><br>
-                            
-                            <div class="alert alert-info p-2">
-                                <strong>Estrutura identificada:</strong><br>
-                                ✅ tb_pessoa (${data.dados.total_usuarios} registros)<br>
-                                ✅ tb_usuario (${data.dados.total_admins} registros)<br>
-                                ✅ tb_solicita_servico (${data.dados.solicitacoes_hoje} hoje)<br>
-                                ✅ tb_tipo_servico<br>
-                                ✅ tb_status_solicitacao
-                            </div>
-                        `;
-                    } else {
-                        conteudo.innerHTML = `
-                            <div class="alert alert-danger p-2">
-                                <i class="bi bi-x-circle me-1"></i>
-                                <strong>Erro:</strong> ${data.erro}
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    conteudo.innerHTML = `
-                        <div class="alert alert-danger p-2">
-                            <i class="bi bi-x-circle me-1"></i>
-                            <strong>Erro de conexão:</strong> ${error.message}
-                        </div>
-                    `;
-                });
-        }
-
-        // Preenchimento automático em desenvolvimento
-        document.addEventListener('DOMContentLoaded', function() {
-            // Duplo clique para preencher automaticamente
-            document.getElementById('email').addEventListener('dblclick', function() {
-                this.value = 'admin@chamaservico.com';
-                document.getElementById('senha').value = 'admin123';
-                document.getElementById('senha').focus();
-                
-                // Feedback visual
-                this.style.backgroundColor = '#d4edda';
-                document.getElementById('senha').style.backgroundColor = '#d4edda';
-                
-                setTimeout(() => {
-                    this.style.backgroundColor = '';
-                    document.getElementById('senha').style.backgroundColor = '';
-                }, 1000);
-            });
-
-            // Tooltip
-            document.getElementById('email').title = 'Duplo-clique para preencher automaticamente';
-        });
     </script>
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
 </body>
 </html>

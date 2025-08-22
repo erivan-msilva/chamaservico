@@ -22,27 +22,31 @@ if (file_exists('controllers/AdminController.php')) {
     require_once 'controllers/AdminController.php';
 }
 
-class Router {
+class Router
+{
     private $routes = [];
 
-    public function get($path, $controller, $method) {
+    public function get($path, $controller, $method)
+    {
         $this->routes['GET'][$path] = ['controller' => $controller, 'method' => $method];
     }
 
-    public function post($path, $controller, $method) {
+    public function post($path, $controller, $method)
+    {
         $this->routes['POST'][$path] = ['controller' => $controller, 'method' => $method];
     }
 
-    public function run() {
+    public function run()
+    {
         $method = $_SERVER['REQUEST_METHOD'];
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        
+
         // Remover o prefixo do projeto se estiver presente
         $basePath = '/chamaservico';
         if (strpos($path, $basePath) === 0) {
             $path = substr($path, strlen($basePath));
         }
-        
+
         // Se path está vazio, definir como /
         if (empty($path) || $path === '') {
             $path = '/';
@@ -59,14 +63,14 @@ class Router {
                 if (!class_exists($controllerName)) {
                     throw new Exception("Controller '$controllerName' não encontrado");
                 }
-                
+
                 $controller = new $controllerName();
-                
+
                 // Verificar se o método existe
                 if (!method_exists($controller, $methodName)) {
                     throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
                 }
-                
+
                 $controller->$methodName();
             } catch (Exception $e) {
                 $this->showError("Erro interno: " . $e->getMessage());
@@ -76,7 +80,8 @@ class Router {
         }
     }
 
-    private function showNotFound($path, $method) {
+    private function showNotFound($path, $method)
+    {
         http_response_code(404);
         echo "<!DOCTYPE html>
         <html lang='pt-BR'>
@@ -104,13 +109,13 @@ class Router {
                                     <div class='text-start mt-2'>
                                         <small><strong>Rotas disponíveis:</strong></small>
                                         <ul class='list-unstyled small'>";
-        
+
         foreach ($this->routes as $method => $routes) {
             foreach ($routes as $route => $config) {
                 echo "<li>$method $route → {$config['controller']}::{$config['method']}</li>";
             }
         }
-        
+
         echo "                        </ul>
                                     </div>
                                 </details>
@@ -123,7 +128,8 @@ class Router {
         </html>";
     }
 
-    private function showError($message) {
+    private function showError($message)
+    {
         http_response_code(500);
         echo "<!DOCTYPE html>
         <html lang='pt-BR'>
@@ -343,4 +349,3 @@ $router->get('/ordem-servico/listar', 'OrdemServicoController', 'listar');
 
 // Executar roteamento
 $router->run();
-?>

@@ -92,12 +92,32 @@ class Session {
         }
     }
 
-    // Novo: Definir mensagem flash
+    // MELHORIA: Método para regenerar ID da sessão
+    public static function regenerateId() {
+        self::start();
+        session_regenerate_id(true);
+    }
+
+    // MELHORIA: Limpeza de sessões antigas
+    public static function cleanup() {
+        self::start();
+        // Remover flash messages antigas
+        if (isset($_SESSION['flash'])) {
+            foreach ($_SESSION['flash'] as $key => $flash) {
+                if (isset($flash['timestamp']) && time() - $flash['timestamp'] > 300) {
+                    unset($_SESSION['flash'][$key]);
+                }
+            }
+        }
+    }
+
+    // MELHORIA: Definir mensagem flash com timestamp
     public static function setFlash($key, $message, $type = 'info') {
         self::start();
         $_SESSION['flash'][$key] = [
             'message' => $message,
-            'type' => $type
+            'type' => $type,
+            'timestamp' => time()
         ];
     }
 

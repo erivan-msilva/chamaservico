@@ -1,137 +1,9 @@
 <?php
 $title = 'Meu erivan Perfil Cliente - ChamaServiço';
 ob_start();
-
-// Debug para investigar o problema da foto
-$fotoPath = '';
-$fotoExists = false;
-
-if (!empty($usuario['foto_perfil'])) {
-    $fotoNome = basename($usuario['foto_perfil']);
-    $possiveisCaminhos = [
-        "uploads/perfil/" . $fotoNome,
-        "uploads/" . $fotoNome,
-        $usuario['foto_perfil']
-    ];
-    
-    foreach ($possiveisCaminhos as $caminho) {
-        if (file_exists($caminho)) {
-            $fotoPath = $caminho;
-            $fotoExists = true;
-            break;
-        }
-    }
-}
 ?>
 
-<style>
-.profile-header {
-    background: linear-gradient(135deg, #283579 0%, #1a2359 100%);
-    border-radius: 15px;
-    color: white;
-    position: relative;
-    overflow: hidden;
-}
-.profile-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="20" fill="rgba(255,255,255,0.1)"/><circle cx="20" cy="80" r="15" fill="rgba(255,255,255,0.05)"/></svg>');
-    background-size: 200px 200px;
-}
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    border: 4px solid rgba(255,255,255,0.2);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    transition: transform 0.3s ease;
-}
-.profile-avatar:hover {
-    transform: scale(1.05);
-}
-.stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: var(--accent-color, #007bff);
-}
-.completude-ring {
-    position: relative;
-    width: 80px;
-    height: 80px;
-}
-.activity-timeline {
-    position: relative;
-    padding-left: 2rem;
-}
-.activity-timeline::before {
-    content: '';
-    position: absolute;
-    left: 0.75rem;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, #007bff, #e9ecef);
-}
-.activity-item {
-    position: relative;
-    margin-bottom: 1.5rem;
-    background: white;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.activity-item::before {
-    content: '';
-    position: absolute;
-    left: -1.8rem;
-    top: 1rem;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--activity-color, #007bff);
-    border: 3px solid white;
-    box-shadow: 0 0 0 2px var(--activity-color, #007bff);
-}
-.security-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f1f3f4;
-}
-.security-item:last-child {
-    border-bottom: none;
-}
-.verification-badge {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-</style>
+
 
 <div class="container-fluid">
     <!-- Header do Perfil -->
@@ -139,8 +11,13 @@ if (!empty($usuario['foto_perfil'])) {
         <div class="row align-items-center">
             <div class="col-md-3 text-center">
                 <div class="position-relative d-inline-block">
-                    <?php if ($fotoExists && !empty($fotoPath)): ?>
-                        <img src="/chamaservico/<?= htmlspecialchars($fotoPath) ?>"
+                    <?php
+                    $fotoPerfil = $usuario['foto_perfil'] ?? '';
+                    $fotoNome = $fotoPerfil ? basename($fotoPerfil) : '';
+                    $fotoExiste = $fotoNome && file_exists("uploads/perfil/" . $fotoNome);
+                    ?>
+                    <?php if ($fotoExiste): ?>
+                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoNome) ?>"
                              class="rounded-circle profile-avatar" 
                              alt="Foto do perfil"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -506,6 +383,22 @@ if (!empty($usuario['foto_perfil'])) {
                             <i class="bi bi-graph-up me-2"></i>Relatórios
                         </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rotate-minus-90 {
+    transform: rotate(-90deg);
+}
+</style>
+
+<?php
+$content = ob_get_clean();
+include 'views/layouts/app.php';
+?>
                 </div>
             </div>
         </div>

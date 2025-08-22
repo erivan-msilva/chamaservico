@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'ChamaServiço' ?></title>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Incluir configurações globais -->
@@ -308,9 +308,7 @@
                                 <?php
                                 $fotoPerfil = Session::get('foto_perfil');
                                 if ($fotoPerfil) {
-                                    // Remover qualquer prefixo de pasta e usar apenas o nome do arquivo
                                     $fotoPerfil = basename($fotoPerfil);
-                                    // Debug: verificar se arquivo existe
                                     $caminhoCompleto = "uploads/perfil/" . $fotoPerfil;
                                     $arquivoExiste = file_exists($caminhoCompleto);
                                 }
@@ -422,7 +420,7 @@
             </div>
         </nav>
     <?php endif; ?>
-
+    <!-- FIM Navbar -->
     <!-- Flash Messages -->
     <?php if (Session::hasFlash('success')): ?>
         <?php $flash = Session::getFlash('success'); ?>
@@ -450,15 +448,15 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light border-top mt-auto py-3 text-center">
+    <footer class="bg-light border-top mt-auto py-3">
         <div class="container">
             <div class="row">
-                
-                    <span class="text-center">&copy; 2025 ChamaServiço. Todos os direitos reservados.</span>
-                
-                <!--<div class="col-md-6 text-end">
+                <div class="col-md-6">
+                    <span class="text-muted">&copy; 2025 ChamaServiço. Todos os direitos reservados.</span>
+                </div>
+                <div class="col-md-6 text-end">
                     <span class="text-muted">Sistema de Solicitação de Serviços</span>
-                </div> -->
+                </div>
             </div>
         </div>
     </footer>

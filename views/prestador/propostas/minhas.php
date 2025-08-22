@@ -31,6 +31,7 @@ ob_start();
                         <i class="bi bi-search me-1"></i>Filtrar
                     </button>
                 </div>
+                
             </div>
             <div class="col-md-3">
                 <label class="form-label">&nbsp;</label>
@@ -44,6 +45,31 @@ ob_start();
     </div>
 </div>
 
+<!-- Controles de Visualização -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <span class="text-muted fw-semibold">Visualização:</span>
+        <div class="btn-group" role="group" aria-label="Tipo de visualização">
+            <button type="button" class="btn btn-outline-primary active" id="btnCards" onclick="alternarVisualizacao('cards')">
+                <i class="bi bi-grid-3x3 me-1"></i>Cards
+            </button>
+            <button type="button" class="btn btn-outline-primary" id="btnLista" onclick="alternarVisualizacao('lista')">
+                <i class="bi bi-list me-1"></i>Lista
+            </button>
+            <button type="button" class="btn btn-outline-primary" id="btnTimeline" onclick="alternarVisualizacao('timeline')">
+                <i class="bi bi-clock-history me-1"></i>Timeline
+            </button>
+        </div>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small">
+            <i class="bi bi-list-ul me-1"></i>
+            <?= count($propostas ?? []) ?> proposta(s) encontrada(s)
+        </span>
+    </div>
+</div>
+
 <?php if (empty($propostas)): ?>
     <div class="text-center py-5">
         <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
@@ -54,100 +80,210 @@ ob_start();
         </a>
     </div>
 <?php else: ?>
-    <div class="row">
-        <?php foreach ($propostas as $proposta): ?>
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="bi bi-calendar me-1"></i>
-                            <?= date('d/m/Y H:i', strtotime($proposta['data_proposta'] ?? 'now')) ?>
-                        </small>
-                        <span class="badge bg-<?= ($proposta['status'] ?? 'pendente') == 'pendente' ? 'warning' : (($proposta['status'] ?? 'pendente') == 'aceita' ? 'success' : (($proposta['status'] ?? 'pendente') == 'recusada' ? 'danger' : 'secondary')) ?>">
-                            <?= ucfirst($proposta['status'] ?? 'pendente') ?>
-                        </span>
-                    </div>
-                    <div class="card-body">
-                        <h6 class="card-title"><?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Título não disponível') ?></h6>
-                        
-                        <div class="mb-3">
-                            <strong class="text-success">R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?></strong>
-                            <span class="text-muted">em <?= $proposta['prazo_execucao'] ?? 'N/A' ?> dia(s)</span>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <small class="text-primary">
-                                <i class="bi bi-person me-1"></i>
-                                Cliente: <?= htmlspecialchars($proposta['cliente_nome'] ?? 'Nome não disponível') ?>
-                            </small>
-                        </div>
-                        
-                        <div class="mb-3">
+
+    <!-- Visualização em Cards -->
+    <div id="visualizacaoCards" class="view-mode">
+        <div class="row">
+            <?php foreach ($propostas as $proposta): ?>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                             <small class="text-muted">
-                                <i class="bi bi-geo-alt me-1"></i>
-                                <?= htmlspecialchars(($proposta['cidade'] ?? 'Cidade') . ', ' . ($proposta['estado'] ?? 'UF')) ?>
+                                <i class="bi bi-calendar me-1"></i>
+                                <?= date('d/m/Y H:i', strtotime($proposta['data_proposta'] ?? 'now')) ?>
                             </small>
-                        </div>
-                        
-                        <p class="card-text"><?= htmlspecialchars(substr($proposta['descricao'] ?? 'Sem descrição', 0, 100)) ?>...</p>
-                        
-                        <!-- Informações do status da solicitação -->
-                        <div class="mb-3">
-                            <span class="badge" style="background-color: <?= htmlspecialchars($proposta['status_cor'] ?? '#ccc') ?>;">
-                                <i class="bi bi-info-circle me-1"></i>
-                                <?= htmlspecialchars($proposta['status_nome'] ?? 'Status não disponível') ?>
+                            <span class="badge bg-<?= ($proposta['status'] ?? 'pendente') == 'pendente' ? 'warning' : (($proposta['status'] ?? 'pendente') == 'aceita' ? 'success' : (($proposta['status'] ?? 'pendente') == 'recusada' ? 'danger' : 'secondary')) ?>">
+                                <?= ucfirst($proposta['status'] ?? 'pendente') ?>
                             </span>
                         </div>
-                        
-                        <!-- Urgência da solicitação -->
-                        <div class="mb-3">
-                            <span class="badge bg-<?= ($proposta['urgencia'] ?? 'media') === 'alta' ? 'danger' : (($proposta['urgencia'] ?? 'media') === 'media' ? 'warning' : 'info') ?>">
-                                Urgência: <?= ucfirst($proposta['urgencia'] ?? 'media') ?>
-                            </span>
-                        </div>
-                        
-                        <!-- Orçamento estimado -->
-                        <?php if (!empty($proposta['orcamento_estimado'])): ?>
+                        <div class="card-body">
+                            <h6 class="card-title"><?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Título não disponível') ?></h6>
+                            
                             <div class="mb-3">
-                                <small class="text-info">
-                                    <i class="bi bi-currency-dollar me-1"></i>
-                                    Orçamento estimado: R$ <?= number_format($proposta['orcamento_estimado'], 2, ',', '.') ?>
+                                <strong class="text-success">R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?></strong>
+                                <span class="text-muted">em <?= $proposta['prazo_execucao'] ?? 'N/A' ?> dia(s)</span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-primary">
+                                    <i class="bi bi-person me-1"></i>
+                                    Cliente: <?= htmlspecialchars($proposta['cliente_nome'] ?? 'Nome não disponível') ?>
                                 </small>
                             </div>
-                        <?php endif; ?>
-                    </div>
-                    <!-- Card da proposta - adicionar indicador de negociação -->
-                    <div class="card-footer" style="background: transparent; border-top: 1px solid #4e5264;">
-                        <div class="d-flex gap-2">
-                            <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
-                               class="btn btn-outline-success btn-sm flex-fill">
-                                <i class="bi bi-eye me-1"></i>Ver Solicitação
-                            </a>
                             
-                            <?php if ($proposta['status'] === 'pendente'): ?>
-                                <!-- Verificar se tem negociação ativa -->
-                                <?php 
-                                $temNegociacao = $this->model->temNegociacaoAtiva($proposta['id']);
-                                if ($temNegociacao): 
-                                ?>
-                                    <a href="/chamaservico/negociacao/negociar?proposta_id=<?= $proposta['id'] ?>" 
-                                       class="btn btn-warning btn-sm">
-                                        <i class="bi bi-chat-square-dots me-1"></i>Negociar
-                                    </a>
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    <?= htmlspecialchars(($proposta['cidade'] ?? 'Cidade') . ', ' . ($proposta['estado'] ?? 'UF')) ?>
+                                </small>
+                            </div>
+                            
+                            <p class="card-text"><?= htmlspecialchars(substr($proposta['descricao'] ?? 'Sem descrição', 0, 100)) ?>...</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex gap-2">
+                                <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                   class="btn btn-outline-success btn-sm flex-fill">
+                                    <i class="bi bi-eye me-1"></i>Ver Solicitação
+                                </a>
+                                <?php if ($proposta['status'] === 'pendente'): ?>
+                                    <button type="button" 
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="confirmarCancelamento(<?= $proposta['id'] ?>)">
+                                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                                    </button>
                                 <?php endif; ?>
-                                
-                                <button type="button" 
-                                        class="btn btn-outline-danger btn-sm"
-                                        onclick="confirmarCancelamento(<?= $proposta['id'] ?>)">
-                                    <i class="bi bi-x-circle me-1"></i>Cancelar
-                                </button>
-                            <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
+            <?php endforeach; ?>
+        </div>
     </div>
+
+    <!-- Visualização em Lista -->
+    <div id="visualizacaoLista" class="view-mode" style="display: none;">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data</th>
+                            <th>Solicitação</th>
+                            <th>Cliente</th>
+                            <th>Valor</th>
+                            <th>Prazo</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($propostas as $proposta): ?>
+                            <tr>
+                                <td>
+                                    <small><?= date('d/m/Y H:i', strtotime($proposta['data_proposta'] ?? 'now')) ?></small>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong><?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Título não disponível') ?></strong>
+                                        <br><small class="text-muted"><?= htmlspecialchars(substr($proposta['descricao'] ?? 'Sem descrição', 0, 50)) ?>...</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <?= htmlspecialchars($proposta['cliente_nome'] ?? 'Nome não disponível') ?>
+                                        <br><small class="text-muted"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars(($proposta['cidade'] ?? 'Cidade') . ', ' . ($proposta['estado'] ?? 'UF')) ?></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong class="text-success">R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?></strong>
+                                </td>
+                                <td>
+                                    <?= $proposta['prazo_execucao'] ?? 'N/A' ?> dia(s)
+                                </td>
+                                <td>
+                                    <span class="badge bg-<?= ($proposta['status'] ?? 'pendente') == 'pendente' ? 'warning' : (($proposta['status'] ?? 'pendente') == 'aceita' ? 'success' : (($proposta['status'] ?? 'pendente') == 'recusada' ? 'danger' : 'secondary')) ?>">
+                                        <?= ucfirst($proposta['status'] ?? 'pendente') ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                           class="btn btn-outline-success" title="Ver detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <?php if ($proposta['status'] === 'pendente'): ?>
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger"
+                                                    onclick="confirmarCancelamento(<?= $proposta['id'] ?>)"
+                                                    title="Cancelar proposta">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualização em Timeline -->
+    <div id="visualizacaoTimeline" class="view-mode" style="display: none;">
+        <div class="timeline">
+            <?php foreach ($propostas as $index => $proposta): ?>
+                <div class="timeline-item">
+                    <div class="timeline-marker bg-<?= ($proposta['status'] ?? 'pendente') == 'pendente' ? 'warning' : (($proposta['status'] ?? 'pendente') == 'aceita' ? 'success' : (($proposta['status'] ?? 'pendente') == 'recusada' ? 'danger' : 'secondary')) ?>">
+                        <i class="bi bi-<?= ($proposta['status'] ?? 'pendente') == 'aceita' ? 'check-circle' : (($proposta['status'] ?? 'pendente') == 'recusada' ? 'x-circle' : 'clock') ?>"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0"><?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Título não disponível') ?></h6>
+                                    <span class="badge bg-<?= ($proposta['status'] ?? 'pendente') == 'pendente' ? 'warning' : (($proposta['status'] ?? 'pendente') == 'aceita' ? 'success' : (($proposta['status'] ?? 'pendente') == 'recusada' ? 'danger' : 'secondary')) ?>">
+                                        <?= ucfirst($proposta['status'] ?? 'pendente') ?>
+                                    </span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <p class="text-muted mb-2"><?= htmlspecialchars(substr($proposta['descricao'] ?? 'Sem descrição', 0, 120)) ?>...</p>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-primary">
+                                                <i class="bi bi-person me-1"></i>
+                                                Cliente: <?= htmlspecialchars($proposta['cliente_nome'] ?? 'Nome não disponível') ?>
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-geo-alt me-1"></i>
+                                                <?= htmlspecialchars(($proposta['cidade'] ?? 'Cidade') . ', ' . ($proposta['estado'] ?? 'UF')) ?>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4 text-end">
+                                        <div class="mb-2">
+                                            <strong class="text-success fs-5">R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?></strong>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small class="text-muted">Prazo: <?= $proposta['prazo_execucao'] ?? 'N/A' ?> dia(s)</small>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                <?= date('d/m/Y H:i', strtotime($proposta['data_proposta'] ?? 'now')) ?>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2 mt-3">
+                                    <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-eye me-1"></i>Ver Solicitação
+                                    </a>
+                                    <?php if ($proposta['status'] === 'pendente'): ?>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger btn-sm"
+                                                onclick="confirmarCancelamento(<?= $proposta['id'] ?>)">
+                                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
 <?php endif; ?>
 
 <!-- Modal de Confirmação para Cancelar -->
@@ -174,13 +310,93 @@ ob_start();
     </div>
 </div>
 
+<style>
+.view-mode {
+    transition: opacity 0.3s ease;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: 3px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.timeline-content {
+    background: white;
+}
+
+.btn-group .btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+</style>
+
 <?php
 $scripts = '
 <script>
-function cancelarProposta(id) {
+function alternarVisualizacao(tipo) {
+    // Esconder todas as visualizações
+    document.querySelectorAll(".view-mode").forEach(el => el.style.display = "none");
+    
+    // Remover classe active de todos os botões
+    document.querySelectorAll(".btn-group .btn").forEach(btn => btn.classList.remove("active"));
+    
+    // Mostrar visualização selecionada
+    if (tipo === "cards") {
+        document.getElementById("visualizacaoCards").style.display = "block";
+        document.getElementById("btnCards").classList.add("active");
+    } else if (tipo === "lista") {
+        document.getElementById("visualizacaoLista").style.display = "block";
+        document.getElementById("btnLista").classList.add("active");
+    } else if (tipo === "timeline") {
+        document.getElementById("visualizacaoTimeline").style.display = "block";
+        document.getElementById("btnTimeline").classList.add("active");
+    }
+    
+    // Salvar preferência no localStorage
+    localStorage.setItem("visualizacaoPropostas", tipo);
+}
+
+function confirmarCancelamento(id) {
     document.getElementById("propostaIdCancelar").value = id;
     new bootstrap.Modal(document.getElementById("modalCancelar")).show();
 }
+
+// Carregar preferência de visualização
+document.addEventListener("DOMContentLoaded", function() {
+    const visualizacaoSalva = localStorage.getItem("visualizacaoPropostas") || "cards";
+    alternarVisualizacao(visualizacaoSalva);
+});
 </script>
 ';
 
