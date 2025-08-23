@@ -451,12 +451,10 @@
     <footer class="bg-light border-top mt-auto py-3">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
-                    <span class="text-muted">&copy; 2025 ChamaServiço. Todos os direitos reservados.</span>
+                
+                    <span class="text-center">&copy; 2025 ChamaServiço. Todos os direitos reservados.</span>
                 </div>
-                <div class="col-md-6 text-end">
-                    <span class="text-muted">Sistema de Solicitação de Serviços</span>
-                </div>
+              
             </div>
         </div>
     </footer>

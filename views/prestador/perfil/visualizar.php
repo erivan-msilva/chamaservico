@@ -293,9 +293,6 @@ $stats = [
 .timeline-marker {
     font-size: 0.875rem;
 }
-.rotate-minus-90 {
-    transform: rotate(-90deg);
-}
 </style>
 
 <?php
