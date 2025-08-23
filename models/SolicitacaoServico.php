@@ -291,4 +291,45 @@ class SolicitacaoServico
         $stmt->execute([$userId, $statusId]);
         return $stmt->fetchColumn();
     }
+
+    // Novo método: Contar solicitações por cliente
+    public function contarSolicitacoesPorCliente($clienteId) {
+        $sql = "SELECT COUNT(*) FROM tb_solicita_servico WHERE cliente_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$clienteId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    // Novo método: Contar serviços concluídos
+    public function contarServicosConcluidos($clienteId) {
+        $sql = "SELECT COUNT(*) FROM tb_solicita_servico WHERE cliente_id = ? AND status_id = 5";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$clienteId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    // Novo método: Calcular valor total investido
+    public function calcularValorTotalInvestido($clienteId) {
+        $sql = "SELECT COALESCE(SUM(p.valor), 0) 
+                FROM tb_proposta p
+                JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                WHERE s.cliente_id = ? AND p.status = 'aceita'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$clienteId]);
+        return (float) $stmt->fetchColumn();
+    }
+
+    // Novo método: Buscar últimas solicitações
+    public function buscarUltimasSolicitacoes($clienteId, $limit = 5) {
+        $sql = "SELECT s.*, ts.nome as tipo_servico_nome, st.nome as status_nome, st.cor as status_cor
+                FROM tb_solicita_servico s
+                JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+                JOIN tb_status_solicitacao st ON s.status_id = st.id
+                WHERE s.cliente_id = ?
+                ORDER BY s.data_solicitacao DESC
+                LIMIT ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$clienteId, $limit]);
+        return $stmt->fetchAll();
+    }
 }

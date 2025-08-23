@@ -34,12 +34,12 @@ class Database
         if ($isLocalhost) {
             // Configurações para desenvolvimento local (XAMPP)
             $this->host = 'localhost';
-            $this->db_name = 'bd_servicos';
-            $this->username = '';
+            $this->db_name = 'td187899_chamaservico'; // Usar mesmo nome da produção
+            $this->username = 'root';
             $this->password = '';
             error_log("Database: Usando configuração LOCAL");
         } else {
-            // Configurações para servidor hospedado (usar as fornecidas)
+            // Configurações para servidor hospedado
             $this->host = 'h63.servidorhh.com';
             $this->db_name = 'td187899_chamaservico';
             $this->username = 'td187899_chamaservico';

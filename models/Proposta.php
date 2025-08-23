@@ -995,6 +995,17 @@ class Proposta {
             $prazoExecucao
         ]);
     }
+
+    // Novo método: Contar propostas recebidas por cliente
+    public function contarPropostasRecebidas($clienteId) {
+        $sql = "SELECT COUNT(*) 
+            FROM tb_proposta p
+            JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+            WHERE s.cliente_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$clienteId]);
+        return (int) $stmt->fetchColumn();
+    }
 }
 ?>
 
