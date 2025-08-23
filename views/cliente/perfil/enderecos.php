@@ -1,252 +1,162 @@
 <?php
-$title = 'Gerenciar Endereços - ChamaServiço';
+$title = 'Meus Endereços - Cliente - ChamaServiço';
 ob_start();
+
+// Buscar endereços do cliente
+require_once 'models/Endereco.php';
+$enderecoModel = new Endereco();
+$clienteId = Session::getUserId();
+$enderecos = $enderecoModel->buscarPorPessoa($clienteId);
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-geo-alt me-2"></i>Gerenciar Endereços</h2>
-            <div>
-                <a href="/chamaservico/cliente/perfil" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>Voltar ao Perfil
-                </a>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEndereco">
-                    <i class="bi bi-plus-circle me-1"></i>Novo Endereço
-                </button>
-            </div>
-        </div>
-
-        <!-- Container para mensagens dinâmicas -->
-        <div id="alertContainer"></div>
-
-        <div id="enderecosList">
-            <?php if (empty($enderecos)): ?>
-                <div class="text-center py-5" id="emptyState">
-                    <i class="bi bi-house" style="font-size: 4rem; color: #ccc;"></i>
-                    <h4 class="text-muted mt-3">Nenhum endereço cadastrado</h4>
-                    <p class="text-muted">Adicione seu primeiro endereço para começar a solicitar serviços.</p>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEndereco">
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary fw-bold">
+                    <i class="bi bi-geo-alt me-2"></i>Meus Endereços de Atendimento
+                </h2>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNovoEndereco">
                         <i class="bi bi-plus-circle me-1"></i>Adicionar Endereço
+                    </button>
+                    <a href="/chamaservico/cliente/perfil" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Voltar ao Perfil
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dica informativa -->
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-lightbulb me-2"></i>
+                <strong>Dica:</strong> Cadastre os endereços onde você precisa de serviços para facilitar suas solicitações.
+            </div>
+
+            <?php if (empty($enderecos)): ?>
+                <!-- Estado vazio -->
+                <div class="text-center py-5">
+                    <i class="bi bi-geo-alt text-muted" style="font-size: 5rem;"></i>
+                    <h4 class="text-muted mt-3">Nenhum endereço cadastrado</h4>
+                    <p class="text-muted">Adicione endereços onde você precisa de serviços para agilizar suas solicitações.</p>
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalNovoEndereco">
+                        <i class="bi bi-plus-circle me-2"></i>Adicionar Meu Primeiro Endereço
                     </button>
                 </div>
             <?php else: ?>
-                <div class="row" id="enderecosGrid">
+                <!-- Lista de endereços -->
+                <div class="row">
                     <?php foreach ($enderecos as $endereco): ?>
-                        <div class="col-md-6 col-lg-4 mb-4" id="endereco-<?= $endereco['id'] ?>">
-                            <!-- Card do Endereço (código consolidado) -->
-                            <div class="card h-100 <?= $endereco['principal'] ? 'border-primary' : '' ?>">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <?php if ($endereco['principal']): ?>
-                                        <span class="badge bg-primary">
-                                            <i class="bi bi-star me-1"></i>Principal
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary">Secundário</span>
-                                    <?php endif; ?>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <button class="dropdown-item" onclick="editarEndereco(<?= htmlspecialchars(json_encode($endereco)) ?>)">
-                                                    <i class="bi bi-pencil me-1"></i>Editar
-                                                </button>
-                                            </li>
-                                            <?php if (!$endereco['principal']): ?>
-                                                <li>
-                                                    <button class="dropdown-item" onclick="definirPrincipal(<?= $endereco['id'] ?>)">
-                                                        <i class="bi bi-star me-1"></i>Definir como Principal
-                                                    </button>
-                                                </li>
-                                            <?php endif; ?>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <button class="dropdown-item text-danger" onclick="excluirEndereco(<?= $endereco['id'] ?>)">
-                                                    <i class="bi bi-trash me-1"></i>Excluir
-                                                </button>
-                                            </li>
-                                        </ul>
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 <?= $endereco['principal'] ? 'border-primary' : '' ?> hover-card">
+                                <?php if ($endereco['principal']): ?>
+                                    <div class="card-header bg-primary text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">
+                                                <i class="bi bi-star-fill me-1"></i>Endereço Principal
+                                            </span>
+                                            <i class="bi bi-house-heart"></i>
+                                        </div>
                                     </div>
-                                </div>
+                                <?php endif; ?>
+                                
                                 <div class="card-body">
-                                    <address class="mb-0">
+                                    <address class="mb-3">
                                         <strong><?= htmlspecialchars($endereco['logradouro']) ?>, <?= htmlspecialchars($endereco['numero']) ?></strong><br>
                                         <?php if ($endereco['complemento']): ?>
                                             <?= htmlspecialchars($endereco['complemento']) ?><br>
                                         <?php endif; ?>
-                                        <?= htmlspecialchars($endereco['bairro']) ?><br>
+                                        <span class="text-primary"><?= htmlspecialchars($endereco['bairro']) ?></span><br>
                                         <?= htmlspecialchars($endereco['cidade']) ?> - <?= htmlspecialchars($endereco['estado']) ?><br>
                                         <small class="text-muted">CEP: <?= htmlspecialchars($endereco['cep']) ?></small>
                                     </address>
+
+                                    <?php if (!$endereco['principal']): ?>
+                                        <div class="mb-3">
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-geo me-1"></i>Local de Atendimento
+                                            </span>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                onclick="editarEndereco(<?= $endereco['id'] ?>)">
+                                            <i class="bi bi-pencil me-1"></i>Editar
+                                        </button>
+                                        <?php if (!$endereco['principal']): ?>
+                                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                                    onclick="definirPrincipal(<?= $endereco['id'] ?>)">
+                                                <i class="bi bi-star me-1"></i>Tornar Principal
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="excluirEndereco(<?= $endereco['id'] ?>)">
+                                                <i class="bi bi-trash me-1"></i>Excluir
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+
+                <!-- Resumo dos endereços -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="h3 text-primary mb-0"><?= count($enderecos) ?></div>
+                                <small class="text-muted">Endereço(s) Cadastrado(s)</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="h3 text-success mb-0">
+                                    <?= count(array_filter($enderecos, function($e) { return $e['principal']; })) ?>
+                                </div>
+                                <small class="text-muted">Endereço Principal</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="h3 text-info mb-0">
+                                    <?= count(array_unique(array_column($enderecos, 'cidade'))) ?>
+                                </div>
+                                <small class="text-muted">Cidade(s) de Atendimento</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 </div>
 
-<!-- Modal Adicionar/Editar Endereço -->
-<div class="modal fade" id="modalEndereco" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-geo-alt me-2"></i>
-                    <span id="modalTitle">Novo Endereço</span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="formEndereco">
-                <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="acao" value="adicionar" id="acaoEndereco">
-                    <input type="hidden" name="endereco_id" id="enderecoId">
-                    
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="cep" class="form-label">CEP *</label>
-                            <input type="text" class="form-control" id="cep" name="cep" 
-                                   placeholder="00000-000" maxlength="9" required>
-                        </div>
-                        <div class="col-md-8 mb-3">
-                            <label for="logradouro" class="form-label">Logradouro *</label>
-                            <input type="text" class="form-control" id="logradouro" name="logradouro" 
-                                   placeholder="Rua, Avenida, etc." required>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label for="numero" class="form-label">Número *</label>
-                            <input type="text" class="form-control" id="numero" name="numero" 
-                                   placeholder="123" required>
-                        </div>
-                        <div class="col-md-9 mb-3">
-                            <label for="complemento" class="form-label">Complemento</label>
-                            <input type="text" class="form-control" id="complemento" name="complemento" 
-                                   placeholder="Apartamento, Casa, etc.">
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="bairro" class="form-label">Bairro *</label>
-                            <input type="text" class="form-control" id="bairro" name="bairro" 
-                                   placeholder="Centro" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="cidade" class="form-label">Cidade *</label>
-                            <input type="text" class="form-control" id="cidade" name="cidade" 
-                                   placeholder="São Paulo" required>
-                        </div>
-                        <div class="col-md-2 mb-3">
-                            <label for="estado" class="form-label">Estado *</label>
-                            <select class="form-select" id="estado" name="estado" required>
-                                <option value="">UF</option>
-                                <option value="AC">AC</option>
-                                <option value="AL">AL</option>
-                                <option value="AP">AP</option>
-                                <option value="AM">AM</option>
-                                <option value="BA">BA</option>
-                                <option value="CE">CE</option>
-                                <option value="DF">DF</option>
-                                <option value="ES">ES</option>
-                                <option value="GO">GO</option>
-                                <option value="MA">MA</option>
-                                <option value="MT">MT</option>
-                                <option value="MS">MS</option>
-                                <option value="MG">MG</option>
-                                <option value="PA">PA</option>
-                                <option value="PB">PB</option>
-                                <option value="PR">PR</option>
-                                <option value="PE">PE</option>
-                                <option value="PI">PI</option>
-                                <option value="RJ">RJ</option>
-                                <option value="RN">RN</option>
-                                <option value="RS">RS</option>
-                                <option value="RO">RO</option>
-                                <option value="RR">RR</option>
-                                <option value="SC">SC</option>
-                                <option value="SP">SP</option>
-                                <option value="SE">SE</option>
-                                <option value="TO">TO</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="principal" name="principal" value="1">
-                        <label class="form-check-label" for="principal">
-                            Definir como endereço principal
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="btnSalvar">
-                        <i class="bi bi-check-lg me-1"></i>Salvar Endereço
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- Usar os mesmos modais da página do prestador -->
+<!-- Modal Novo Endereço -->
+<!-- Modal Editar Endereço -->  
+<!-- Modal Confirmar Exclusão -->
 
-<!-- Modais de ação -->
-<div class="modal fade" id="modalDefinirPrincipal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Definir Endereço Principal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja definir este endereço como principal?</p>
-                <p><small class="text-muted">O endereço principal anterior será alterado para secundário.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form method="POST" style="display: inline;" id="formDefinirPrincipal">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="acao" value="definir_principal">
-                    <input type="hidden" name="endereco_id" id="enderecoIdPrincipal">
-                    <button type="submit" class="btn btn-primary">Definir como Principal</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
 
-<div class="modal fade" id="modalExcluir" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Excluir Endereço</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja excluir este endereço?</p>
-                <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form method="POST" style="display: inline;" id="formExcluirEndereco">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="acao" value="excluir">
-                    <input type="hidden" name="endereco_id" id="enderecoIdExcluir">
-                    <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+.hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.card-footer .btn {
+    transition: all 0.2s;
+}
+
+.card-footer .btn:hover {
+    transform: translateY(-1px);
+}
+</style>
 
 <?php
+// Mesmo JavaScript da página do prestador, mas com endpoint do cliente
 $scripts = '
 <script>
 let enderecoIdAtual = null;
