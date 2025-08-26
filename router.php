@@ -8,7 +8,7 @@ require_once 'controllers/HomeController.php';
 require_once 'controllers/SolicitacaoController.php';
 require_once 'controllers/PerfilController.php';
 require_once 'controllers/ClientePerfilController.php';
-require_once 'controllers/ClientePropostaController.php';
+require_once 'controllers/ClientePropostaController.php'; // CORRIGIDO: Adicionada extensão .php
 require_once 'controllers/PrestadorPerfilController.php';
 require_once 'controllers/PrestadorController.php';
 require_once 'controllers/PropostaController.php';
@@ -255,6 +255,8 @@ $router->get('/cliente/perfil/editar', 'ClientePerfilController', 'editar');
 $router->post('/cliente/perfil/editar', 'ClientePerfilController', 'editar');
 $router->get('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
 $router->post('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
+$router->get('/cliente/perfil/api/buscar-cpf', 'ClientePerfilController', 'buscarPorCPF');
+$router->get('/cliente/perfil/api/buscar-cep', 'ClientePerfilController', 'buscarPorCEP');
 
 // Solicitações do Cliente
 $router->get('/cliente/solicitacoes', 'SolicitacaoController', 'listar');
@@ -264,6 +266,7 @@ $router->get('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
 $router->post('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
 $router->get('/cliente/solicitacoes/visualizar', 'SolicitacaoController', 'visualizar');
 $router->post('/cliente/solicitacoes/deletar', 'SolicitacaoController', 'deletar');
+$router->get('/cliente/solicitacoes/baixar-imagens', 'SolicitacaoController', 'baixarImagens'); // NOVA ROTA
 
 // Propostas para Clientes
 $router->get('/cliente/propostas/recebidas', 'ClientePropostaController', 'recebidas');
@@ -312,6 +315,7 @@ $router->post('/prestador/servicos/atualizar-status', 'PrestadorController', 'at
 // ========================================
 $router->get('/notificacoes', 'NotificacaoController', 'index');
 $router->get('/notificacoes/contador', 'NotificacaoController', 'contador');
+$router->get('/notificacoes/recentes', 'NotificacaoController', 'recentes');
 $router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarComoLida');
 $router->post('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas');
 $router->post('/notificacoes/deletar', 'NotificacaoController', 'deletar');

@@ -82,7 +82,7 @@ ob_start();
     <div class="card card-login mx-auto">
         <div class="card-body">
             <div class="text-center mb-4">
-                <img src="/assets/img/logo_branca_sem-fundo.png" alt="Logo ChamaServiço" class="logo-chama">
+                <img src="/assets/img/logochama.png" alt="Logo ChamaServiço" class="logo-chama">
                 <h4 class="fw-bold mb-1">Bem-vindo!</h4>
                 <p class="text-muted mb-3">Acesse sua conta para usar o sistema</p>
             </div>
@@ -126,7 +126,7 @@ ob_start();
         </div>
     </div>
 </div>
-
+</div>
 <script>
     function toggleSenha() {
         const input = document.getElementById('senha');

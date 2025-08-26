@@ -1,254 +1,345 @@
 <?php
 $title = 'Notificações - ChamaServiço';
 ob_start();
-
-// Verificar se é prestador ou cliente para personalizar
-$isPrestador = isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'prestador';
-$userType = $isPrestador ? 'prestador' : 'cliente';
-$themeColor = $isPrestador ? '#f5a522' : '#007bff';
 ?>
 
-<style>
-.notificacao-card {
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
-}
-.notificacao-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-.notificacao-card[data-lida="0"] {
-    background: linear-gradient(90deg, rgba(<?= $isPrestador ? '245,165,34' : '0,123,255' ?>,0.05) 0%, rgba(255,255,255,1) 10%);
-    border-left-color: <?= $themeColor ?>;
-}
-.pulse {
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-}
-</style>
-
-<div class="container-fluid">
-    <!-- Header -->
+<div class="container">
+    <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-            <i class="bi bi-bell me-2" style="color: <?= $themeColor ?>;"></i>
-            Minhas Notificações
-        </h2>
+        <div>
+            <h2><i class="bi bi-bell me-2"></i>Notificações</h2>
+            <p class="text-muted">Central de notificações e atualizações</p>
+        </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary" onclick="marcarTodasComoLidas()">
+            <button type="button" class="btn btn-outline-primary" onclick="marcarTodasComoLidas()">
                 <i class="bi bi-check-all me-1"></i>Marcar Todas como Lidas
             </button>
-            <a href="/chamaservico/<?= $userType ?>/dashboard" class="btn btn-outline-primary">
-                <i class="bi bi-speedometer2 me-1"></i>Dashboard
-            </a>
+            <button type="button" class="btn btn-outline-secondary" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+            </button>
         </div>
     </div>
 
     <!-- Estatísticas -->
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card text-center" style="border-left: 4px solid <?= $themeColor ?>;">
-                <div class="card-body">
-                    <h3 style="color: <?= $themeColor ?>;">
-                        <?= isset($notificacoes) ? count($notificacoes) : 0 ?>
-                    </h3>
-                    <p class="text-muted mb-0">Total</p>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-primary"><?= $estatisticas['total'] ?? 0 ?></h3>
+                    <p class="text-muted mb-0">Total de Notificações</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center" style="border-left: 4px solid #dc3545;">
-                <div class="card-body">
-                    <h3 class="text-danger">
-                        <?= isset($notificacoes) ? count(array_filter($notificacoes, function($n) { return !$n['lida']; })) : 0 ?>
-                    </h3>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-warning"><?= $estatisticas['nao_lidas'] ?? 0 ?></h3>
                     <p class="text-muted mb-0">Não Lidas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center" style="border-left: 4px solid #28a745;">
-                <div class="card-body">
-                    <h3 class="text-success">
-                        <?= isset($notificacoes) ? count(array_filter($notificacoes, function($n) { return $n['lida']; })) : 0 ?>
-                    </h3>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="text-success"><?= $estatisticas['lidas'] ?? 0 ?></h3>
                     <p class="text-muted mb-0">Lidas</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Lista de Notificações -->
-    <?php if (empty($notificacoes)): ?>
-        <div class="text-center py-5">
-            <i class="bi bi-bell-slash" style="font-size: 5rem; color: #6c757d; opacity: 0.5;"></i>
-            <h4 class="text-muted mt-3">Nenhuma notificação</h4>
-            <p class="text-muted">Você não tem notificações no momento.</p>
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <select class="form-select" name="tipo" id="tipo">
+                        <option value="">Todos os tipos</option>
+                        <option value="proposta_aceita" <?= ($_GET['tipo'] ?? '') == 'proposta_aceita' ? 'selected' : '' ?>>Proposta Aceita</option>
+                        <option value="proposta_recusada" <?= ($_GET['tipo'] ?? '') == 'proposta_recusada' ? 'selected' : '' ?>>Proposta Recusada</option>
+                        <option value="status_servico" <?= ($_GET['tipo'] ?? '') == 'status_servico' ? 'selected' : '' ?>>Status do Serviço</option>
+                        <option value="nova_proposta" <?= ($_GET['tipo'] ?? '') == 'nova_proposta' ? 'selected' : '' ?>>Nova Proposta</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="lida" class="form-label">Status</label>
+                    <select class="form-select" name="lida" id="lida">
+                        <option value="">Todas</option>
+                        <option value="0" <?= ($_GET['lida'] ?? '') === '0' ? 'selected' : '' ?>>Não Lidas</option>
+                        <option value="1" <?= ($_GET['lida'] ?? '') === '1' ? 'selected' : '' ?>>Lidas</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>Filtrar
+                    </button>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <a href="/chamaservico/notificacoes" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle me-1"></i>Limpar
+                    </a>
+                </div>
+            </form>
         </div>
-    <?php else: ?>
-        <?php foreach ($notificacoes as $notificacao): ?>
-            <div class="card mb-3 notificacao-card" 
-                 id="notificacao-<?= $notificacao['id'] ?>"
-                 data-lida="<?= $notificacao['lida'] ?>">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center mb-2">
-                                <!-- Ícone baseado no tipo -->
-                                <div class="me-3">
-                                    <?php
-                                    $icones = [
-                                        'nova_proposta' => '<i class="bi bi-file-earmark-plus text-success" style="font-size: 1.5rem;"></i>',
-                                        'proposta_aceita' => '<i class="bi bi-check-circle text-info" style="font-size: 1.5rem;"></i>',
-                                        'status_servico' => '<i class="bi bi-tools text-warning" style="font-size: 1.5rem;"></i>',
-                                        'nova_solicitacao' => '<i class="bi bi-clipboard-plus text-info" style="font-size: 1.5rem;"></i>',
-                                        'default' => '<i class="bi bi-bell text-secondary" style="font-size: 1.5rem;"></i>'
-                                    ];
-                                    echo $icones[$notificacao['tipo']] ?? $icones['default'];
-                                    ?>
+    </div>
+
+    <!-- Lista de Notificações -->
+    <div class="card">
+        <div class="card-body p-0">
+            <?php if (empty($notificacoes)): ?>
+                <div class="text-center py-5">
+                    <i class="bi bi-bell-slash" style="font-size: 4rem; color: #ccc;"></i>
+                    <h4 class="text-muted mt-3">Nenhuma notificação encontrada</h4>
+                    <p class="text-muted">Você não possui notificações no momento.</p>
+                </div>
+            <?php else: ?>
+                <div id="notificacoesList">
+                    <?php foreach ($notificacoes as $notificacao): ?>
+                        <div class="notification-item <?= !$notificacao['lida'] ? 'bg-light' : '' ?>" 
+                             data-id="<?= $notificacao['id'] ?>">
+                            <div class="d-flex p-3 border-bottom">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="notification-icon <?= getNotificationIconClass($notificacao['tipo'] ?? '') ?>">
+                                        <i class="bi bi-<?= getNotificationIcon($notificacao['tipo'] ?? '') ?>"></i>
+                                    </div>
                                 </div>
-                                
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-1 <?= $notificacao['lida'] ? 'text-muted' : 'fw-bold' ?>">
-                                        <?php if (!$notificacao['lida']): ?>
-                                            <span class="badge pulse me-2" style="background-color: <?= $themeColor ?>;">Nova</span>
-                                        <?php endif; ?>
-                                        <?= htmlspecialchars($notificacao['titulo']) ?>
-                                    </h6>
-                                    <small class="text-muted">
-                                        <i class="bi bi-clock me-1"></i>
-                                        <?= date('d/m/Y H:i', strtotime($notificacao['data_notificacao'])) ?>
-                                    </small>
-                                </div>
-                            </div>
-                            
-                            <p class="<?= $notificacao['lida'] ? 'text-muted' : '' ?> mb-3">
-                                <?= nl2br(htmlspecialchars($notificacao['mensagem'])) ?>
-                            </p>
-                            
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="btn-group" role="group">
-                                    <?php if ($notificacao['referencia_id']): ?>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-eye me-1"></i>Ver Detalhes
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                                
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <?php if (!$notificacao['lida']): ?>
-                                            <li>
-                                                <button class="dropdown-item" onclick="marcarComoLida(<?= $notificacao['id'] ?>)">
-                                                    <i class="bi bi-check me-1"></i>Marcar como Lida
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1 <?= !$notificacao['lida'] ? 'fw-bold' : '' ?>">
+                                            <?= htmlspecialchars($notificacao['titulo']) ?>
+                                        </h6>
+                                        <small class="text-muted">
+                                            <?= timeAgo($notificacao['data_notificacao']) ?>
+                                        </small>
+                                    </div>
+                                    <p class="mb-1 text-muted">
+                                        <?= nl2br(htmlspecialchars($notificacao['mensagem'])) ?>
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <span class="badge bg-<?= getNotificationBadgeColor($notificacao['tipo'] ?? '') ?>">
+                                                <?= getNotificationTypeLabel($notificacao['tipo'] ?? '') ?>
+                                            </span>
+                                        </small>
+                                        <div class="btn-group btn-group-sm">
+                                            <?php if (!$notificacao['lida']): ?>
+                                                <button type="button" class="btn btn-outline-success btn-sm" 
+                                                        onclick="marcarComoLida(<?= $notificacao['id'] ?>)"
+                                                        title="Marcar como lida">
+                                                    <i class="bi bi-check"></i>
                                                 </button>
-                                            </li>
-                                        <?php endif; ?>
-                                        <li>
-                                            <button class="dropdown-item text-danger" onclick="deletarNotificacao(<?= $notificacao['id'] ?>)">
-                                                <i class="bi bi-trash me-1"></i>Excluir
+                                            <?php endif; ?>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="deletarNotificacao(<?= $notificacao['id'] ?>)"
+                                                    title="Excluir">
+                                                <i class="bi bi-trash"></i>
                                             </button>
-                                        </li>
-                                    </ul>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</div>
-
-<!-- Toast para feedback -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="toast" class="toast" role="alert">
-        <div class="toast-header">
-            <strong class="me-auto">Notificação</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            <?php endif; ?>
         </div>
-        <div class="toast-body" id="toastMessage"></div>
     </div>
 </div>
 
+<style>
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.notification-icon.bg-success { background-color: #28a745; }
+.notification-icon.bg-danger { background-color: #dc3545; }
+.notification-icon.bg-info { background-color: #17a2b8; }
+.notification-icon.bg-warning { background-color: #ffc107; color: #212529; }
+.notification-icon.bg-primary { background-color: #007bff; }
+
+.notification-item {
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa !important;
+}
+</style>
+
 <?php
-$scripts = '
-<script>
-function mostrarToast(mensagem, tipo = "info") {
-    const toast = document.getElementById("toast");
-    const toastMessage = document.getElementById("toastMessage");
-    
-    toastMessage.textContent = mensagem;
-    
-    const toastBootstrap = new bootstrap.Toast(toast);
-    toastBootstrap.show();
-}
-
-function marcarComoLida(id) {
-    fetch("/chamaservico/notificacoes/marcar-lida", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: `id=${id}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const card = document.getElementById("notificacao-" + id);
-            if (card) {
-                card.setAttribute("data-lida", "1");
-                card.querySelector(".badge")?.remove();
-                card.querySelector(".fw-bold")?.classList.remove("fw-bold");
-                card.querySelector(".fw-bold")?.classList.add("text-muted");
-            }
-            mostrarToast("Notificação marcada como lida!");
-        } else {
-            mostrarToast("Erro ao marcar notificação", "erro");
-        }
-    });
-}
-
-function deletarNotificacao(id) {
-    if (confirm("Tem certeza que deseja excluir esta notificação?")) {
-        fetch("/chamaservico/notificacoes/deletar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: `notificacao_id=${id}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const card = document.getElementById("notificacao-" + id);
-                if (card) {
-                    card.style.opacity = "0";
-                    setTimeout(() => card.remove(), 300);
-                }
-                mostrarToast("Notificação excluída!");
-            } else {
-                mostrarToast("Erro ao excluir notificação", "erro");
-            }
-        });
+// Funções auxiliares para as notificações
+function getNotificationIcon($tipo) {
+    switch ($tipo) {
+        case 'proposta_aceita': return 'check-circle';
+        case 'proposta_recusada': return 'x-circle';
+        case 'status_servico': return 'gear';
+        case 'nova_proposta': return 'envelope';
+        default: return 'bell';
     }
 }
 
-function marcarTodasComoLidas() {
-    if (confirm("Marcar todas as notificações como lidas?")) {
-        fetch("/chamaservico/notificacoes/marcar-todas-lidas", {
-            method: "POST"
-        })
-        .then(() => {
-            location.reload();
+function getNotificationIconClass($tipo) {
+    switch ($tipo) {
+        case 'proposta_aceita': return 'bg-success';
+        case 'proposta_recusada': return 'bg-danger';
+        case 'status_servico': return 'bg-info';
+        case 'nova_proposta': return 'bg-warning';
+        default: return 'bg-primary';
+    }
+}
+
+function getNotificationBadgeColor($tipo) {
+    switch ($tipo) {
+        case 'proposta_aceita': return 'success';
+        case 'proposta_recusada': return 'danger';
+        case 'status_servico': return 'info';
+        case 'nova_proposta': return 'warning';
+        default: return 'primary';
+    }
+}
+
+function getNotificationTypeLabel($tipo) {
+    switch ($tipo) {
+        case 'proposta_aceita': return 'Proposta Aceita';
+        case 'proposta_recusada': return 'Proposta Recusada';
+        case 'status_servico': return 'Status do Serviço';
+        case 'nova_proposta': return 'Nova Proposta';
+        default: return 'Sistema';
+    }
+}
+
+function timeAgo($datetime) {
+    $time = time() - strtotime($datetime);
+    
+    if ($time < 60) return 'agora';
+    if ($time < 3600) return floor($time/60) . 'm';
+    if ($time < 86400) return floor($time/3600) . 'h';
+    if ($time < 2592000) return floor($time/86400) . 'd';
+    
+    return date('d/m/Y', strtotime($datetime));
+}
+
+$scripts = '
+<script>
+async function marcarComoLida(id) {
+    try {
+        const formData = new FormData();
+        formData.append("notificacao_id", id);
+        
+        const response = await fetch("/chamaservico/notificacoes/marcar-lida", {
+            method: "POST",
+            body: formData
         });
+        
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            const item = document.querySelector(`[data-id="${id}"]`);
+            if (item) {
+                item.classList.remove("bg-light");
+                const title = item.querySelector("h6");
+                if (title) title.classList.remove("fw-bold");
+                
+                const btn = item.querySelector(".btn-outline-success");
+                if (btn) btn.remove();
+            }
+            
+            // Atualizar contador global
+            atualizarContadorGlobal();
+        }
+    } catch (error) {
+        console.error("Erro ao marcar como lida:", error);
+    }
+}
+
+async function marcarTodasComoLidas() {
+    if (confirm("Marcar todas as notificações como lidas?")) {
+        try {
+            const response = await fetch("/chamaservico/notificacoes/marcar-todas-lidas", {
+                method: "POST"
+            });
+            
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                location.reload();
+            } else {
+                alert("Erro: " + data.mensagem);
+            }
+        } catch (error) {
+            console.error("Erro:", error);
+            alert("Erro interno");
+        }
+    }
+}
+
+async function deletarNotificacao(id) {
+    if (confirm("Excluir esta notificação?")) {
+        try {
+            const formData = new FormData();
+            formData.append("notificacao_id", id);
+            
+            const response = await fetch("/chamaservico/notificacoes/deletar", {
+                method: "POST",
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                const item = document.querySelector(`[data-id="${id}"]`);
+                if (item) {
+                    item.style.transition = "all 0.3s ease";
+                    item.style.opacity = "0";
+                    item.style.transform = "translateX(-100%)";
+                    
+                    setTimeout(() => {
+                        item.remove();
+                    }, 300);
+                }
+                
+                atualizarContadorGlobal();
+            } else {
+                alert("Erro: " + data.mensagem);
+            }
+        } catch (error) {
+            console.error("Erro:", error);
+            alert("Erro interno");
+        }
+    }
+}
+
+async function atualizarContadorGlobal() {
+    try {
+        const response = await fetch("/chamaservico/notificacoes/contador");
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            const badges = document.querySelectorAll(".notification-badge, .notification-badge-left, .notification-badge-menu");
+            badges.forEach(badge => {
+                if (data.contador > 0) {
+                    badge.textContent = data.contador;
+                    badge.style.display = badge.classList.contains("notification-badge-menu") ? "inline-block" : "flex";
+                } else {
+                    badge.style.display = "none";
+                }
+            });
+            
+            // Atualizar sino também
+            const bell = document.getElementById("notificationBell");
+            if (bell) {
+                bell.style.display = data.contador > 0 ? "flex" : "none";
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao atualizar contador:", error);
     }
 }
 </script>

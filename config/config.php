@@ -68,15 +68,15 @@ if (!defined('DB_HOST')) {
     $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8083']);
     
     if ($isLocalhost) {
-        // CORREÇÃO: Configurações para desenvolvimento local (XAMPP) com mesmo nome do banco de produção
+        // CORREÇÃO: Usar banco real do dump
         define('DB_HOST', 'localhost');
-        define('DB_NAME', 'td187899_chamaservico'); // Mesmo nome do banco de produção
-        define('DB_USER', 'root');                   // Usuário padrão do XAMPP
-        define('DB_PASS', '');                       // Senha vazia no XAMPP
+        define('DB_NAME', 'bd_servicos'); // <-- BANCO REAL DO SEU DUMP
+        define('DB_USER', 'root');
+        define('DB_PASS', '');
         define('DB_CHARSET', 'utf8mb4');
         define('DB_PORT', 3306);
         
-        error_log("Usando configuração LOCAL do banco de dados: td187899_chamaservico");
+        error_log("Usando configuração LOCAL do banco de dados: bd_servicos");
     } else {
         // Configurações para servidor hospedado
         define('DB_HOST', 'h63.servidorhh.com');

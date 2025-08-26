@@ -516,34 +516,52 @@ ob_start();
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Aceitar Proposta</h5>
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle me-2 text-success"></i>Aceitar Proposta
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="text-center mb-3">
-                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
-                </div>
-                <p class="text-center">Tem certeza que deseja aceitar esta proposta?</p>
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Importante:</strong> Ao aceitar, todas as outras propostas para esta solicitação serão automaticamente recusadas.
-                </div>
-                <div class="bg-light p-3 rounded text-center">
-                    <strong>Valor:</strong> R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?><br>
-                    <strong>Prazo:</strong> <?= ($proposta['prazo_execucao'] ?? 0) ?> dia(s)
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form method="POST" action="/chamaservico/cliente/propostas/aceitar" style="display: inline;">
+            <form method="POST" action="/chamaservico/cliente/propostas/aceitar">
+                <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?? 0 ?>">
-                    <input type="hidden" name="solicitacao_id" value="<?= $proposta['solicitacao_id'] ?? 0 ?>">
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle me-1"></i>Confirmar Aceitação
+                    <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?>">
+                    
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-info-circle me-2"></i>Confirmar Aceitação</h6>
+                        <p>Você está prestes a aceitar a proposta de <strong><?= htmlspecialchars($proposta['prestador_nome']) ?></strong> no valor de <strong class="text-success">R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></strong>.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">
+                            <i class="bi bi-chat-text me-1"></i>Observações para o Prestador (Opcional)
+                        </label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="4" 
+                                 placeholder="Deixe uma mensagem para o prestador sobre detalhes específicos, horários preferenciais, etc."></textarea>
+                        <div class="form-text">
+                            <i class="bi bi-lightbulb me-1"></i>
+                            Aproveite para informar horários preferenciais, detalhes específicos do serviço ou outras observações importantes.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-bell me-2"></i>O que acontece após aceitar?</h6>
+                        <ul class="mb-0">
+                            <li>O prestador será <strong>notificado imediatamente</strong></li>
+                            <li>Outras propostas serão automaticamente recusadas</li>
+                            <li>O status do serviço mudará para "Em Andamento"</li>
+                            <li>Você poderá acompanhar o progresso do serviço</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
                     </button>
-                </form>
-            </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Confirmar e Aceitar Proposta
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -105,12 +105,21 @@ ob_start();
                                 <i class="bi bi-gear me-1"></i>Atualizar
                             </button>
                         </div>
+                    
                         
-                        <?php if ($servico['cliente_telefone']): ?>
-                            <a href="tel:<?= htmlspecialchars($servico['cliente_telefone']) ?>" 
-                               class="btn btn-outline-success btn-sm w-100">
-                                <i class="bi bi-telephone me-1"></i>Ligar para Cliente
-                            </a>
+                        <!-- Botão para visualizar Ordem de Serviço se concluído -->
+                        <?php if ($servico['status_nome'] === 'Concluído'): ?>
+                            <?php
+                            // Buscar Ordem de Serviço gerada para esta proposta
+                            require_once 'models/OrdemServico.php';
+                            $osModel = new OrdemServico();
+                            $os = $osModel->buscarPorProposta($servico['id']);
+                            ?>
+                            <?php if ($os): ?>
+                                <a href="/chamaservico/ordem-servico/visualizar?id=<?= $os['id'] ?>" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Ordem de Serviço
+                                </a>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>

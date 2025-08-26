@@ -187,7 +187,9 @@ CREATE TABLE `tb_pessoa` (
   `data_cadastro` datetime DEFAULT current_timestamp(),
   `ultimo_acesso` datetime DEFAULT NULL,
   `ativo` tinyint(1) DEFAULT 1,
-  `tipo` enum('cliente','prestador','ambos') NOT NULL DEFAULT 'cliente' COMMENT 'Tipo de perfil do usuário'
+  `tipo` enum('cliente','prestador','ambos') NOT NULL DEFAULT 'cliente' COMMENT 'Tipo de perfil do usuário',
+  `token_redefinicao` varchar(255) DEFAULT NULL,
+  `token_expiracao` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

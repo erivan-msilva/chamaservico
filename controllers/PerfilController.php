@@ -75,7 +75,7 @@ class PerfilController {
     
     // Método enderecos removido por duplicidade.
     
-    private function atualizarDadosPessoais($userId, $usuarioAtual) {
+    protected function atualizarDadosPessoais($userId, $usuarioAtual) {
         $dados = [
             'nome' => trim($_POST['nome']),
             'email' => trim($_POST['email']),

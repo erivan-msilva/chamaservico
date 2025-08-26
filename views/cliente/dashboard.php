@@ -1,6 +1,32 @@
 <?php
 $title = 'Dashboard Cliente - ChamaServiço';
 ob_start();
+
+// Buscar dados necessários se não foram carregados pelo controller
+if (!isset($estatisticas)) {
+    require_once 'models/SolicitacaoServico.php';
+    require_once 'models/Proposta.php';
+    require_once 'models/Notificacao.php';
+    
+    $clienteId = Session::getUserId();
+    
+    $solicitacaoModel = new SolicitacaoServico();
+    $propostaModel = new Proposta();
+    $notificacaoModel = new Notificacao();
+    
+    // Buscar estatísticas básicas
+    $estatisticas = [
+        'total_solicitacoes' => $solicitacaoModel->contarPorCliente($clienteId),
+        'aguardando_propostas' => $solicitacaoModel->contarPorStatus($clienteId, 1),
+        'em_andamento' => $solicitacaoModel->contarPorStatus($clienteId, 4),
+        'concluidas' => $solicitacaoModel->contarPorStatus($clienteId, 5)
+    ];
+    
+    // Buscar dados recentes
+    $solicitacoesRecentes = $solicitacaoModel->buscarRecentesPorCliente($clienteId, 5);
+    $propostasRecentes = $propostaModel->buscarPropostasRecebidas($clienteId, ['limit' => 5]);
+    $notificacoesRecentes = $notificacaoModel->buscarPorUsuario($clienteId, 5);
+}
 ?>
 
 <div class="container">
@@ -26,7 +52,7 @@ ob_start();
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-muted mb-0">Total de Solicitações</h6>
-                            <h2 class="mt-2 mb-0 text-primary"><?= $estatisticas['total_solicitacoes'] ?></h2>
+                            <h2 class="mt-2 mb-0 text-primary"><?= $estatisticas['total_solicitacoes'] ?? 0 ?></h2>
                         </div>
                         <div class="bg-light p-3 rounded-circle">
                             <i class="bi bi-list-ul text-primary" style="font-size: 1.5rem;"></i>
@@ -42,7 +68,7 @@ ob_start();
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-muted mb-0">Aguardando Propostas</h6>
-                            <h2 class="mt-2 mb-0 text-warning"><?= $estatisticas['aguardando_propostas'] ?></h2>
+                            <h2 class="mt-2 mb-0 text-warning"><?= $estatisticas['aguardando_propostas'] ?? 0 ?></h2>
                         </div>
                         <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
                             <i class="bi bi-clock-history text-warning" style="font-size: 1.5rem;"></i>
@@ -58,7 +84,7 @@ ob_start();
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-muted mb-0">Em Andamento</h6>
-                            <h2 class="mt-2 mb-0 text-info"><?= $estatisticas['em_andamento'] ?></h2>
+                            <h2 class="mt-2 mb-0 text-info"><?= $estatisticas['em_andamento'] ?? 0 ?></h2>
                         </div>
                         <div class="bg-info bg-opacity-10 p-3 rounded-circle">
                             <i class="bi bi-gear-fill text-info" style="font-size: 1.5rem;"></i>
@@ -74,7 +100,7 @@ ob_start();
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-title text-muted mb-0">Concluídos</h6>
-                            <h2 class="mt-2 mb-0 text-success"><?= $estatisticas['concluidas'] ?></h2>
+                            <h2 class="mt-2 mb-0 text-success"><?= $estatisticas['concluidas'] ?? 0 ?></h2>
                         </div>
                         <div class="bg-success bg-opacity-10 p-3 rounded-circle">
                             <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
@@ -109,12 +135,12 @@ ob_start();
                                    class="list-group-item list-group-item-action py-3">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?= htmlspecialchars($solicitacao['titulo']) ?></h6>
-                                        <span class="badge" style="background-color: <?= $solicitacao['status_cor'] ?>;">
-                                            <?= htmlspecialchars($solicitacao['status_nome']) ?>
+                                        <span class="badge" style="background-color: <?= $solicitacao['status_cor'] ?? '#6c757d' ?>;">
+                                            <?= htmlspecialchars($solicitacao['status_nome'] ?? 'Pendente') ?>
                                         </span>
                                     </div>
                                     <p class="mb-1 small text-muted">
-                                        <i class="bi bi-tools me-1"></i><?= htmlspecialchars($solicitacao['tipo_servico_nome']) ?>
+                                        <i class="bi bi-tools me-1"></i><?= htmlspecialchars($solicitacao['tipo_servico_nome'] ?? 'Serviço') ?>
                                         <span class="ms-2">
                                             <i class="bi bi-calendar me-1"></i><?= date('d/m/Y', strtotime($solicitacao['data_solicitacao'])) ?>
                                         </span>
@@ -149,16 +175,16 @@ ob_start();
                                 <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
                                    class="list-group-item list-group-item-action py-3">
                                     <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1"><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></h6>
-                                        <span class="badge bg-<?= $proposta['status'] === 'pendente' ? 'warning' : 
-                                                               ($proposta['status'] === 'aceita' ? 'success' : 'danger') ?>">
-                                            <?= ucfirst($proposta['status']) ?>
+                                        <h6 class="mb-1"><?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Proposta') ?></h6>
+                                        <span class="badge bg-<?= ($proposta['status'] ?? 'pendente') === 'pendente' ? 'warning' : 
+                                                               (($proposta['status'] ?? 'pendente') === 'aceita' ? 'success' : 'danger') ?>">
+                                            <?= ucfirst($proposta['status'] ?? 'pendente') ?>
                                         </span>
                                     </div>
                                     <p class="mb-1 small text-muted">
-                                        <i class="bi bi-person me-1"></i><?= htmlspecialchars($proposta['prestador_nome']) ?>
+                                        <i class="bi bi-person me-1"></i><?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>
                                         <span class="ms-2">
-                                            <i class="bi bi-currency-dollar me-1"></i>R$ <?= number_format($proposta['valor'], 2, ',', '.') ?>
+                                            <i class="bi bi-currency-dollar me-1"></i>R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?>
                                         </span>
                                     </p>
                                 </a>
@@ -200,14 +226,14 @@ ob_start();
                         <div class="list-group list-group-flush">
                             <?php foreach ($notificacoesRecentes as $notificacao): ?>
                                 <a href="/chamaservico/notificacoes" 
-                                   class="list-group-item list-group-item-action py-3 <?= $notificacao['lida'] ? '' : 'bg-light' ?>">
+                                   class="list-group-item list-group-item-action py-3 <?= ($notificacao['lida'] ?? 1) ? '' : 'bg-light' ?>">
                                     <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1"><?= htmlspecialchars($notificacao['titulo']) ?></h6>
-                                        <small><?= date('d/m/Y H:i', strtotime($notificacao['data_notificacao'])) ?></small>
+                                        <h6 class="mb-1"><?= htmlspecialchars($notificacao['titulo'] ?? 'Notificação') ?></h6>
+                                        <small><?= date('d/m/Y H:i', strtotime($notificacao['data_notificacao'] ?? 'now')) ?></small>
                                     </div>
                                     <p class="mb-1 small text-truncate">
-                                        <?= htmlspecialchars(mb_substr($notificacao['mensagem'], 0, 100)) ?>
-                                        <?= (mb_strlen($notificacao['mensagem']) > 100) ? '...' : '' ?>
+                                        <?= htmlspecialchars(mb_substr($notificacao['mensagem'] ?? '', 0, 100)) ?>
+                                        <?= (mb_strlen($notificacao['mensagem'] ?? '') > 100) ? '...' : '' ?>
                                     </p>
                                 </a>
                             <?php endforeach; ?>
@@ -271,9 +297,9 @@ document.addEventListener("DOMContentLoaded", function() {
             labels: ["Aguardando Propostas", "Em Andamento", "Concluídos"],
             datasets: [{
                 data: [
-                    ' . $estatisticas['aguardando_propostas'] . ',
-                    ' . $estatisticas['em_andamento'] . ',
-                    ' . $estatisticas['concluidas'] . '
+                    ' . ($estatisticas['aguardando_propostas'] ?? 0) . ',
+                    ' . ($estatisticas['em_andamento'] ?? 0) . ',
+                    ' . ($estatisticas['concluidas'] ?? 0) . '
                 ],
                 backgroundColor: [
                     "#FFC107",

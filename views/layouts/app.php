@@ -167,6 +167,59 @@
             animation: pulse 2s infinite;
         }
 
+        /* NOVOS ESTILOS para notificações - LADO ESQUERDO */
+        .notification-bell-left {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-badge-left {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545 !important;
+            color: white !important;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .notification-badge-menu {
+            background: #dc3545 !important;
+            color: white !important;
+            font-size: 0.75rem;
+            padding: 3px 7px;
+            border-radius: 12px;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+            20%, 40%, 60%, 80% { transform: rotate(10deg); }
+        }
+
+        .bell-shake {
+            animation: shake 0.8s ease-in-out;
+        }
+
         @media (max-width: 991px) {
             .navbar-nav .nav-link {
                 padding: 10px 12px !important;
@@ -305,41 +358,70 @@
                     <ul class="navbar-nav">
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center user-info" href="#" role="button" data-bs-toggle="dropdown">
-                                <?php
-                                $fotoPerfil = Session::get('foto_perfil');
-                                if ($fotoPerfil) {
-                                    $fotoPerfil = basename($fotoPerfil);
-                                    $caminhoCompleto = "uploads/perfil/" . $fotoPerfil;
-                                    $arquivoExiste = file_exists($caminhoCompleto);
-                                }
-                                if ($fotoPerfil && $arquivoExiste):
-                                ?>
-                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
-                                        class="rounded-circle profile-img-sm" alt="Foto do perfil"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                                    <i class="bi bi-person-circle" style="font-size: 2rem; display: none;"></i>
-                                <?php else: ?>
-                                    <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
-                                <?php endif; ?>
-                                <span class="d-none d-md-inline">
+                                <!-- NOVO: Container para sino e foto -->
+                                <div class="d-flex align-items-center position-relative">
+                                    <!-- SINO DE NOTIFICAÇÕES - LADO ESQUERDO -->
+                                    <?php
+                                    $notificacoesNaoLidas = 0;
+                                    try {
+                                        if (file_exists('models/Notificacao.php')) {
+                                            require_once 'models/Notificacao.php';
+                                            $notificacaoModel = new Notificacao();
+                                            $userId = Session::getUserId();
+                                            
+                                            if (is_array($userId)) {
+                                                $userId = $userId[0] ?? 0;
+                                            }
+                                            
+                                            if ($userId) {
+                                                $notificacoesNaoLidas = $notificacaoModel->contarNaoLidas($userId);
+                                            }
+                                        }
+                                    } catch (Exception $e) {
+                                        error_log("Erro ao contar notificações: " . $e->getMessage());
+                                        $notificacoesNaoLidas = 0;
+                                    }
+                                    
+                                    if ($notificacoesNaoLidas > 0): ?>
+                                        <div class="notification-bell-left me-2" id="notificationBell">
+                                            <i class="bi bi-bell-fill text-warning fs-5"></i>
+                                            <span class="notification-badge-left" id="notificationCount"><?= $notificacoesNaoLidas ?></span>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="notification-bell-left me-2" id="notificationBell" style="display: none;">
+                                            <i class="bi bi-bell-fill text-warning fs-5"></i>
+                                            <span class="notification-badge-left" id="notificationCount">0</span>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- FOTO DO USUÁRIO - LADO DIREITO -->
+                                    <div class="position-relative">
+                                        <?php
+                                        $fotoPerfil = Session::get('foto_perfil');
+                                        if ($fotoPerfil) {
+                                            $fotoPerfil = basename($fotoPerfil);
+                                            $caminhoCompleto = "uploads/perfil/" . $fotoPerfil;
+                                            $arquivoExiste = file_exists($caminhoCompleto);
+                                        }
+                                        if ($fotoPerfil && $arquivoExiste):
+                                        ?>
+                                            <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
+                                                class="rounded-circle profile-img-sm" alt="Foto do perfil"
+                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                            <i class="bi bi-person-circle" style="font-size: 2rem; display: none;"></i>
+                                        <?php else: ?>
+                                            <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <span class="d-none d-md-inline ms-2">
                                     <?php
                                     $nomeCompleto = Session::getUserName() ?? '';
                                     $primeiroNome = explode(' ', trim($nomeCompleto))[0];
                                     echo htmlspecialchars($primeiroNome);
                                     ?>
                                 </span>
-                                <?php
-                                $notificacoesNaoLidas = 0;
-                                try {
-                                    require_once 'models/Notificacao.php';
-                                    $notificacaoModel = new Notificacao();
-                                    $notificacoesNaoLidas = $notificacaoModel->contarNaoLidas(Session::getUserId());
-                                } catch (Exception $e) {
-                                    $notificacoesNaoLidas = 0;
-                                }
-                                if ($notificacoesNaoLidas > 0): ?>
-                                    <span class="notification-badge"><?= $notificacoesNaoLidas ?></span>
-                                <?php endif; ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
@@ -376,9 +458,9 @@
                                 <li>
                                     <a class="dropdown-item" href="/chamaservico/notificacoes">
                                         <i class="bi bi-bell me-2"></i>Notificações
-                                        <?php if ($notificacoesNaoLidas > 0): ?>
-                                            <span class="notification-badge"><?= $notificacoesNaoLidas ?></span>
-                                        <?php endif; ?>
+                                        <span class="notification-badge-menu" id="notificationBadgeMenu" <?= $notificacoesNaoLidas > 0 ? '' : 'style="display: none;"' ?>>
+                                            <?= $notificacoesNaoLidas ?>
+                                        </span>
                                     </a>
                                 </li>
                                 <li>
@@ -422,25 +504,22 @@
     <?php endif; ?>
     <!-- FIM Navbar -->
     <!-- Flash Messages -->
-    <?php if (Session::hasFlash('success')): ?>
-        <?php $flash = Session::getFlash('success'); ?>
-        <div class="container mt-3">
-            <div class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($flash['message']) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <?php endif; ?>
+    <!-- Flash Messages centralizadas e temporárias -->
+<?php if (Session::hasFlash('success')): ?>
+    <?php $flash = Session::getFlash('success'); ?>
+    <div id="alertCenter" class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show position-fixed top-50 start-50 translate-middle shadow-lg text-center" role="alert" style="z-index:1055; min-width:320px; max-width:90vw;">
+        <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($flash['message']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
-    <?php if (Session::hasFlash('error')): ?>
-        <?php $flash = Session::getFlash('error'); ?>
-        <div class="container mt-3">
-            <div class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i><?= htmlspecialchars($flash['message']) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <?php endif; ?>
+<?php if (Session::hasFlash('error')): ?>
+    <?php $flash = Session::getFlash('error'); ?>
+    <div id="alertCenter" class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show position-fixed top-50 start-50 translate-middle shadow-lg text-center" role="alert" style="z-index:1055; min-width:320px; max-width:90vw;">
+        <i class="bi bi-exclamation-triangle me-2"></i><?= htmlspecialchars($flash['message']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
     <!-- Conteúdo Principal -->
     <main class="container my-4">
@@ -485,6 +564,256 @@
             });
         });
     </script>
+
+    <script>
+async function carregarEnderecosCard() {
+    const card = document.getElementById('enderecoCard');
+    const overlay = document.getElementById('enderecoCardOverlay');
+    const content = document.getElementById('enderecoCardContent');
+    
+    // Mostrar card com carregamento
+    card.style.display = 'block';
+    overlay.style.display = 'block';
+    
+    // Resetar conteúdo para carregamento
+    content.innerHTML = `
+        <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-2 text-muted">Carregando endereços...</p>
+        </div>
+    `;
+    
+    try {
+        const response = await fetch('/chamaservico/cliente/perfil/enderecos?action=api_list');
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar endereços');
+        }
+        
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            mostrarEnderecos(data.enderecos);
+        } else {
+            throw new Error(data.mensagem || 'Erro desconhecido');
+        }
+        
+    } catch (error) {
+        console.error('Erro:', error);
+        content.innerHTML = `
+            <div class="text-center py-4">
+                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                <h6 class="text-muted mt-2">Erro ao carregar endereços</h6>
+                <p class="text-muted">${error.message}</p>
+                <button class="btn btn-primary btn-sm" onclick="carregarEnderecosCard()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Tentar Novamente
+                </button>
+            </div>
+        `;
+    }
+}
+
+async function definirPrincipalCard(id) {
+    if (confirm('Definir este endereço como principal?')) {
+        try {
+            const formData = new FormData();
+            formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
+            formData.append('acao', 'definir_principal');
+            formData.append('endereco_id', id);
+            
+            const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                // Recarregar a lista
+                carregarEnderecosCard();
+            } else {
+                alert('Erro ao definir endereço principal: ' + data.mensagem);
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao definir endereço principal');
+        }
+    }
+}
+
+async function excluirEnderecoCard(id) {
+    if (confirm('Tem certeza que deseja excluir este endereço?')) {
+        try {
+            const formData = new FormData();
+            formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
+            formData.append('acao', 'excluir');
+            formData.append('endereco_id', id);
+            
+            const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                // Recarregar a lista
+                carregarEnderecosCard();
+            } else {
+                alert('Erro ao excluir endereço: ' + data.mensagem);
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao excluir endereço');
+        }
+    }
+}
+</script>
+
+    <script>
+// Sistema global de notificações em tempo real
+let sistemaNotificacoes = {
+    ultimaVerificacao: new Date().toISOString(),
+    intervalo: null,
+    ultimoContador: <?= $notificacoesNaoLidas ?>,
+    
+    iniciar() {
+        // Verificar a cada 10 segundos
+        this.intervalo = setInterval(() => {
+            this.verificarNovas();
+        }, 10000);
+        
+        // Verificar imediatamente após 5 segundos
+        setTimeout(() => {
+            this.verificarNovas();
+        }, 5000);
+    },
+    
+    parar() {
+        if (this.intervalo) {
+            clearInterval(this.intervalo);
+            this.intervalo = null;
+        }
+    },
+    
+    async verificarNovas() {
+        try {
+            const response = await fetch('/chamaservico/notificacoes/contador');
+            const data = await response.json();
+            
+            if (data.sucesso) {
+                const novoContador = data.contador;
+                
+                // Se aumentou o contador, mostrar animações
+                if (novoContador > this.ultimoContador) {
+                    this.animarNovaNotificacao();
+                    this.mostrarToastRapido();
+                }
+                
+                this.atualizarBadges(novoContador);
+                this.ultimoContador = novoContador;
+            }
+        } catch (error) {
+            console.error('Erro ao verificar notificações:', error);
+        }
+    },
+    
+    atualizarBadges(contador) {
+        const bell = document.getElementById('notificationBell');
+        const count = document.getElementById('notificationCount');
+        const menuBadge = document.getElementById('notificationBadgeMenu');
+        
+        if (contador > 0) {
+            // Mostrar sino e contador
+            if (bell) bell.style.display = 'flex';
+            if (count) count.textContent = contador;
+            if (menuBadge) {
+                menuBadge.textContent = contador;
+                menuBadge.style.display = 'inline-block';
+            }
+        } else {
+            // Esconder sino
+            if (bell) bell.style.display = 'none';
+            if (menuBadge) menuBadge.style.display = 'none';
+        }
+    },
+    
+    animarNovaNotificacao() {
+        const bell = document.getElementById('notificationBell');
+        const icon = bell?.querySelector('.bi-bell-fill');
+        
+        if (icon) {
+            icon.classList.add('bell-shake');
+            setTimeout(() => {
+                icon.classList.remove('bell-shake');
+            }, 800);
+        }
+    },
+    
+    mostrarToastRapido() {
+        // Toast discreto para nova notificação
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed top-0 end-0 p-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="toast show" role="alert">
+                <div class="toast-header">
+                    <i class="bi bi-bell-fill text-warning me-2"></i>
+                    <strong class="me-auto">Nova Notificação</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    Você tem uma nova notificação!
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto remover
+        setTimeout(() => {
+            toast.remove();
+        }, 4000);
+    }
+};
+
+// CSS para animação do sininho
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: rotate(0deg); }
+        10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+        20%, 40%, 60%, 80% { transform: rotate(10deg); }
+    }
+    
+    .notification-badge {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+`;
+document.head.appendChild(style);
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    // Só inicializar se o usuário estiver logado
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        sistemaNotificacoes.iniciar();
+    }
+});
+
+// Parar quando sair da página
+window.addEventListener('beforeunload', function() {
+    sistemaNotificacoes.parar();
+});
+</script>
 
     <?= $scripts ?? '' ?>
 </body>

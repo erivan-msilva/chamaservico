@@ -6,6 +6,7 @@ ob_start();
 <div class="row justify-content-center">
     <div class="col-md-10">
         <div class="card">
+            <!-- Status visual com ícone -->
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="mb-0"><?= htmlspecialchars($solicitacao['titulo']) ?></h4>
@@ -13,7 +14,8 @@ ob_start();
                         Solicitado em <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?>
                     </small>
                 </div>
-                <span class="badge fs-6" style="background-color: <?= $solicitacao['status_cor'] ?>;">
+                <span class="badge fs-6 d-flex align-items-center" style="background-color: <?= $solicitacao['status_cor'] ?>;">
+                    <i class="bi <?= $solicitacao['status_nome'] === 'Concluído' ? 'bi-check-circle' : ($solicitacao['status_nome'] === 'Cancelado' ? 'bi-x-circle' : 'bi-clock') ?> me-1"></i>
                     <?= htmlspecialchars($solicitacao['status_nome']) ?>
                 </span>
             </div>
@@ -28,6 +30,9 @@ ob_start();
                             <h6>
                                 <i class="bi bi-camera me-2"></i>Fotos Anexadas
                                 <span class="badge bg-primary"><?= count($solicitacao['imagens']) ?></span>
+                                <a href="/chamaservico/cliente/solicitacoes/baixar-imagens?id=<?= $solicitacao['id'] ?>" class="btn btn-outline-secondary btn-sm ms-2">
+                                    <i class="bi bi-download"></i> Baixar Todas
+                                </a>
                             </h6>
                             <div class="row g-3 mb-4">
                                 <?php foreach ($solicitacao['imagens'] as $index => $imagem): ?>
@@ -35,15 +40,17 @@ ob_start();
                                         <div class="card h-100 shadow-sm">
                                             <div class="position-relative">
                                                 <?php
-                                                $imagemPath = "../uploads/solicitacoes" . htmlspecialchars($imagem['caminho_imagem']);
+                                                // CORREÇÃO: Caminho correto para imagens anexadas
+                                                $imagemPath = "/chamaservico/uploads/solicitacoes/" . basename($imagem['caminho_imagem']);
                                                 ?>
-                                                <img src="<?= $imagemPath ?>"
-                                                    class="card-img-top"
-                                                    style="height: 220px; object-fit: cover; cursor: pointer;"
-                                                    onclick="openImageModal('<?= $imagemPath ?>', '<?= $index + 1 ?>')"
-                                                    alt="Foto <?= $index + 1 ?> da solicitação"
-                                                    loading="lazy"
-                                                    onerror="this.parentElement.innerHTML='<div class=\'d-flex align-items-center justify-content-center bg-light text-center p-3\' style=\'height: 220px;\'><div><i class=\'bi bi-image-alt text-muted\' style=\'font-size: 2rem;\'></i><br><small class=\'text-muted\'>Imagem não encontrada</small></div></div>'">
+                                                <a href="<?= $imagemPath ?>" target="_blank">
+                                                    <img src="<?= $imagemPath ?>"
+                                                        class="card-img-top"
+                                                        style="height: 220px; object-fit: cover; cursor: zoom-in;"
+                                                        alt="Foto <?= $index + 1 ?> da solicitação"
+                                                        loading="lazy"
+                                                        onerror="this.parentElement.innerHTML='<div class=\'d-flex align-items-center justify-content-center bg-light text-center p-3\' style=\'height: 220px;\'><div><i class=\'bi bi-image-alt text-muted\' style=\'font-size: 2rem;\'></i><br><small class=\'text-muted\'>Imagem não encontrada</small></div></div>'">
+                                                </a>
                                                 <div class="position-absolute top-0 end-0 m-2">
                                                     <span class="badge bg-dark bg-opacity-75">
                                                         <i class="bi bi-zoom-in"></i>
@@ -104,12 +111,57 @@ ob_start();
                                     <?php endif; ?>
                                     <?= htmlspecialchars($solicitacao['bairro']) ?><br>
                                     <?= htmlspecialchars($solicitacao['cidade']) ?> - <?= htmlspecialchars($solicitacao['estado']) ?><br>
-                                    <small class="text-muted">CEP: <?= htmlspecialchars($solicitacao['cep']) ?></small>
+                                    <small class="text-muted">CEP: <?= htmlspecialchars($solicitacao['cep']) ?></small><br>
+                                    <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($solicitacao['logradouro'] . ', ' . $solicitacao['numero'] . ', ' . $solicitacao['bairro'] . ', ' . $solicitacao['cidade'] . ', ' . $solicitacao['estado']) ?>" target="_blank" class="btn btn-outline-info btn-sm mt-2">
+                                        <i class="bi bi-geo-alt"></i> Ver no Google Maps
+                                    </a>
                                 </address>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Propostas recebidas -->
+                <?php
+                require_once 'models/Proposta.php';
+                $propostaModel = new Proposta();
+                $propostas = $propostaModel->buscarPropostasPorSolicitacao($solicitacao['id']);
+                ?>
+                <?php if (!empty($propostas)): ?>
+                    <div class="mt-4">
+                        <h6><i class="bi bi-envelope me-2"></i>Propostas Recebidas</h6>
+                        <ul class="list-group">
+                            <?php foreach ($propostas as $proposta): ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <strong><?= htmlspecialchars($proposta['prestador_nome']) ?></strong>
+                                        - R$ <?= number_format($proposta['valor'], 2, ',', '.') ?>
+                                        <span class="badge bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'pendente' ? 'warning' : 'danger') ?>">
+                                            <?= ucfirst($proposta['status']) ?>
+                                        </span>
+                                    </span>
+                                    <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-eye"></i> Ver Detalhes
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Histórico de status (exemplo simplificado) -->
+                <?php if (!empty($solicitacao['historico_status'])): ?>
+                    <div class="mt-4">
+                        <h6><i class="bi bi-clock-history me-2"></i>Histórico de Status</h6>
+                        <ul class="list-group">
+                            <?php foreach ($solicitacao['historico_status'] as $status): ?>
+                                <li class="list-group-item">
+                                    <?= htmlspecialchars($status['nome']) ?> em <?= date('d/m/Y H:i', strtotime($status['data'])) ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
 
                 <div class="d-flex gap-2">
                     <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" class="btn btn-primary">

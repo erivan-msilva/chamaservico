@@ -28,28 +28,28 @@ class Pessoa {
     }
 
     public function salvarTokenRedefinicao($id, $token) {
-        $sql = "UPDATE tb_pessoa SET token_redefinicao = ?, token_expira = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?";
+        $sql = "UPDATE tb_pessoa SET token_redefinicao = ?, token_expiracao = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$token, $id]);
     }
 
     public function buscarPorTokenRedefinicao($token) {
-        $sql = "SELECT * FROM tb_pessoa WHERE token_redefinicao = ? AND token_expira > NOW()";
+        $sql = "SELECT * FROM tb_pessoa WHERE token_redefinicao = ? AND token_expiracao > NOW()";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$token]);
         return $stmt->fetch();
-    }
-
-    public function removerTokenRedefinicao($id) {
-        $sql = "UPDATE tb_pessoa SET token_redefinicao = NULL, token_expira = NULL WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([$id]);
     }
 
     public function alterarSenha($id, $novaSenha) {
         $sql = "UPDATE tb_pessoa SET senha = ? WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([password_hash($novaSenha, PASSWORD_DEFAULT), $id]);
+    }
+
+    public function removerTokenRedefinicao($id) {
+        $sql = "UPDATE tb_pessoa SET token_redefinicao = NULL, token_expiracao = NULL WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$id]);
     }
 
     public function emailExiste($email) {
@@ -103,4 +103,3 @@ class Pessoa {
     }
 }
 ?>
-    

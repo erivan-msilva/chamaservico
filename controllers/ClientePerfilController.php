@@ -70,42 +70,293 @@ class ClientePerfilController {
     }
     
     public function enderecos() {
+        Session::requireClientLogin();
         $userId = Session::getUserId();
-        
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                
-                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Token de segurança inválido!']);
+
+        // API para listar endereços (usado pelo AJAX)
+        if ($_GET['action'] ?? '' === 'api_list') {
+            require_once 'models/ClientePerfil.php';
+            $model = new ClientePerfil();
+            $enderecos = $model->buscarEnderecos($userId);
+            echo json_encode(['sucesso' => true, 'enderecos' => $enderecos]);
+            exit;
+        }
+
+        // Cadastro via AJAX
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'criar') {
+            $dados = [
+                'pessoa_id' => $userId,
+                'cep' => $_POST['cep'] ?? '',
+                'logradouro' => $_POST['logradouro'] ?? '',
+                'numero' => $_POST['numero'] ?? '',
+                'complemento' => $_POST['complemento'] ?? '',
+                'bairro' => $_POST['bairro'] ?? '',
+                'cidade' => $_POST['cidade'] ?? '',
+                'estado' => $_POST['estado'] ?? '',
+                'principal' => !empty($_POST['principal']) ? 1 : 0
+            ];
+            require_once 'models/ClientePerfil.php';
+            $model = new ClientePerfil();
+            $sucesso = $model->criarEndereco($dados);
+
+            // Se for AJAX, retorna JSON e não redireciona
+            if (
+                (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+                || (isset($_POST['ajax']) && $_POST['ajax'] == '1')
+            ) {
+                if ($sucesso) {
+                    echo json_encode(['sucesso' => true, 'mensagem' => 'Endereço cadastrado com sucesso!']);
+                } else {
+                    echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao cadastrar endereço!']);
+                }
+                exit;
+            }
+
+            // Fluxo normal (form padrão)
+            if ($sucesso) {
+                Session::setFlash('success', 'Endereço cadastrado com sucesso!', 'success');
+            } else {
+                Session::setFlash('error', 'Erro ao cadastrar endereço!', 'danger');
+            }
+            header('Location: /chamaservico/cliente/perfil/enderecos');
+            exit;
+        }
+
+        // Exclusão via AJAX ou formulário
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'excluir') {
+            $enderecoId = $_POST['endereco_id'] ?? 0;
+            require_once 'models/ClientePerfil.php';
+            $model = new ClientePerfil();
+
+            // Não permitir excluir se for o único endereço principal
+            $enderecos = $model->buscarEnderecos($userId);
+            $principalCount = 0;
+            foreach ($enderecos as $end) {
+                if ($end['principal']) $principalCount++;
+            }
+            $endereco = null;
+            foreach ($enderecos as $end) {
+                if ($end['id'] == $enderecoId) $endereco = $end;
+            }
+            if ($endereco && $endereco['principal'] && $principalCount <= 1) {
+                $msg = 'Não é possível excluir o único endereço principal.';
+                if (
+                    (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+                    || (isset($_POST['ajax']) && $_POST['ajax'] == '1')
+                ) {
+                    echo json_encode(['sucesso' => false, 'mensagem' => $msg]);
                     exit;
                 }
-                
+                Session::setFlash('error', $msg, 'danger');
                 header('Location: /chamaservico/cliente/perfil/enderecos');
                 exit;
             }
-            
-            $acao = $_POST['acao'] ?? 'adicionar';
-            
-            switch ($acao) {
-                case 'editar':
-                    $this->editarEndereco($userId);
-                    break;
-                case 'excluir':
-                    $this->excluirEndereco($userId);
-                    break;
-                case 'definir_principal':
-                    $this->definirEnderecoPrincipal($userId);
-                    break;
-                default:
-                    $this->processarAdicionarEndereco($userId);
-                    break;
+
+            $sucesso = $model->excluirEndereco($enderecoId, $userId);
+
+            if (
+                (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+                || (isset($_POST['ajax']) && $_POST['ajax'] == '1')
+            ) {
+                echo json_encode(['sucesso' => $sucesso]);
+                exit;
             }
+
+            if ($sucesso) {
+                Session::setFlash('success', 'Endereço excluído com sucesso!', 'success');
+            } else {
+                Session::setFlash('error', 'Erro ao excluir endereço!', 'danger');
+            }
+            header('Location: /chamaservico/cliente/perfil/enderecos');
+            exit;
+        }
+
+        // Incluir modelo necessário
+        require_once 'models/Endereco.php';
+        
+        // Exibir página de endereços
+        $modeloEndereco = new Endereco();
+        $clienteId = Session::getUserId();
+        $enderecos = $modeloEndereco->buscarPorPessoa($clienteId);
+        
+        // CORREÇÃO: Usar o arquivo correto na pasta cliente/perfil
+        include 'views/cliente/perfil/enderecos.php';
+    }
+    
+    private function apiListarEnderecos() {
+        header('Content-Type: application/json');
+        
+        try {
+            require_once 'models/Endereco.php';
+            $modeloEndereco = new Endereco();
+            $clienteId = Session::getUserId();
+            
+            $enderecos = $modeloEndereco->buscarPorPessoa($clienteId);
+            
+            echo json_encode([
+                'sucesso' => true,
+                'enderecos' => $enderecos
+            ]);
+            
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Erro ao carregar endereços: ' . $e->getMessage()
+            ]);
+        }
+        exit;
+    }
+    
+    private function apiObterEndereco() {
+        header('Content-Type: application/json');
+        
+        try {
+            require_once 'models/Endereco.php';
+            $modeloEndereco = new Endereco();
+            $clienteId = Session::getUserId();
+            $enderecoId = $_GET['id'];
+            
+            $endereco = $modeloEndereco->buscarPorId($enderecoId);
+            
+            // Verificar se o endereço pertence ao cliente
+            if (!$endereco || $endereco['pessoa_id'] != $clienteId) {
+                throw new Exception('Endereço não encontrado');
+            }
+            
+            echo json_encode($endereco);
+            
+        } catch (Exception $e) {
+            http_response_code(404);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => $e->getMessage()
+            ]);
+        }
+        exit;
+    }
+    
+    private function processarAcaoEndereco() {
+        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['sucesso' => false, 'mensagem' => 'Token de segurança inválido']);
+                exit;
+            }
+            Session::setFlash('erro', 'Token de segurança inválido!', 'danger');
+            header('Location: /chamaservico/cliente/perfil/enderecos');
+            exit;
         }
         
-        $enderecos = $this->model->buscarEnderecosPorUsuario($userId);
-        include 'views/cliente/perfil/enderecos.php';
+        require_once 'models/Endereco.php';
+        $modeloEndereco = new Endereco();
+        $clienteId = Session::getUserId();
+        $acao = $_POST['acao'] ?? '';
+        
+        try {
+            switch ($acao) {
+                case 'adicionar':
+                    $dados = [
+                        'pessoa_id' => $clienteId,
+                        'cep' => $_POST['cep'] ?? '',
+                        'logradouro' => $_POST['logradouro'] ?? '',
+                        'numero' => $_POST['numero'] ?? '',
+                        'complemento' => $_POST['complemento'] ?? '',
+                        'bairro' => $_POST['bairro'] ?? '',
+                        'cidade' => $_POST['cidade'] ?? '',
+                        'estado' => $_POST['estado'] ?? '',
+                        'principal' => isset($_POST['principal'])
+                    ];
+                    
+                    $resultado = $modeloEndereco->adicionar($dados);
+                    
+                    if ($resultado) {
+                        $mensagem = 'Endereço adicionado com sucesso!';
+                        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                            echo json_encode(['sucesso' => true, 'mensagem' => $mensagem]);
+                            exit;
+                        }
+                        Session::setFlash('sucesso', $mensagem, 'success');
+                    } else {
+                        throw new Exception('Erro ao adicionar endereço');
+                    }
+                    break;
+                    
+                case 'editar':
+                    $enderecoId = $_POST['endereco_id'] ?? 0;
+                    $dados = [
+                        'pessoa_id' => $clienteId,
+                        'cep' => $_POST['cep'] ?? '',
+                        'logradouro' => $_POST['logradouro'] ?? '',
+                        'numero' => $_POST['numero'] ?? '',
+                        'complemento' => $_POST['complemento'] ?? '',
+                        'bairro' => $_POST['bairro'] ?? '',
+                        'cidade' => $_POST['cidade'] ?? '',
+                        'estado' => $_POST['estado'] ?? '',
+                        'principal' => isset($_POST['principal'])
+                    ];
+                    
+                    $resultado = $modeloEndereco->editar($enderecoId, $dados);
+                    
+                    if ($resultado) {
+                        $mensagem = 'Endereço atualizado com sucesso!';
+                        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                            echo json_encode(['sucesso' => true, 'mensagem' => $mensagem]);
+                            exit;
+                        }
+                        Session::setFlash('sucesso', $mensagem, 'success');
+                    } else {
+                        throw new Exception('Erro ao atualizar endereço');
+                    }
+                    break;
+                    
+                case 'definir_principal':
+                    $enderecoId = $_POST['endereco_id'] ?? 0;
+                    $resultado = $modeloEndereco->definirPrincipal($enderecoId, $clienteId);
+                    
+                    if ($resultado) {
+                        $mensagem = 'Endereço principal definido com sucesso!';
+                        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                            echo json_encode(['sucesso' => true, 'mensagem' => $mensagem]);
+                            exit;
+                        }
+                        Session::setFlash('sucesso', $mensagem, 'success');
+                    } else {
+                        throw new Exception('Erro ao definir endereço principal');
+                    }
+                    break;
+                    
+                case 'excluir':
+                    $enderecoId = $_POST['endereco_id'] ?? 0;
+                    $resultado = $modeloEndereco->excluir($enderecoId, $clienteId);
+                    
+                    if ($resultado) {
+                        $mensagem = 'Endereço excluído com sucesso!';
+                        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                            echo json_encode(['sucesso' => true, 'mensagem' => $mensagem]);
+                            exit;
+                        }
+                        Session::setFlash('sucesso', $mensagem, 'success');
+                    } else {
+                        throw new Exception('Erro ao excluir endereço');
+                    }
+                    break;
+                    
+                default:
+                    throw new Exception('Ação não reconhecida');
+            }
+            
+        } catch (Exception $e) {
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['sucesso' => false, 'mensagem' => $e->getMessage()]);
+                exit;
+            }
+            Session::setFlash('erro', $e->getMessage(), 'danger');
+        }
+        
+        header('Location: /chamaservico/cliente/perfil/enderecos');
+        exit;
     }
     
     // Métodos privados idênticos ao PerfilController
@@ -405,6 +656,53 @@ class ClientePerfilController {
             header('Location: /chamaservico/cliente/perfil/enderecos');
             exit;
         }
+    }
+    
+    public function buscarPorCEP() {
+        header('Content-Type: application/json');
+        $cep = $_GET['cep'] ?? '';
+        $cep = preg_replace('/\D/', '', $cep);
+
+        if (strlen($cep) !== 8) {
+            echo json_encode(['success' => false, 'message' => 'CEP inválido']);
+            exit;
+        }
+
+        // Tenta buscar no banco local
+        if (file_exists('models/Endereco.php')) {
+            require_once 'models/Endereco.php';
+            $enderecoModel = new Endereco();
+            $endereco = $enderecoModel->buscarPorCEP($cep);
+
+            if ($endereco) {
+                echo json_encode(['success' => true, 'endereco' => $endereco]);
+                exit;
+            }
+        }
+
+        // Tenta buscar na API ViaCEP
+        $url = "https://viacep.com.br/ws/{$cep}/json/";
+        $response = @file_get_contents($url);
+        if ($response) {
+            $data = json_decode($response, true);
+            if (!isset($data['erro'])) {
+                echo json_encode([
+                    'success' => true,
+                    'endereco' => [
+                        'cep' => $data['cep'],
+                        'logradouro' => $data['logradouro'],
+                        'bairro' => $data['bairro'],
+                        'cidade' => $data['localidade'],
+                        'estado' => $data['uf'],
+                        'complemento' => $data['complemento']
+                    ]
+                ]);
+                exit;
+            }
+        }
+
+        echo json_encode(['success' => false, 'message' => 'Endereço não encontrado']);
+        exit;
     }
 }
 ?>

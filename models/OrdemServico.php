@@ -481,5 +481,18 @@ class OrdemServico
             error_log("Erro ao enviar notificação: " . $e->getMessage());
         }
     }
+
+    public function buscarPorProposta($propostaId)
+    {
+        try {
+            $sql = "SELECT * FROM tb_ordem_servico WHERE proposta_id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$propostaId]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Erro ao buscar ordem de serviço por proposta: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>

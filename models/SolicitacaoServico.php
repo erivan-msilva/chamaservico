@@ -56,8 +56,7 @@ class SolicitacaoServico
     }
 
     // Novo: Buscar imagens da solicitação
-    public function buscarImagensPorSolicitacao($solicitacaoId)
-    {
+    public function buscarImagensPorSolicitacao($solicitacaoId) {
         $sql = "SELECT * FROM tb_imagem_solicitacao WHERE solicitacao_id = ? ORDER BY data_upload ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$solicitacaoId]);
@@ -333,3 +332,4 @@ class SolicitacaoServico
         return $stmt->fetchAll();
     }
 }
+

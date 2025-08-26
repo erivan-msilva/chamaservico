@@ -18,8 +18,8 @@ ob_start();
 
         <div class="card shadow-sm">
             <div class="card-body">
-                <form method="POST" enctype="multipart/form-data" id="formSolicitacao">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                <form method="POST" action="/chamaservico/cliente/solicitacoes/criar" enctype="multipart/form-data" id="formSolicitacao">
+                    <input type="hidden" name="csrf_token" id="csrfTokenSolicitacao" value="<?= Session::generateCSRFToken() ?>">
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -135,9 +135,112 @@ ob_start();
     </div>
 </div>
 
-<?php
-$scripts = '
+<!-- Modal de Cadastro de Endereço com AJAX -->
+<div class="modal fade" id="modalEndereco" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" id="formEnderecoModal" method="POST" action="/chamaservico/cliente/perfil/enderecos">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-geo-alt me-2"></i>Cadastrar Endereço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="csrf_token" id="csrfTokenEndereco" value="<?= Session::generateCSRFToken() ?>">
+                <input type="hidden" name="acao" value="criar">
+                <div class="mb-3">
+                    <label for="cepModal" class="form-label">CEP *</label>
+                    <input type="text" class="form-control" name="cep" id="cepModal" required>
+                </div>
+                <div class="mb-3">
+                    <label for="logradouroModal" class="form-label">Logradouro *</label>
+                    <input type="text" class="form-control" name="logradouro" id="logradouroModal" required>
+                </div>
+                <div class="mb-3">
+                    <label for="numeroModal" class="form-label">Número *</label>
+                    <input type="text" class="form-control" name="numero" id="numeroModal" required>
+                </div>
+                <div class="mb-3">
+                    <label for="complementoModal" class="form-label">Complemento</label>
+                    <input type="text" class="form-control" name="complemento" id="complementoModal">
+                </div>
+                <div class="mb-3">
+                    <label for="bairroModal" class="form-label">Bairro *</label>
+                    <input type="text" class="form-control" name="bairro" id="bairroModal" required>
+                </div>
+                <div class="mb-3">
+                    <label for="cidadeModal" class="form-label">Cidade *</label>
+                    <input type="text" class="form-control" name="cidade" id="cidadeModal" required>
+                </div>
+                <div class="mb-3">
+                    <label for="estadoModal" class="form-label">Estado *</label>
+                    <input type="text" class="form-control" name="estado" id="estadoModal" required maxlength="2">
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="principal" id="principalModal" value="1" checked>
+                    <label class="form-check-label" for="principalModal">Definir como endereço principal</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Endereço</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+document.getElementById('formEnderecoModal').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+
+    fetch('/chamaservico/cliente/perfil/enderecos', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso || data.success) {
+            // Atualizar o select de endereços
+            fetch('/chamaservico/cliente/perfil/enderecos?action=api_list')
+                .then(resp => resp.json())
+                .then(endData => {
+                    if (endData.sucesso && Array.isArray(endData.enderecos)) {
+                        const select = document.getElementById('endereco_id');
+                        select.innerHTML = '<option value="">Selecione o endereço</option>';
+                        endData.enderecos.forEach(end => {
+                            const opt = document.createElement('option');
+                            opt.value = end.id;
+                            opt.textContent = `${end.logradouro}, ${end.numero} - ${end.bairro}`;
+                            select.appendChild(opt);
+                        });
+                        // Seleciona o último cadastrado
+                        if (endData.enderecos.length > 0) {
+                            select.value = endData.enderecos[endData.enderecos.length - 1].id;
+                        }
+                    }
+                });
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEndereco'));
+            modal.hide();
+
+            // ATUALIZAR TOKEN CSRF DO FORMULÁRIO PRINCIPAL
+            fetch('/chamaservico/cliente/solicitacoes/criar?action=csrf')
+                .then(resp => resp.json())
+                .then(obj => {
+                    if (obj.csrf_token) {
+                        document.getElementById('csrfTokenSolicitacao').value = obj.csrf_token;
+                    }
+                });
+        } else {
+            alert(data.mensagem || 'Erro ao salvar endereço');
+        }
+    })
+    .catch(() => {
+        alert('Erro ao salvar endereço');
+    });
+});
+
 function previewImages(input) {
     const previewContainer = document.getElementById("imagePreview");
     previewContainer.innerHTML = "";
@@ -175,8 +278,8 @@ function previewImages(input) {
     }
 }
 </script>
-';
 
+<?php
 $content = ob_get_clean();
 include 'views/layouts/app.php';
 ?>

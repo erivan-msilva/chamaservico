@@ -11,106 +11,143 @@ class NotificacaoController {
     }
     
     public function index() {
-        try {
-            $userId = Session::getUserId();
-            if (!$userId) {
-                throw new Exception('Usuário não autenticado.');
-            }
-            
-            // Buscar notificações simples
-            $notificacoes = $this->model->buscarPorUsuario($userId, 20);
-            
-            // Incluir a ÚNICA view de notificações
-            include 'views/notificacoes/index.php';
-        } catch (Exception $e) {
-            error_log("Erro ao carregar notificações: " . $e->getMessage());
-            Session::setFlash('error', 'Erro ao carregar notificações: ' . $e->getMessage(), 'danger');
-            header('Location: /chamaservico/');
-            exit;
-        }
+        $userId = Session::getUserId();
+        $filtros = [
+            'tipo' => $_GET['tipo'] ?? '',
+            'lida' => $_GET['lida'] ?? ''
+        ];
+        
+        $notificacoes = $this->model->buscarPorUsuario($userId, 50, $filtros);
+        $estatisticas = $this->model->getEstatisticas($userId);
+        
+        include 'views/notificacoes/index.php';
     }
     
+    // API para buscar contador de notificações não lidas
     public function contador() {
-        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            try {
-                $userId = Session::getUserId();
-                $contador = $this->model->contarNaoLidas($userId);
-                header('Content-Type: application/json');
-                echo json_encode([
-                    'success' => true,
-                    'contador_nao_lidas' => $contador
-                ]);
-                exit;
-            } catch (Exception $e) {
-                error_log("Erro ao buscar contador: " . $e->getMessage());
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Erro interno']);
-                exit;
-            }
+        header('Content-Type: application/json');
+        
+        try {
+            $userId = Session::getUserId();
+            $naoLidas = $this->model->contarNaoLidas($userId);
+            
+            echo json_encode([
+                'sucesso' => true,
+                'contador' => (int)$naoLidas
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => $e->getMessage()
+            ]);
         }
+        exit;
+    }
+    
+    // API para buscar notificações recentes
+    public function recentes() {
+        header('Content-Type: application/json');
+        
+        try {
+            $userId = Session::getUserId();
+            $limit = $_GET['limit'] ?? 5;
+            $ultimaVerificacao = $_GET['ultima_verificacao'] ?? null;
+            
+            $sql = "SELECT * FROM tb_notificacao 
+                    WHERE pessoa_id = ?";
+            $params = [$userId];
+            
+            if ($ultimaVerificacao) {
+                $sql .= " AND data_notificacao > ?";
+                $params[] = $ultimaVerificacao;
+            }
+            
+            $sql .= " ORDER BY data_notificacao DESC LIMIT ?";
+            $params[] = (int)$limit;
+            
+            $stmt = $this->model->db->prepare($sql);
+            $stmt->execute($params);
+            $notificacoes = $stmt->fetchAll();
+            
+            echo json_encode([
+                'sucesso' => true,
+                'notificacoes' => $notificacoes,
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => $e->getMessage()
+            ]);
+        }
+        exit;
     }
     
     public function marcarComoLida() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $notificacaoId = $_POST['id'] ?? 0;
-            $userId = Session::getUserId();
-            
-            $success = $this->model->marcarComoLida($notificacaoId, $userId);
-            
             header('Content-Type: application/json');
-            echo json_encode(['success' => $success]);
+            
+            try {
+                $notificacaoId = $_POST['notificacao_id'] ?? 0;
+                $userId = Session::getUserId();
+                
+                $resultado = $this->model->marcarComoLida($notificacaoId, $userId);
+                
+                echo json_encode([
+                    'sucesso' => $resultado,
+                    'mensagem' => $resultado ? 'Notificação marcada como lida' : 'Erro ao marcar como lida'
+                ]);
+            } catch (Exception $e) {
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => $e->getMessage()
+                ]);
+            }
+            exit;
         }
     }
     
     public function marcarTodasComoLidas() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            header('Content-Type: application/json');
+            
             try {
                 $userId = Session::getUserId();
-                error_log("Marcando todas as notificações como lidas para usuário $userId");
+                $resultado = $this->model->marcarTodasComoLidas($userId);
                 
-                if ($this->model->marcarTodasComoLidas($userId)) {
-                    error_log("Todas as notificações marcadas como lidas");
-                    Session::setFlash('success', 'Todas as notificações foram marcadas como lidas!', 'success');
-                } else {
-                    error_log("Falha ao marcar todas como lidas");
-                    Session::setFlash('error', 'Erro ao marcar notificações como lidas!', 'danger');
-                }
+                echo json_encode([
+                    'sucesso' => $resultado,
+                    'mensagem' => $resultado ? 'Todas as notificações foram marcadas como lidas' : 'Erro ao marcar notificações'
+                ]);
             } catch (Exception $e) {
-                error_log("Erro ao marcar todas como lidas: " . $e->getMessage());
-                Session::setFlash('error', 'Erro interno do sistema!', 'danger');
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => $e->getMessage()
+                ]);
             }
-            
-            header('Location: /chamaservico/notificacoes');
             exit;
         }
     }
     
     public function deletar() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            header('Content-Type: application/json');
+            
             try {
                 $notificacaoId = $_POST['notificacao_id'] ?? 0;
                 $userId = Session::getUserId();
-                error_log("Tentando deletar notificação $notificacaoId para usuário $userId");
                 
-                if ($this->model->deletarNotificacao($notificacaoId, $userId)) {
-                    // Buscar novo contador
-                    $novoContador = $this->model->contarNaoLidas($userId);
-                    error_log("Notificação deletada. Novo contador: $novoContador");
-                    
-                    header('Content-Type: application/json');
-                    echo json_encode([
-                        'success' => true,
-                        'contador_nao_lidas' => $novoContador
-                    ]);
-                } else {
-                    error_log("Falha ao deletar notificação");
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'error' => 'Falha ao deletar']);
-                }
+                $resultado = $this->model->deletar($notificacaoId, $userId);
+                
+                echo json_encode([
+                    'sucesso' => $resultado,
+                    'mensagem' => $resultado ? 'Notificação excluída' : 'Erro ao excluir notificação'
+                ]);
             } catch (Exception $e) {
-                error_log("Erro ao deletar notificação: " . $e->getMessage());
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'error' => 'Erro interno']);
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => $e->getMessage()
+                ]);
             }
             exit;
         }

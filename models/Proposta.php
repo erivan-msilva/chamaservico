@@ -451,9 +451,11 @@ class Proposta {
             $this->db->getConnection()->beginTransaction();
             
             // Primeiro, verificar se a proposta existe e os dados estão corretos
-            $sqlVerificar = "SELECT p.id, p.status, p.solicitacao_id, s.cliente_id, s.titulo
+            $sqlVerificar = "SELECT p.id, p.status, p.solicitacao_id, p.prestador_id, p.valor, 
+                                   s.cliente_id, s.titulo, pr.nome as prestador_nome
                             FROM tb_proposta p
                             JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                            JOIN tb_pessoa pr ON p.prestador_id = pr.id
                             WHERE p.id = ? AND s.cliente_id = ?";
             
             $stmtVerificar = $this->db->prepare($sqlVerificar);
@@ -473,22 +475,10 @@ class Proposta {
                 return false;
             }
             
-            // Verificar se existe a coluna observacoes_cliente
-            $sqlCheckColumn = "SHOW COLUMNS FROM tb_proposta LIKE 'observacoes_cliente'";
-            $stmtCheckColumn = $this->db->prepare($sqlCheckColumn);
-            $stmtCheckColumn->execute();
-            $columnExists = $stmtCheckColumn->fetch();
-            
-            // Aceitar a proposta (com ou sem o campo observacoes_cliente)
-            if ($columnExists) {
-                $sqlAceitar = "UPDATE tb_proposta SET status = 'aceita', data_aceite = NOW(), observacoes_cliente = ? WHERE id = ?";
-                $stmtAceitar = $this->db->prepare($sqlAceitar);
-                $resultAceitar = $stmtAceitar->execute([$observacoes, $propostaId]);
-            } else {
-                $sqlAceitar = "UPDATE tb_proposta SET status = 'aceita', data_aceite = NOW() WHERE id = ?";
-                $stmtAceitar = $this->db->prepare($sqlAceitar);
-                $resultAceitar = $stmtAceitar->execute([$propostaId]);
-            }
+            // Aceitar a proposta
+            $sqlAceitar = "UPDATE tb_proposta SET status = 'aceita', data_aceite = NOW() WHERE id = ?";
+            $stmtAceitar = $this->db->prepare($sqlAceitar);
+            $resultAceitar = $stmtAceitar->execute([$propostaId]);
             
             if (!$resultAceitar) {
                 $this->db->getConnection()->rollBack();
@@ -513,17 +503,53 @@ class Proposta {
                 return false;
             }
             
+            // CRIAR NOTIFICAÇÃO DIRETAMENTE AQUI TAMBÉM (backup)
+            $this->criarNotificacaoBackup($proposta, $observacoes);
+            
             $this->db->getConnection()->commit();
             
             // Log de sucesso
-            error_log("Proposta aceita com sucesso: ID=$propostaId, Cliente=$clienteId");
+            error_log("Proposta aceita com sucesso: ID=$propostaId, Cliente=$clienteId, Prestador={$proposta['prestador_id']}");
             
             return true;
             
         } catch (Exception $e) {
-            $this->db->getConnection()->rollBack();
+            if ($this->db->getConnection()->inTransaction()) {
+                $this->db->getConnection()->rollBack();
+            }
             error_log("Erro ao aceitar proposta: " . $e->getMessage());
             return false;
+        }
+    }
+
+    // MÉTODO BACKUP para garantir que a notificação seja criada
+    private function criarNotificacaoBackup($proposta, $observacoes = '') {
+        try {
+            // Inserir notificação diretamente
+            $titulo = '🎉 Proposta Aceita!';
+            $mensagem = "Sua proposta de R$ " . number_format($proposta['valor'], 2, ',', '.') . 
+                       " para '{$proposta['titulo']}' foi aceita!";
+            
+            if (!empty($observacoes)) {
+                $mensagem .= "\n\nObservações: " . $observacoes;
+            }
+            
+            $sqlNotificacao = "INSERT INTO tb_notificacao (pessoa_id, titulo, mensagem, tipo, referencia_id) 
+                              VALUES (?, ?, ?, 'proposta_aceita', ?)";
+            $stmtNotificacao = $this->db->prepare($sqlNotificacao);
+            $resultNotificacao = $stmtNotificacao->execute([
+                $proposta['prestador_id'],
+                $titulo,
+                $mensagem,
+                $proposta['id']
+            ]);
+            
+            if ($resultNotificacao) {
+                error_log("Notificação backup criada com sucesso para prestador: {$proposta['prestador_id']}");
+            }
+            
+        } catch (Exception $e) {
+            error_log("Erro ao criar notificação backup: " . $e->getMessage());
         }
     }
 

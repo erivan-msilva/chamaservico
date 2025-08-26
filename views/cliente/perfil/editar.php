@@ -38,18 +38,18 @@ ob_start();
                                 <div class="position-relative d-inline-block">
                                     <?php if ($fotoPerfil && $arquivoExiste): ?>
                                         <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
-                                            class="rounded-circle border border-3 border-primary" 
-                                            style="width: 120px; height: 120px; object-fit: cover;" 
+                                            class="rounded-circle border border-3 border-primary"
+                                            style="width: 120px; height: 120px; object-fit: cover;"
                                             alt="Foto do perfil">
                                     <?php else: ?>
                                         <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-3 border-primary"
-                                             style="width: 120px; height: 120px;">
+                                            style="width: 120px; height: 120px;">
                                             <i class="bi bi-person text-secondary" style="font-size: 3rem;"></i>
                                         </div>
                                     <?php endif; ?>
                                     <div class="position-absolute bottom-0 end-0">
-                                        <button type="button" class="btn btn-primary btn-sm rounded-circle" 
-                                                data-bs-toggle="modal" data-bs-target="#modalFoto">
+                                        <button type="button" class="btn btn-primary btn-sm rounded-circle"
+                                            data-bs-toggle="modal" data-bs-target="#modalFoto">
                                             <i class="bi bi-camera"></i>
                                         </button>
                                     </div>
@@ -62,12 +62,12 @@ ob_start();
 
                     <!-- Navegação das seções -->
                     <div class="list-group shadow-sm">
-                        <a href="#dadosPessoais" class="list-group-item list-group-item-action active" 
-                           data-bs-toggle="list">
+                        <a href="#dadosPessoais" class="list-group-item list-group-item-action active"
+                            data-bs-toggle="list">
                             <i class="bi bi-person me-2"></i>Dados Pessoais
                         </a>
-                        <a href="#seguranca" class="list-group-item list-group-item-action" 
-                           data-bs-toggle="list">
+                        <a href="#seguranca" class="list-group-item list-group-item-action"
+                            data-bs-toggle="list">
                             <i class="bi bi-shield-lock me-2"></i>Segurança
                         </a>
                         <a href="/chamaservico/cliente/perfil/enderecos" class="list-group-item list-group-item-action">
@@ -86,11 +86,11 @@ ob_start();
                                     <h4 class="mb-4 text-primary">
                                         <i class="bi bi-person me-2"></i>Dados Pessoais do Cliente
                                     </h4>
-                                    
+
                                     <form method="POST" action="/chamaservico/cliente/perfil/editar" id="formDadosPessoais">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="dados_pessoais">
-                                        
+
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <label for="nome" class="form-label fw-semibold">Nome Completo *</label>
@@ -103,11 +103,11 @@ ob_start();
                                                     required value="<?= htmlspecialchars($usuario['email'] ?? '') ?>">
                                             </div>
                                         </div>
-                                        
+
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <label for="cpf" class="form-label fw-semibold">
-                                                    CPF 
+                                                    CPF
                                                     <?php if (!empty($usuario['cpf'])): ?>
                                                         <small class="text-muted">(não pode ser alterado)</small>
                                                     <?php endif; ?>
@@ -115,7 +115,7 @@ ob_start();
                                                 <input type="text" class="form-control" id="cpf" name="cpf"
                                                     value="<?= $usuario['cpf'] ? preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $usuario['cpf']) : '' ?>"
                                                     placeholder="000.000.000-00" maxlength="14"
-                                                    <?= !empty($usuario['cpf']) ? 'readonly style="background-color: #f8f9fa;"' : '' ?>>
+                                                    <?= !empty($usuario['cpf']) ? 'readonly style="background-color: #f8f9fa;"' : '' ?> disabled>
                                                 <?php if (!empty($usuario['cpf'])): ?>
                                                     <div class="form-text text-warning">
                                                         <i class="bi bi-lock me-1"></i>CPF não pode ser alterado por questões de segurança.
@@ -125,22 +125,22 @@ ob_start();
                                             <div class="col-md-6">
                                                 <label for="telefone" class="form-label fw-semibold">Telefone</label>
                                                 <input type="text" class="form-control" id="telefone" name="telefone"
-                                                    value="<?= htmlspecialchars($usuario['telefone'] ?? '') ?>" 
+                                                    value="<?= htmlspecialchars($usuario['telefone'] ?? '') ?>"
                                                     placeholder="(00) 00000-0000" maxlength="15">
                                             </div>
                                         </div>
-                                        
+
                                         <div class="row mb-4">
                                             <div class="col-md-6">
                                                 <label for="dt_nascimento" class="form-label fw-semibold">
-                                                    Data de Nascimento 
+                                                    Data de Nascimento
                                                     <?php if (!empty($usuario['dt_nascimento'])): ?>
                                                         <small class="text-muted">(não pode ser alterada)</small>
                                                     <?php endif; ?>
                                                 </label>
                                                 <input type="date" class="form-control" id="dt_nascimento" name="dt_nascimento"
                                                     value="<?= $usuario['dt_nascimento'] ?? '' ?>"
-                                                    <?= !empty($usuario['dt_nascimento']) ? 'readonly style="background-color: #f8f9fa;"' : '' ?>>
+                                                    <?= !empty($usuario['dt_nascimento']) ? 'readonly style="background-color: #f8f9fa;"' : '' ?> disabled>
                                                 <?php if (!empty($usuario['dt_nascimento'])): ?>
                                                     <div class="form-text text-warning">
                                                         <i class="bi bi-lock me-1"></i>Data de nascimento não pode ser alterada por questões de segurança.
@@ -156,7 +156,7 @@ ob_start();
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-primary" id="btnSalvarDados">
                                                 <span class="spinner-border spinner-border-sm d-none" role="status"></span>
@@ -174,46 +174,46 @@ ob_start();
                                     <h4 class="mb-4 text-primary">
                                         <i class="bi bi-shield-lock me-2"></i>Alterar Senha
                                     </h4>
-                                    
+
                                     <form method="POST" action="/chamaservico/cliente/perfil/editar" id="formSenha">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="alterar_senha">
-                                        
+
                                         <div class="mb-3">
                                             <label for="senha_atual" class="form-label fw-semibold">Senha Atual *</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="senha_atual" name="senha_atual" 
-                                                       required placeholder="Digite sua senha atual">
+                                                <input type="password" class="form-control" id="senha_atual" name="senha_atual"
+                                                    required placeholder="Digite sua senha atual">
                                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('senha_atual')">
                                                     <i class="bi bi-eye" id="toggleIcon_senha_atual"></i>
                                                 </button>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <label for="nova_senha" class="form-label fw-semibold">Nova Senha *</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="nova_senha" name="nova_senha" 
-                                                       required placeholder="Mínimo 6 caracteres" minlength="6">
+                                                <input type="password" class="form-control" id="nova_senha" name="nova_senha"
+                                                    required placeholder="Mínimo 6 caracteres" minlength="6">
                                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('nova_senha')">
                                                     <i class="bi bi-eye" id="toggleIcon_nova_senha"></i>
                                                 </button>
                                             </div>
                                             <div class="form-text">A senha deve ter pelo menos 6 caracteres.</div>
                                         </div>
-                                        
+
                                         <div class="mb-4">
                                             <label for="confirmar_senha" class="form-label fw-semibold">Confirmar Nova Senha *</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" 
-                                                       required placeholder="Digite novamente a nova senha">
+                                                <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha"
+                                                    required placeholder="Digite novamente a nova senha">
                                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmar_senha')">
                                                     <i class="bi bi-eye" id="toggleIcon_confirmar_senha"></i>
                                                 </button>
                                             </div>
                                             <div id="senhaMatchStatus" class="form-text"></div>
                                         </div>
-                                        
+
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-warning" id="btnAlterarSenha">
                                                 <span class="spinner-border spinner-border-sm d-none" role="status"></span>
@@ -249,7 +249,7 @@ ob_start();
                 <form method="POST" action="/chamaservico/cliente/perfil/editar" enctype="multipart/form-data" id="formFoto">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="acao" value="upload_foto">
-                    
+
                     <div class="mb-3">
                         <label for="foto_perfil" class="form-label">Selecione uma imagem</label>
                         <input type="file" class="form-control" id="foto_perfil" name="foto_perfil"
@@ -258,15 +258,15 @@ ob_start();
                             Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <div id="imagemPreview" class="text-center d-none">
                             <p class="mb-2">Preview da imagem:</p>
-                            <img id="previewImg" src="" class="img-fluid rounded-circle border border-3 border-primary" 
-                                 style="max-height: 200px; max-width: 200px;">
+                            <img id="previewImg" src="" class="img-fluid rounded-circle border border-3 border-primary"
+                                style="max-height: 200px; max-width: 200px;">
                         </div>
                     </div>
-                    
+
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary" id="btnUploadFoto">
                             <span class="spinner-border spinner-border-sm d-none" role="status"></span>

@@ -33,22 +33,38 @@ class SolicitacaoController
         $tiposServico = $this->model->getTiposServico();
         $enderecos = $this->model->getEnderecosPorUsuario(Session::getUserId());
 
+        // AJAX: Retornar apenas o token CSRF
+        if ($_GET['action'] ?? '' === 'csrf') {
+            require_once 'config/session.php';
+            echo json_encode(['csrf_token' => Session::generateCSRFToken()]);
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/solicitacoes/criar');
+            $tipoServicoId = $_POST['tipo_servico_id'] ?? null;
+            $enderecoId = $_POST['endereco_id'] ?? null;
+            $titulo = $_POST['titulo'] ?? '';
+            $descricao = $_POST['descricao'] ?? '';
+            $orcamentoEstimado = !empty($_POST['orcamento_estimado']) ? $_POST['orcamento_estimado'] : null;
+            $dataAtendimento = !empty($_POST['data_atendimento']) ? $_POST['data_atendimento'] : null;
+            $urgencia = $_POST['urgencia'] ?? '';
+
+            // Valide antes de salvar
+            if (!$tipoServicoId || !$enderecoId || !$titulo || !$descricao) {
+                Session::setFlash('error', 'Preencha todos os campos obrigatórios!', 'danger');
+                header('Location: /chamaservico/cliente/solicitacoes/criar');
                 exit;
             }
 
             $dados = [
                 'cliente_id' => Session::getUserId(),
-                'tipo_servico_id' => $_POST['tipo_servico_id'],
-                'endereco_id' => $_POST['endereco_id'],
-                'titulo' => trim($_POST['titulo']),
-                'descricao' => trim($_POST['descricao']),
-                'orcamento_estimado' => !empty($_POST['orcamento_estimado']) ? $_POST['orcamento_estimado'] : null,
-                'data_atendimento' => !empty($_POST['data_atendimento']) ? $_POST['data_atendimento'] : null,
-                'urgencia' => $_POST['urgencia']
+                'tipo_servico_id' => $tipoServicoId,
+                'endereco_id' => $enderecoId,
+                'titulo' => trim($titulo),
+                'descricao' => trim($descricao),
+                'orcamento_estimado' => $orcamentoEstimado,
+                'data_atendimento' => $dataAtendimento,
+                'urgencia' => $urgencia
             ];
 
             $solicitacaoId = $this->model->criar($dados);
@@ -264,6 +280,76 @@ class SolicitacaoController
         $currentPath = $_SERVER['REQUEST_URI'];
         $newPath = str_replace('/chamaservico/solicitacoes', '/chamaservico/cliente/solicitacoes', $currentPath);
         header("Location: $newPath", true, 301); // Redirect permanente
+        exit;
+    }
+
+    public function baixarImagens() {
+        Session::requireClientLogin();
+        $solicitacaoId = $_GET['id'] ?? 0;
+        $clienteId = Session::getUserId();
+
+        // Verifica se a solicitação pertence ao cliente logado
+        require_once 'models/Proposta.php';
+        $propostaModel = new Proposta();
+        $solicitacao = $propostaModel->buscarSolicitacaoPorId($solicitacaoId, $clienteId);
+
+        if (!$solicitacao) {
+            http_response_code(404);
+            echo "Solicitação não encontrada ou acesso negado.";
+            exit;
+        }
+
+        // Buscar imagens anexadas
+        require_once 'models/SolicitacaoServico.php';
+        $solicitacaoModel = new SolicitacaoServico();
+        $imagens = $solicitacaoModel->buscarImagensPorSolicitacao($solicitacaoId);
+
+        if (empty($imagens)) {
+            http_response_code(404);
+            echo "Nenhuma imagem encontrada para esta solicitação.";
+            exit;
+        }
+
+        // VERIFICAÇÃO: Extensão zip habilitada?
+        if (!class_exists('ZipArchive')) {
+            echo "<div style='background:#f8d7da;color:#721c24;padding:20px;border-radius:8px;margin:20px;font-family:Arial,sans-serif;'>
+                    <h3>❌ Erro: Extensão ZIP não habilitada</h3>
+                    <p>Para baixar todas as imagens em um arquivo ZIP, habilite a extensão <strong>zip</strong> no seu PHP.</p>
+                    <ul>
+                        <li>Abra o arquivo <strong>php.ini</strong> do XAMPP</li>
+                        <li>Procure por <code>;extension=zip</code> e remova o ponto e vírgula</li>
+                        <li>Reinicie o Apache</li>
+                    </ul>
+                    <p>Após habilitar, tente novamente.</p>
+                </div>";
+            exit;
+        }
+
+        // Criar arquivo ZIP temporário
+        $zip = new ZipArchive();
+        $zipFile = sys_get_temp_dir() . "/solicitacao_{$solicitacaoId}_imagens.zip";
+        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            http_response_code(500);
+            echo "Erro ao criar arquivo ZIP.";
+            exit;
+        }
+
+        foreach ($imagens as $img) {
+            $filePath = __DIR__ . '/../uploads/solicitacoes/' . basename($img['caminho_imagem']);
+            if (file_exists($filePath)) {
+                $zip->addFile($filePath, basename($img['caminho_imagem']));
+            }
+        }
+        $zip->close();
+
+        // Enviar arquivo ZIP para download
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment; filename="solicitacao_' . $solicitacaoId . '_imagens.zip"');
+        header('Content-Length: ' . filesize($zipFile));
+        readfile($zipFile);
+
+        // Remover arquivo temporário
+        unlink($zipFile);
         exit;
     }
 }

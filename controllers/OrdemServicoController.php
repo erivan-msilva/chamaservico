@@ -128,7 +128,7 @@ class OrdemServicoController {
         $userId = Session::getUserId();
         $ordensServico = $this->model->buscarPorUsuario($userId);
         
-        include 'views/ordem_servico/listar.php';
+       
     }
 }
 ?>

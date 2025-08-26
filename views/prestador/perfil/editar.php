@@ -1,5 +1,5 @@
 <?php
-$title = 'Editar Perfil - ChamaServiço';
+$title = 'Editar Perfil Prestador - ChamaServiço';
 ob_start();
 ?>
 
@@ -125,7 +125,7 @@ ob_start();
                                             <div class="col-md-6">
                                                 <label for="dt_nascimento" class="form-label fw-semibold">Data de Nascimento</label>
                                                 <input type="date" class="form-control" id="dt_nascimento" name="dt_nascimento"
-                                                    value="<?= $usuario['dt_nascimento'] ?? '' ?>">
+                                                    value="<?= $usuario['dt_nascimento'] ?? '' ?>" disabled>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label fw-semibold">Tipo de Conta</label>

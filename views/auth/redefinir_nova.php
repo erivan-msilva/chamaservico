@@ -74,16 +74,14 @@ ob_start();
                 <h3 class="mb-1 mt-3" style="color: #f5a522;">Definir Nova Senha</h3>
                 <p class="text-muted mb-3">Digite sua nova senha</p>
             </div>
-            <form method="POST" id="formNovaSenha">
+            <form method="POST" action="/chamaservico/redefinir-senha-nova">
                 <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                <input type="hidden" name="token" value="<?= htmlspecialchars($_GET['token'] ?? '') ?>">
                 <div class="mb-3">
                     <label for="nova_senha" class="form-label fw-semibold">Nova Senha</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
                         <input type="password" class="form-control" id="nova_senha" name="nova_senha" required minlength="6" placeholder="Digite a nova senha">
-                        <span class="input-group-text" style="cursor:pointer;" onclick="toggleSenha('nova_senha', 'iconEye1')">
-                            <i class="bi bi-eye" id="iconEye1"></i>
-                        </span>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -91,19 +89,10 @@ ob_start();
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
                         <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required minlength="6" placeholder="Confirme a nova senha">
-                        <span class="input-group-text" style="cursor:pointer;" onclick="toggleSenha('confirmar_senha', 'iconEye2')">
-                            <i class="bi bi-eye" id="iconEye2"></i>
-                        </span>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i>
-                        A senha deve ter pelo menos 6 caracteres
-                    </small>
-                </div>
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-success btn-lg" id="btnRedefinir">
+                    <button type="submit" class="btn btn-success btn-lg">
                         <i class="bi bi-check-lg me-1"></i>Redefinir Senha
                     </button>
                 </div>
