@@ -33,5 +33,12 @@ class ClientePerfil {
             $dados['principal']
         ]);
     }
+
+    // Excluir endereço
+    public function excluirEndereco($enderecoId, $userId) {
+        $sql = "DELETE FROM tb_endereco WHERE id = ? AND pessoa_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$enderecoId, $userId]);
+    }
 }
 ?>
