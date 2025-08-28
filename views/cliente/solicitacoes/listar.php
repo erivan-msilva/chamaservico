@@ -37,8 +37,8 @@ ob_start();
                     </div>
                     <div class="col-md-4">
                         <label for="busca" class="form-label">Buscar</label>
-                        <input type="text" class="form-control" name="busca" id="busca" 
-                               placeholder="Título ou descrição..." value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
+                        <input type="text" class="form-control" name="busca" id="busca"
+                            placeholder="Título ou descrição..." value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="button" class="btn btn-outline-primary w-100" onclick="filtrar()">
@@ -52,11 +52,11 @@ ob_start();
                     <!-- Busca -->
                     <div class="input-group me-3" style="max-width: 300px;">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="searchInput" 
-                               placeholder="Buscar..." 
-                               value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
+                        <input type="text" class="form-control" id="searchInput"
+                            placeholder="Buscar..."
+                            value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
                     </div>
-                    
+
                     <!-- Botões de Visualização -->
                     <div class="btn-group" role="group" aria-label="Visualização">
                         <button type="button" class="btn btn-outline-secondary active" id="btnCards" onclick="alterarVisualizacao('cards')">
@@ -72,7 +72,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <!-- Botões de Exportar e Limpar -->
         <div class="row mt-3">
             <div class="col-md-6">
@@ -105,7 +105,7 @@ ob_start();
         <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
         <h4 class="text-muted mt-3">Nenhuma solicitação encontrada</h4>
         <p class="text-muted">
-            <?= !empty($_GET['status']) || !empty($_GET['urgencia']) || !empty($_GET['busca']) 
+            <?= !empty($_GET['status']) || !empty($_GET['urgencia']) || !empty($_GET['busca'])
                 ? 'Tente ajustar os filtros ou ' : '' ?>
             Crie sua primeira solicitação de serviço!
         </p>
@@ -125,13 +125,13 @@ ob_start();
     <div id="viewCards" class="view-container">
         <div class="row" id="cardsContainer">
             <?php foreach ($solicitacoes as $solicitacao): ?>
-                <div class="col-md-6 col-lg-4 mb-4 solicitacao-item" 
-                     data-status="<?= $solicitacao['status_id'] ?>"
-                     data-titulo="<?= strtolower($solicitacao['titulo']) ?>"
-                     data-descricao="<?= strtolower($solicitacao['descricao']) ?>"
-                     data-data="<?= $solicitacao['data_solicitacao'] ?>">
-                    <div class="card h-100 shadow-sm border-start border-4" 
-                         style="border-left-color: <?= htmlspecialchars($solicitacao['status_cor'] ?? '#283579') ?> !important;">
+                <div class="col-md-6 col-lg-4 mb-4 solicitacao-item"
+                    data-status="<?= $solicitacao['status_id'] ?>"
+                    data-titulo="<?= strtolower($solicitacao['titulo']) ?>"
+                    data-descricao="<?= strtolower($solicitacao['descricao']) ?>"
+                    data-data="<?= $solicitacao['data_solicitacao'] ?>">
+                    <div class="card h-100 shadow-sm border-start border-4"
+                        style="border-left-color: <?= htmlspecialchars($solicitacao['status_cor'] ?? '#283579') ?> !important;">
                         <div class="card-header d-flex justify-content-between align-items-center py-2">
                             <small class="text-muted">
                                 <i class="bi bi-calendar me-1"></i>
@@ -150,7 +150,7 @@ ob_start();
                                 </small>
                             </p>
                             <p class="card-text"><?= htmlspecialchars(substr($solicitacao['descricao'] ?? 'Sem descrição', 0, 100)) ?>...</p>
-                            
+
                             <!-- Indicadores -->
                             <div class="mb-3">
                                 <?php if (($solicitacao['total_imagens'] ?? 0) > 0): ?>
@@ -159,18 +159,18 @@ ob_start();
                                         <?= $solicitacao['total_imagens'] ?> foto<?= $solicitacao['total_imagens'] > 1 ? 's' : '' ?>
                                     </span>
                                 <?php endif; ?>
-                                
+
                                 <span class="badge bg-<?= ($solicitacao['urgencia'] ?? 'media') === 'alta' ? 'danger' : (($solicitacao['urgencia'] ?? 'media') === 'media' ? 'warning' : 'info') ?>">
                                     <?= ucfirst($solicitacao['urgencia'] ?? 'media') ?>
                                 </span>
-                                
+
                                 <?php if (!empty($solicitacao['orcamento_estimado'])): ?>
                                     <span class="badge bg-success">
                                         R$ <?= number_format($solicitacao['orcamento_estimado'], 0, ',', '.') ?>
                                     </span>
                                 <?php endif; ?>
                             </div>
-                            
+
                             <div class="mb-2">
                                 <small class="text-muted">
                                     <i class="bi bi-geo-alt me-1"></i>
@@ -180,29 +180,29 @@ ob_start();
                         </div>
                         <div class="card-footer bg-transparent">
                             <div class="d-flex gap-1">
-                                <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>" 
-                                   class="btn btn-outline-primary btn-sm flex-fill">
+                                <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                    class="btn btn-outline-primary btn-sm flex-fill">
                                     <i class="bi bi-eye me-1"></i>Ver
                                 </a>
-                                
+
                                 <?php if (in_array($solicitacao['status_id'] ?? 0, [1, 2])): ?>
-                                    <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" 
-                                       class="btn btn-outline-secondary btn-sm flex-fill">
+                                    <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>"
+                                        class="btn btn-outline-secondary btn-sm flex-fill">
                                         <i class="bi bi-pencil me-1"></i>Editar
                                     </a>
                                 <?php endif; ?>
-                                
-                                <button type="button" 
-                                        class="btn btn-outline-danger btn-sm flex-fill"
-                                        onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)">
+
+                                <button type="button"
+                                    class="btn btn-outline-danger btn-sm flex-fill"
+                                    onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)">
                                     <i class="bi bi-trash me-1"></i>Excluir
                                 </button>
                             </div>
-                            
+
                             <?php if ($solicitacao['status_id'] == 1): ?>
                                 <div class="mt-2">
-                                    <a href="/chamaservico/cliente/propostas/recebidas?solicitacao_id=<?= $solicitacao['id'] ?>" 
-                                       class="btn btn-success btn-sm w-100">
+                                    <a href="/chamaservico/cliente/propostas/recebidas?solicitacao_id=<?= $solicitacao['id'] ?>"
+                                        class="btn btn-success btn-sm w-100">
                                         <i class="bi bi-inbox me-1"></i>Ver Propostas Recebidas
                                     </a>
                                 </div>
@@ -231,7 +231,7 @@ ob_start();
                 </thead>
                 <tbody>
                     <?php foreach ($solicitacoes as $solicitacao): ?>
-                        <tr class="solicitacao-item" 
+                        <tr class="solicitacao-item"
                             data-status="<?= $solicitacao['status_id'] ?>"
                             data-titulo="<?= strtolower($solicitacao['titulo']) ?>"
                             data-descricao="<?= strtolower($solicitacao['descricao']) ?>"
@@ -262,19 +262,19 @@ ob_start();
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>" 
-                                       class="btn btn-outline-primary" title="Visualizar">
+                                    <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                        class="btn btn-outline-primary" title="Visualizar">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <?php if (in_array($solicitacao['status_id'], [1, 2])): ?>
-                                        <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" 
-                                           class="btn btn-outline-secondary" title="Editar">
+                                        <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>"
+                                            class="btn btn-outline-secondary" title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                     <?php endif; ?>
-                                    <button type="button" 
-                                            class="btn btn-outline-danger"
-                                            onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)" title="Excluir">
+                                    <button type="button"
+                                        class="btn btn-outline-danger"
+                                        onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)" title="Excluir">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -290,11 +290,11 @@ ob_start();
     <div id="viewTimeline" class="view-container" style="display: none;">
         <div class="timeline">
             <?php foreach ($solicitacoes as $index => $solicitacao): ?>
-                <div class="timeline-item solicitacao-item" 
-                     data-status="<?= $solicitacao['status_id'] ?>"
-                     data-titulo="<?= strtolower($solicitacao['titulo']) ?>"
-                     data-descricao="<?= strtolower($solicitacao['descricao']) ?>"
-                     data-data="<?= $solicitacao['data_solicitacao'] ?>">
+                <div class="timeline-item solicitacao-item"
+                    data-status="<?= $solicitacao['status_id'] ?>"
+                    data-titulo="<?= strtolower($solicitacao['titulo']) ?>"
+                    data-descricao="<?= strtolower($solicitacao['descricao']) ?>"
+                    data-data="<?= $solicitacao['data_solicitacao'] ?>">
                     <div class="timeline-marker" style="background-color: <?= $solicitacao['status_cor'] ?>;">
                         <i class="bi bi-tools text-white"></i>
                     </div>
@@ -342,13 +342,13 @@ ob_start();
                                             </div>
                                         <?php endif; ?>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>" 
-                                               class="btn btn-outline-primary">
+                                            <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                                class="btn btn-outline-primary">
                                                 <i class="bi bi-eye me-1"></i>Ver
                                             </a>
                                             <?php if (in_array($solicitacao['status_id'], [1, 2])): ?>
-                                                <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" 
-                                                   class="btn btn-outline-secondary">
+                                                <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>"
+                                                    class="btn btn-outline-secondary">
                                                     <i class="bi bi-pencil me-1"></i>Editar
                                                 </a>
                                             <?php endif; ?>
@@ -433,75 +433,75 @@ ob_start();
 </div>
 
 <style>
-/* Timeline Styles */
-.timeline {
-    position: relative;
-    padding: 0;
-    margin: 0;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 30px;
-    height: 100%;
-    width: 2px;
-    background: #e9ecef;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 2rem;
-    padding-left: 80px;
-}
-
-.timeline-marker {
-    position: absolute;
-    left: 20px;
-    top: 10px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.timeline-content {
-    position: relative;
-}
-
-.timeline-content::before {
-    content: '';
-    position: absolute;
-    top: 15px;
-    left: -10px;
-    border: 5px solid transparent;
-    border-right-color: #dee2e6;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .timeline-item {
-        padding-left: 60px;
+    /* Timeline Styles */
+    .timeline {
+        position: relative;
+        padding: 0;
+        margin: 0;
     }
-    
+
     .timeline::before {
-        left: 25px;
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 30px;
+        height: 100%;
+        width: 2px;
+        background: #e9ecef;
     }
-    
-    .timeline-marker {
-        left: 15px;
-    }
-}
 
-/* View Container Animation */
-.view-container {
-    transition: opacity 0.3s ease-in-out;
-}
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        padding-left: 80px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 20px;
+        top: 10px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-content {
+        position: relative;
+    }
+
+    .timeline-content::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: -10px;
+        border: 5px solid transparent;
+        border-right-color: #dee2e6;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .timeline-item {
+            padding-left: 60px;
+        }
+
+        .timeline::before {
+            left: 25px;
+        }
+
+        .timeline-marker {
+            left: 15px;
+        }
+    }
+
+
+    .view-container {
+        transition: opacity 0.3s ease-in-out;
+    }
 </style>
 
 <?php
@@ -569,36 +569,6 @@ document.getElementById("searchInput").addEventListener("input", function() {
 
 // Filtros automáticos
 document.querySelectorAll("#status, #urgencia").forEach(select => {
-    select.addEventListener("change", function() {
-        filtrar();
-    });
-});
-
-// Enter para buscar
-document.getElementById("searchInput").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-        filtrar();
-    }
-});
-
-// Restaurar visualização salva
-document.addEventListener("DOMContentLoaded", function() {
-    const savedView = localStorage.getItem("solicitacoes_view");
-    if (savedView && ["cards", "lista", "timeline"].includes(savedView)) {
-        alterarVisualizacao(savedView);
-    }
-});
-</script>
-';
-
-$content = ob_get_clean();
-include 'views/layouts/app.php';
-?>
-    });
-});
-
-// Filtros automáticos
-document.querySelectorAll("#status, #tipo_servico").forEach(select => {
     select.addEventListener("change", function() {
         filtrar();
     });

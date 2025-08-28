@@ -239,7 +239,8 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary sticky-top">
             <div class="container">
                 <!-- Logo/Brand -->
-                <a href="/chamaservico/" class="navbar-brand d-flex align-items-center" style="gap: 8px;">
+                <a href="<?= Session::isLoggedIn() ? (Session::isCliente() ? '/chamaservico/cliente/dashboard' : '/chamaservico/prestador/dashboard') : '/chamaservico/' ?>" 
+                   class="navbar-brand d-flex align-items-center" style="gap: 8px;">
                     <span style="display:inline-block;width:18px;height:18px;background:#f5a522;border-radius:50%;margin-right:6px;"></span>
                     <span class="fw-bold" style="letter-spacing:0.5px;color:#fff;">CHAMA</span>
                     <span class="fw-light" style="color:#f5a522;">SERVIÇO</span>
@@ -256,7 +257,11 @@
                         <li class="nav-item">
                             <?php if (Session::isPrestador() && !Session::isCliente()): ?>
                                 <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') !== false ? ' active' : '' ?>" href="/chamaservico/prestador/dashboard">
-                                    <i class="bi bi-speedometer2 fs-5"></i>Dashboard
+                                    <i class="bi bi-speedometer2 fs-5"></i>Dashboard Prestador
+                                </a>
+                            <?php elseif (Session::isCliente()): ?>
+                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/cliente/dashboard') !== false ? ' active' : '' ?>" href="/chamaservico/cliente/dashboard">
+                                    <i class="bi bi-speedometer2 fs-5"></i>Dashboard Cliente
                                 </a>
                             <?php else: ?>
                                 <a class="nav-link<?= $_SERVER['REQUEST_URI'] === '/chamaservico/' ? ' active' : '' ?>" href="/chamaservico/">
@@ -520,6 +525,19 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 <?php endif; ?>
+
+<script>
+    // Fechar alertas automaticamente após 5 segundos
+    document.addEventListener('DOMContentLoaded', function () {
+        const alertCenter = document.getElementById('alertCenter');
+        if (alertCenter) {
+            setTimeout(() => {
+                alertCenter.classList.remove('show');
+                setTimeout(() => alertCenter.remove(), 400); // Remover do DOM após animação
+            }, 4000);
+        }
+    });
+</script>
 
     <!-- Conteúdo Principal -->
     <main class="container my-4">

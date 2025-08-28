@@ -26,9 +26,15 @@ class Router
 {
     private $routes = [];
 
-    public function get($path, $controller, $method)
+    public function get($path, $controller, $method = null)
     {
-        $this->routes['GET'][$path] = ['controller' => $controller, 'method' => $method];
+        if (is_callable($controller)) {
+            // Se o segundo argumento for uma Closure, armazene diretamente
+            $this->routes['GET'][$path] = $controller;
+        } else {
+            // Caso contrário, armazene como controlador e método
+            $this->routes['GET'][$path] = ['controller' => $controller, 'method' => $method];
+        }
     }
 
     public function post($path, $controller, $method)
@@ -55,25 +61,31 @@ class Router
         // Buscar rota
         if (isset($this->routes[$method][$path])) {
             $route = $this->routes[$method][$path];
-            $controllerName = $route['controller'];
-            $methodName = $route['method'];
 
-            try {
-                // Verificar se a classe existe
-                if (!class_exists($controllerName)) {
-                    throw new Exception("Controller '$controllerName' não encontrado");
+            if (is_callable($route)) {
+                // Se a rota for uma Closure, execute-a
+                call_user_func($route);
+            } else {
+                $controllerName = $route['controller'];
+                $methodName = $route['method'];
+
+                try {
+                    // Verificar se a classe existe
+                    if (!class_exists($controllerName)) {
+                        throw new Exception("Controller '$controllerName' não encontrado");
+                    }
+
+                    $controller = new $controllerName();
+
+                    // Verificar se o método existe
+                    if (!method_exists($controller, $methodName)) {
+                        throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
+                    }
+
+                    $controller->$methodName();
+                } catch (Exception $e) {
+                    $this->showError("Erro interno: " . $e->getMessage());
                 }
-
-                $controller = new $controllerName();
-
-                // Verificar se o método existe
-                if (!method_exists($controller, $methodName)) {
-                    throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
-                }
-
-                $controller->$methodName();
-            } catch (Exception $e) {
-                $this->showError("Erro interno: " . $e->getMessage());
             }
         } else {
             $this->showNotFound($path, $method);
@@ -159,24 +171,56 @@ $router = new Router();
 // ========================================
 // ROTAS PÚBLICAS
 // ========================================
-$router->get('/', 'HomeController', 'index');
-$router->get('/home', 'HomeController', 'index');
 
-// Rotas de autenticação
-$router->get('/login', 'AuthController', 'login');
+// Página inicial pública
+$router->get('/', function () {
+    include 'views/public/HomePage.php';
+});
+
+// Página de login
+$router->get('/login', function () {
+    include 'views/auth/login.php';
+});
 $router->post('/login', 'AuthController', 'authenticate');
-$router->get('/registro', 'AuthController', 'registro');
+
+// Página de registro
+$router->get('/registro', function () {
+    include 'views/auth/registro.php';
+});
 $router->post('/registro', 'AuthController', 'store');
-$router->get('/logout', 'AuthController', 'logout');
 
-// Rotas de redefinição de senha
-$router->get('/redefinir-senha', 'AuthController', 'redefinirSenha');
-$router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
-$router->get('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
-$router->post('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
+// Logout
+$router->get('/logout', function () {
+    Session::logout();
+    header('Location: /chamaservico/');
+    exit;
+});
 
-// Rota de acesso negado
-$router->get('/acesso-negado', 'HomeController', 'acessoNegado');
+// Rotas protegidas (exigem login)
+$router->get('/cliente/dashboard', function () {
+    if (!Session::isLoggedIn() || !Session::isCliente()) {
+        header('Location: /chamaservico/login');
+        exit;
+    }
+    include 'views/cliente/dashboard.php';
+});
+
+$router->get('/prestador/dashboard', function () {
+    if (!Session::isLoggedIn() || !Session::isPrestador()) {
+        header('Location: /chamaservico/login');
+        exit;
+    }
+    include 'views/prestador/dashboard.php';
+});
+
+// Exemplo de rota protegida adicional
+$router->get('/cliente/solicitacoes', function () {
+    if (!Session::isLoggedIn() || !Session::isCliente()) {
+        header('Location: /chamaservico/login');
+        exit;
+    }
+    include 'views/cliente/solicitacoes/listar.php';
+});
 
 // ========================================
 // ROTAS DO ADMINISTRADOR
@@ -350,6 +394,16 @@ $router->get('/ordem-servico/download', 'OrdemServicoController', 'download');
 $router->post('/ordem-servico/enviar-email', 'OrdemServicoController', 'enviarEmail');
 $router->post('/ordem-servico/assinar', 'OrdemServicoController', 'assinar');
 $router->get('/ordem-servico/listar', 'OrdemServicoController', 'listar');
+
+// Rotas de redefinição de senha
+$router->get('/redefinir-senha', function () {
+    include 'views/auth/redefini.php';
+});
+$router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
+$router->get('/redefinir-senha-nova', function () {
+    include 'views/auth/redefinir_nova.php';
+});
+$router->post('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
 
 // Executar roteamento
 $router->run();

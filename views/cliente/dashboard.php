@@ -184,7 +184,7 @@ if (!isset($estatisticas)) {
                                     <p class="mb-1 small text-muted">
                                         <i class="bi bi-person me-1"></i><?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>
                                         <span class="ms-2">
-                                            <i class="bi bi-currency-dollar me-1"></i>R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?>
+                                           R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?>
                                         </span>
                                     </p>
                                 </a>

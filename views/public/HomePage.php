@@ -1,10 +1,3 @@
-<?php
-// Se o arquivo for acessado diretamente, redireciona para o front controller
-if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
-    header('Location: /chamaservico/index.php?url=home');
-    exit();
-}
-?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -12,18 +5,18 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chama Serviço - Conectamos Profissionais e Clientes</title>
-    
+
     <!-- SEO Meta Tags -->
     <meta name="description" content="Encontre profissionais qualificados para qualquer serviço ou conecte-se com novos clientes. A maior plataforma de serviços do Brasil.">
     <meta name="keywords" content="serviços, profissionais, eletricista, encanador, diarista, técnico, reforma, reparos">
     <meta name="author" content="Chama Serviço">
-    
+
     <!-- Open Graph -->
     <meta property="og:title" content="Chama Serviço - A Plataforma que Conecta">
     <meta property="og:description" content="Encontre o profissional ideal para qualquer serviço ou ofereça seus serviços para milhares de clientes.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://chamaservico.com">
-    
+
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -32,7 +25,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
+
     <!-- Custom Styles -->
     <style>
         :root {
@@ -432,8 +425,15 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
         }
 
         @keyframes floating {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         .pulse-slow {
@@ -445,16 +445,16 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
             .hero-title {
                 font-size: 2.5rem;
             }
-            
+
             .cta-title {
                 font-size: 2rem;
             }
-            
+
             .btn-hero {
                 padding: 0.875rem 1.5rem;
                 font-size: 1rem;
             }
-            
+
             .feature-card,
             .testimonial-card {
                 padding: 2rem;
@@ -470,11 +470,11 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
             <a class="navbar-brand" href="/chamaservico">
                 <i class="bi bi-tools me-2"></i>Chama Serviço
             </a>
-            
+
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -490,13 +490,13 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         <a class="nav-link" href="#depoimentos">Depoimentos</a>
                     </li>
                 </ul>
-                
+
                 <div class="d-flex gap-2">
                     <a href="/chamaservico/login" class="btn btn-outline-primary">
                         <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
                     </a>
                     <a href="/chamaservico/registro" class="btn btn-primary">
-                        <i class="bi bi-person-plus me-1"></i>Cadastrar
+                        <i class="bi bi-person-plus me-1"></i>Criar Conta
                     </a>
                 </div>
             </div>
@@ -509,11 +509,11 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <h1 class="hero-title">
-                        Conectamos você ao 
+                        Conectamos você ao
                         <span style="background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">profissional ideal</span>
                     </h1>
                     <p class="hero-subtitle">
-                        A maior plataforma do Brasil para encontrar profissionais qualificados ou oferecer seus serviços. 
+                        A maior plataforma do Brasil para encontrar profissionais qualificados ou oferecer seus serviços.
                         Rápido, seguro e sem complicações.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
@@ -527,14 +527,19 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6 text-center">
-                    <div class="floating">
-                        <div style="width: 400px; height: 400px; background: var(--gradient-primary); border-radius: 20px; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xl);">
-                            <i class="bi bi-people-fill" style="font-size: 8rem; color: white; opacity: 0.9;"></i>
-                        </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <img
+                            src="assets/img/marketplace-hero.png"
+                            alt="Ilustração profissional do marketplace Chama Serviço"
+                            class="img-fluid floating shadow rounded-1 border border-3 border-light"
+                            style="max-width: 90%; background: #fff; padding: 1px;"
+                            loading="lazy">
                     </div>
                 </div>
             </div>
+        </div>
+        </div>
         </div>
     </section>
 
@@ -545,7 +550,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                 <h2 class="display-5 fw-bold mb-3">Como Funciona?</h2>
                 <p class="lead text-muted">Em poucos passos você resolve o que precisa ou encontra novos clientes</p>
             </div>
-            
+
             <div class="row g-4">
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
@@ -558,7 +563,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -570,7 +575,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -582,7 +587,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -637,9 +642,9 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                 <h2 class="display-5 fw-bold mb-3">Serviços Mais Procurados</h2>
                 <p class="lead text-muted">Encontre profissionais para qualquer tipo de serviço</p>
             </div>
-            
+
             <div class="row g-4">
-                <?php 
+                <?php
                 $servicos = [
                     ['icon' => 'tools', 'name' => 'Encanador', 'count' => '2.5k+ profissionais'],
                     ['icon' => 'lightning-charge', 'name' => 'Eletricista', 'count' => '3.1k+ profissionais'],
@@ -650,18 +655,18 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                     ['icon' => 'laptop', 'name' => 'Técnico TI', 'count' => '900+ profissionais'],
                     ['icon' => 'wrench-adjustable', 'name' => 'Mecânico', 'count' => '1.1k+ profissionais']
                 ];
-                
-                foreach($servicos as $index => $servico): 
+
+                foreach ($servicos as $index => $servico):
                 ?>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="<?= ($index + 1) * 100 ?>">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="bi bi-<?= $servico['icon'] ?>"></i>
+                    <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="<?= ($index + 1) * 100 ?>">
+                        <div class="service-card">
+                            <div class="service-icon">
+                                <i class="bi bi-<?= $servico['icon'] ?>"></i>
+                            </div>
+                            <h4 class="service-name"><?= $servico['name'] ?></h4>
+                            <p class="service-count"><?= $servico['count'] ?></p>
                         </div>
-                        <h4 class="service-name"><?= $servico['name'] ?></h4>
-                        <p class="service-count"><?= $servico['count'] ?></p>
                     </div>
-                </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -674,7 +679,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                 <h2 class="display-5 fw-bold mb-3">O Que Dizem Nossos Usuários</h2>
                 <p class="lead text-muted">Milhares de pessoas já confiam na nossa plataforma</p>
             </div>
-            
+
             <div class="row g-4">
                 <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="testimonial-card">
@@ -697,7 +702,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
                     <div class="testimonial-card">
                         <div class="stars">
@@ -719,7 +724,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
                     <div class="testimonial-card">
                         <div class="stars">
@@ -793,7 +798,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         </a>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-2 col-md-6 mb-4">
                     <div class="footer-section">
                         <h5>Plataforma</h5>
@@ -803,7 +808,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         <a href="#" class="footer-link">Segurança</a>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-2 col-md-6 mb-4">
                     <div class="footer-section">
                         <h5>Suporte</h5>
@@ -813,7 +818,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         <a href="#" class="footer-link">Blog</a>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-2 col-md-6 mb-4">
                     <div class="footer-section">
                         <h5>Legal</h5>
@@ -823,7 +828,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                         <a href="#" class="footer-link">Licenças</a>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-2 col-md-6 mb-4">
                     <div class="footer-section">
                         <h5>Empresa</h5>
@@ -834,9 +839,9 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
                     </div>
                 </div>
             </div>
-            
+
             <hr class="my-4" style="border-color: #374151;">
-            
+
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="text-muted mb-0">
@@ -856,7 +861,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
+
     <script>
         // Initialize AOS
         AOS.init({
@@ -878,7 +883,7 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
@@ -925,4 +930,5 @@ if (basename($_SERVER['SCRIPT_FILENAME']) === 'HomePage.php') {
         }
     </script>
 </body>
+
 </html>

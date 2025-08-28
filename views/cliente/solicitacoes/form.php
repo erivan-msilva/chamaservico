@@ -4,138 +4,131 @@ $title = ($isEdit ? 'Editar' : 'Nova') . ' Solicitação - ChamaServiço';
 ob_start();
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>
-                <i class="bi bi-<?= $isEdit ? 'pencil' : 'plus-circle' ?> me-2"></i>
-                <?= $isEdit ? 'Editar Solicitação' : 'Nova Solicitação' ?>
-            </h2>
-            <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Voltar
-            </a>
+<div class="container my-5">
+    <h2 class="mb-4">
+        <i class="bi bi-<?= $isEdit ? 'pencil' : 'plus-circle' ?> me-2"></i>
+        <?= $isEdit ? 'Editar Solicitação' : 'Criar Nova Solicitação' ?>
+    </h2>
+    <form method="POST" action="/chamaservico/cliente/solicitacoes/criar" enctype="multipart/form-data" id="formSolicitacao">
+        <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+
+        <!-- Título -->
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título da Solicitação *</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" 
+                   value="<?= $isEdit ? htmlspecialchars($solicitacao['titulo'] ?? '') : '' ?>"
+                   required maxlength="100" placeholder="Ex: Instalar chuveiro, consertar torneira...">
+            <div class="form-text">Escolha um título claro e objetivo.</div>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <form method="POST" action="/chamaservico/cliente/solicitacoes/criar" enctype="multipart/form-data" id="formSolicitacao">
-                    <input type="hidden" name="csrf_token" id="csrfTokenSolicitacao" value="<?= Session::generateCSRFToken() ?>">
+        <!-- Descrição -->
+        <div class="mb-3">
+            <label for="descricao" class="form-label">Descrição *</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="4" 
+                      required placeholder="Descreva detalhadamente o que precisa ser feito"><?= $isEdit ? htmlspecialchars($solicitacao['descricao'] ?? '') : '' ?></textarea>
+            <div class="form-text">Inclua informações como materiais necessários, prazos e outros detalhes importantes.</div>
+        </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="tipo_servico_id" class="form-label">
-                                <i class="bi bi-tools me-1"></i>Tipo de Serviço <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="tipo_servico_id" name="tipo_servico_id" required>
-                                <option value="">Selecione o tipo de serviço</option>
-                                <?php if (!empty($tiposServico)): ?>
-                                    <?php foreach ($tiposServico as $tipo): ?>
-                                        <option value="<?= $tipo['id'] ?>" 
-                                                <?= ($isEdit && $solicitacao['tipo_servico_id'] == $tipo['id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($tipo['nome']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="endereco_id" class="form-label">
-                                <i class="bi bi-geo-alt me-1"></i>Endereço <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="endereco_id" name="endereco_id" required>
-                                <option value="">Selecione o endereço</option>
-                                <?php if (!empty($enderecos)): ?>
-                                    <?php foreach ($enderecos as $endereco): ?>
-                                        <option value="<?= $endereco['id'] ?>"
-                                                <?= ($isEdit && $solicitacao['endereco_id'] == $endereco['id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($endereco['logradouro'] . ', ' . $endereco['numero'] . ' - ' . $endereco['bairro']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <option value="">Nenhum endereço cadastrado</option>
-                                <?php endif; ?>
-                            </select>
-                        </div>
-                    </div>
+        <!-- Tipo de Serviço -->
+        <div class="mb-3">
+            <label for="tipo_servico_id" class="form-label">
+                <i class="bi bi-tools me-1"></i>Tipo de Serviço <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="tipo_servico_id" name="tipo_servico_id" required>
+                <option value="">Selecione o tipo de serviço</option>
+                <?php if (!empty($tiposServico)): ?>
+                    <?php foreach ($tiposServico as $tipo): ?>
+                        <option value="<?= $tipo['id'] ?>" 
+                                <?= ($isEdit && $solicitacao['tipo_servico_id'] == $tipo['id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($tipo['nome']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </select>
+        </div>
 
-                    <div class="mb-3">
-                        <label for="titulo" class="form-label">
-                            <i class="bi bi-card-heading me-1"></i>Título <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" id="titulo" name="titulo" 
-                               value="<?= $isEdit ? htmlspecialchars($solicitacao['titulo'] ?? '') : '' ?>"
-                               required maxlength="100" placeholder="Ex: Instalar chuveiro, consertar torneira...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="descricao" class="form-label">
-                            <i class="bi bi-chat-left-text me-1"></i>Descrição <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control" id="descricao" name="descricao" rows="4" 
-                                  required placeholder="Descreva detalhadamente o que precisa ser feito"><?= $isEdit ? htmlspecialchars($solicitacao['descricao'] ?? '') : '' ?></textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="imagens" class="form-label">
-                            <i class="bi bi-camera me-1"></i>Fotos do Local/Problema
-                        </label>
-                        <input type="file" class="form-control" id="imagens" name="imagens[]" 
-                               multiple accept="image/*" onchange="previewImages(this)">
-                        <div class="form-text">
-                            Adicione fotos para ajudar os prestadores. Máximo 5MB por imagem.
-                        </div>
-                        <div id="imagePreview" class="mt-3 row g-2" style="display: none;"></div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="orcamento_estimado" class="form-label">
-                                <i class="bi bi-currency-dollar me-1"></i>Orçamento Estimado
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" class="form-control" id="orcamento_estimado" 
-                                       name="orcamento_estimado" step="0.01" min="0"
-                                       value="<?= $isEdit ? ($solicitacao['orcamento_estimado'] ?? '') : '' ?>"
-                                       placeholder="0,00">
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="data_atendimento" class="form-label">
-                                <i class="bi bi-calendar-event me-1"></i>Data Preferencial
-                            </label>
-                            <input type="datetime-local" class="form-control" id="data_atendimento" 
-                                   name="data_atendimento"
-                                   value="<?= $isEdit && !empty($solicitacao['data_atendimento']) ? date('Y-m-d\TH:i', strtotime($solicitacao['data_atendimento'])) : '' ?>">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="urgencia" class="form-label">
-                                <i class="bi bi-lightning me-1"></i>Urgência <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select" id="urgencia" name="urgencia" required>
-                                <option value="baixa" <?= ($isEdit && ($solicitacao['urgencia'] ?? '') === 'baixa') ? 'selected' : '' ?>>Baixa</option>
-                                <option value="media" <?= ($isEdit && ($solicitacao['urgencia'] ?? '') === 'media') ? 'selected' : 'selected' ?>>Média</option>
-                                <option value="alta" <?= ($isEdit && ($solicitacao['urgencia'] ?? '') === 'alta') ? 'selected' : '' ?>>Alta</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg me-1"></i>
-                            <?= $isEdit ? 'Atualizar' : 'Criar' ?> Solicitação
-                        </button>
-                        <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>Voltar
-                        </a>
-                    </div>
-                </form>
+        <!-- Endereço -->
+        <div class="mb-3">
+            <label for="endereco_id" class="form-label">
+                <i class="bi bi-geo-alt me-1"></i>Endereço <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="endereco_id" name="endereco_id" required>
+                <option value="">Selecione um endereço</option>
+                <?php if (!empty($enderecos)): ?>
+                    <?php foreach ($enderecos as $endereco): ?>
+                        <option value="<?= $endereco['id'] ?>"
+                                <?= ($isEdit && $solicitacao['endereco_id'] == $endereco['id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($endereco['logradouro'] . ', ' . $endereco['numero'] . ' - ' . $endereco['bairro']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option value="">Nenhum endereço cadastrado</option>
+                <?php endif; ?>
+            </select>
+            <div class="form-text">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modalEndereco">Cadastrar novo endereço</a>
             </div>
         </div>
-    </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="orcamento_estimado" class="form-label">
+                    <i class="bi bi-currency-dollar me-1"></i>Orçamento Estimado
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input type="number" class="form-control" id="orcamento_estimado" 
+                           name="orcamento_estimado" step="0.01" min="0"
+                           value="<?= $isEdit ? ($solicitacao['orcamento_estimado'] ?? '') : '' ?>"
+                           placeholder="0,00">
+                </div>
+                <div class="form-text">Informe um valor aproximado, se desejar.</div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="data_atendimento" class="form-label">
+                    <i class="bi bi-calendar-event me-1"></i>Data Preferencial
+                </label>
+                <input type="datetime-local" class="form-control" id="data_atendimento" 
+                       name="data_atendimento"
+                       value="<?= $isEdit && !empty($solicitacao['data_atendimento']) ? date('Y-m-d\TH:i', strtotime($solicitacao['data_atendimento'])) : '' ?>">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="urgencia" class="form-label">
+                    <i class="bi bi-lightning me-1"></i>Urgência <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="urgencia" name="urgencia" required>
+                    <option value="baixa" <?= ($isEdit && ($solicitacao['urgencia'] ?? '') === 'baixa') ? 'selected' : '' ?>>Baixa</option>
+                    <option value="media" <?= ($isEdit && ($solicitacao['urgencia'] ?? '') === 'media') ? 'selected' : 'selected' ?>>Média</option>
+                    <option value="alta" <?= ($isEdit && ($solicitacao['urgencia'] ?? '') === 'alta') ? 'selected' : '' ?>>Alta</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Upload de Imagens -->
+        <div class="mb-3">
+            <label for="imagens" class="form-label">
+                <i class="bi bi-camera me-1"></i>Fotos do Local/Problema
+            </label>
+            <input type="file" class="form-control" id="imagens" name="imagens[]" 
+                   multiple accept="image/*" onchange="previewImages(this)">
+            <div class="form-text">
+                Adicione fotos para ajudar os prestadores. Máximo 5MB por imagem.
+            </div>
+            <div id="imagePreview" class="mt-3 row g-2" style="display: none;"></div>
+        </div>
+
+        <!-- Botões -->
+        <div class="d-flex justify-content-end">
+            <button type="reset" class="btn btn-outline-secondary me-2">Limpar</button>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg me-1"></i>
+                <?= $isEdit ? 'Atualizar' : 'Criar' ?> Solicitação
+            </button>
+        </div>
+    </form>
 </div>
 
-<!-- Modal de Cadastro de Endereço com AJAX -->
+<!-- Modal de Cadastro de Endereço -->
 <div class="modal fade" id="modalEndereco" tabindex="-1">
     <div class="modal-dialog">
         <form class="modal-content" id="formEnderecoModal" method="POST" action="/chamaservico/cliente/perfil/enderecos">
@@ -144,39 +137,32 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" name="csrf_token" id="csrfTokenEndereco" value="<?= Session::generateCSRFToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                 <input type="hidden" name="acao" value="criar">
+                <!-- Campos do endereço -->
                 <div class="mb-3">
                     <label for="cepModal" class="form-label">CEP *</label>
-                    <input type="text" class="form-control" name="cep" id="cepModal" required>
+                    <input type="text" class="form-control" id="cepModal" name="cep" required>
                 </div>
                 <div class="mb-3">
                     <label for="logradouroModal" class="form-label">Logradouro *</label>
-                    <input type="text" class="form-control" name="logradouro" id="logradouroModal" required>
+                    <input type="text" class="form-control" id="logradouroModal" name="logradouro" required>
                 </div>
                 <div class="mb-3">
                     <label for="numeroModal" class="form-label">Número *</label>
-                    <input type="text" class="form-control" name="numero" id="numeroModal" required>
-                </div>
-                <div class="mb-3">
-                    <label for="complementoModal" class="form-label">Complemento</label>
-                    <input type="text" class="form-control" name="complemento" id="complementoModal">
+                    <input type="text" class="form-control" id="numeroModal" name="numero" required>
                 </div>
                 <div class="mb-3">
                     <label for="bairroModal" class="form-label">Bairro *</label>
-                    <input type="text" class="form-control" name="bairro" id="bairroModal" required>
+                    <input type="text" class="form-control" id="bairroModal" name="bairro" required>
                 </div>
                 <div class="mb-3">
                     <label for="cidadeModal" class="form-label">Cidade *</label>
-                    <input type="text" class="form-control" name="cidade" id="cidadeModal" required>
+                    <input type="text" class="form-control" id="cidadeModal" name="cidade" required>
                 </div>
                 <div class="mb-3">
                     <label for="estadoModal" class="form-label">Estado *</label>
-                    <input type="text" class="form-control" name="estado" id="estadoModal" required maxlength="2">
-                </div>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" name="principal" id="principalModal" value="1" checked>
-                    <label class="form-check-label" for="principalModal">Definir como endereço principal</label>
+                    <input type="text" class="form-control" id="estadoModal" name="estado" required maxlength="2">
                 </div>
             </div>
             <div class="modal-footer">
@@ -277,6 +263,56 @@ function previewImages(input) {
         previewContainer.style.display = "none";
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cepInput = document.getElementById('cepModal');
+    const status = document.getElementById('cepStatusModal');
+    const logradouro = document.getElementById('logradouroModal');
+    const bairro = document.getElementById('bairroModal');
+    const cidade = document.getElementById('cidadeModal');
+    const estado = document.getElementById('estadoModal');
+
+    // Buscar endereço pelo CEP
+    document.getElementById('btnBuscarCepModal').addEventListener('click', function() {
+        const cep = cepInput.value.replace(/\D/g, '');
+        if (cep.length !== 8) {
+            status.textContent = 'CEP inválido';
+            status.className = 'text-danger small';
+            return;
+        }
+
+        status.textContent = 'Buscando endereço...';
+        status.className = 'text-muted small';
+
+        fetch('/chamaservico/cliente/perfil/api/buscar-cep?cep=' + cep)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.endereco) {
+                    logradouro.value = data.endereco.logradouro || '';
+                    bairro.value = data.endereco.bairro || '';
+                    cidade.value = data.endereco.cidade || '';
+                    estado.value = data.endereco.estado || '';
+                    status.textContent = 'Endereço preenchido automaticamente!';
+                    status.className = 'text-success small';
+                } else {
+                    status.textContent = data.message || 'Endereço não encontrado';
+                    status.className = 'text-warning small';
+                }
+            })
+            .catch(() => {
+                status.textContent = 'Erro ao buscar endereço';
+                status.className = 'text-danger small';
+            });
+    });
+
+    // Validação em tempo real
+    cepInput.addEventListener('input', function() {
+        const cep = cepInput.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            status.textContent = '';
+        }
+    });
+});
 </script>
 
 <?php

@@ -15,12 +15,7 @@ class HomeController {
         }
         
         // Se não está logado ou não se encaixa nas condições acima, mostrar a página inicial
-        $homePath = __DIR__ . '/../views/auth/login.php'; // Caminho correto para a view inicial
-        if (file_exists($homePath)) {
-            include $homePath;
-        } else {
-            echo "<div class='container mt-5'><div class='alert alert-warning'>Página inicial não encontrada. Crie o arquivo <code>login.php</code>.</div></div>";
-        }
+        include 'views/public/HomePage.php';
     }
     
     public function acessoNegado() {
@@ -28,3 +23,4 @@ class HomeController {
     }
 }
 ?>
+

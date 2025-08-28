@@ -49,9 +49,13 @@ class AuthController
                     Session::set('foto_perfil', basename($pessoa['foto_perfil']));
                 }
 
+                Session::setLoginSuccessMessage();
+
                 // Redirecionar conforme o tipo de usuário
                 if ($pessoa['tipo'] === 'prestador') {
                     header('Location: /chamaservico/prestador/dashboard');
+                } elseif ($pessoa['tipo'] === 'cliente') {
+                    header('Location: /chamaservico/cliente/dashboard');
                 } else {
                     header('Location: /chamaservico/');
                 }
@@ -70,7 +74,8 @@ class AuthController
     public function logout()
     {
         Session::logout();
-        header('Location: /chamaservico/login');
+        Session::setLogoutSuccessMessage();
+        header('Location: /chamaservico/');
         exit;
     }
 

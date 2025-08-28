@@ -1,4 +1,13 @@
 <?php
+require_once __DIR__ . '/../../config/session.php'; // Corrigido o caminho para o arquivo
+Session::start();
+
+// Redirecionar usuários logados para evitar acesso à página de registro
+if (Session::isLoggedIn()) {
+    header('Location: /chamaservico/');
+    exit;
+}
+
 $title = 'Criar Conta - ChamaServiço';
 ob_start();
 ?>

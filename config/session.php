@@ -45,7 +45,7 @@ class Session {
     // Novo: Obter tipo do usuário (cliente, prestador, ambos)
     public static function getUserType() {
         self::start();
-        return $_SESSION['tipo'] ?? 'cliente';
+        return $_SESSION['tipo'] ?? null;
     }
 
     // Novo: Verificar se é prestador
@@ -63,7 +63,7 @@ class Session {
     // Atualizar método existente para usar pessoa_id
     public static function isLoggedIn() {
         self::start();
-        return isset($_SESSION['pessoa_id']) || isset($_SESSION['cliente_id']);
+        return isset($_SESSION['pessoa_id']);
     }
 
     // Atualizar para usar o caminho correto
@@ -185,6 +185,16 @@ class Session {
     public static function clear() {
         self::start();
         $_SESSION = [];
+    }
+
+    // Novo: Mensagem de sucesso ao fazer login
+    public static function setLoginSuccessMessage() {
+        self::setFlash('success', 'Login realizado com sucesso!', 'success');
+    }
+
+    // Novo: Mensagem de sucesso ao fazer logout
+    public static function setLogoutSuccessMessage() {
+        self::setFlash('success', 'Você saiu do sistema com sucesso!', 'success');
     }
 }
 ?>

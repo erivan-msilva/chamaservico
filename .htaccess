@@ -1,4 +1,3 @@
-
 RewriteEngine On
 
 # Permitir acesso direto aos arquivos de upload
@@ -13,8 +12,8 @@ RewriteRule ^(.*)$ - [L]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^(.*)$ - [L]
 
-# Redirecionar todas as outras requisições para index.php
+# Redirecionar todas as requisições para index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
+RewriteRule ^ index.php [L]
 
