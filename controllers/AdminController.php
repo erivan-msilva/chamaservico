@@ -48,6 +48,7 @@ class AdminController
             }
         }
 
+        // Apenas inclui a view sem lógica extra
         include 'views/admin/login.php';
     }
 
@@ -578,5 +579,10 @@ class AdminController
         } else {
             Session::setFlash('error', 'Erro ao remover status!', 'danger');
         }
+    }
+
+    public function login()
+    {
+        include 'views/admin/login.php';
     }
 }

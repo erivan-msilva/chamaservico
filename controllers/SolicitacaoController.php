@@ -137,14 +137,15 @@ class SolicitacaoController
                     if (!$this->model->salvarImagem($solicitacaoId, $newFileName)) {
                         $uploadSuccess = false;
                     }
-                } else {
-                    $uploadSuccess = false;
+                    } else {
+                        $uploadSuccess = false;
+                    }
                 }
             }
+    
+            return $uploadSuccess;
         }
-
-        return $uploadSuccess;
-    }
+    
 
     public function editar()
     {

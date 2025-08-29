@@ -659,50 +659,69 @@ class ClientePerfilController {
     }
     
     public function buscarPorCEP() {
-        header('Content-Type: application/json');
-        $cep = $_GET['cep'] ?? '';
-        $cep = preg_replace('/\D/', '', $cep);
+        error_log("ClientePerfilController::buscarPorCEP - inicio");
+        header('Content-Type: application/json; charset=utf-8');
 
-        if (strlen($cep) !== 8) {
-            echo json_encode(['success' => false, 'message' => 'CEP inválido']);
+        try {
+            $cep = $_GET['cep'] ?? '';
+            $cep_clean = preg_replace('/\D/', '', $cep);
+            error_log("CEP recebido: {$cep} -> limpo: {$cep_clean}");
+
+            if (strlen($cep_clean) !== 8) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'CEP inválido. Informe 8 dígitos.']);
+                exit;
+            }
+
+            $url = "https://viacep.com.br/ws/{$cep_clean}/json/";
+
+            // Tentar file_get_contents
+            $context = stream_context_create(['http' => ['timeout' => 8, 'header' => 'User-Agent: ChamaServico/1.0']]);
+            $response = @file_get_contents($url, false, $context);
+
+            // Fallback para cURL se necessário
+            if ($response === false && function_exists('curl_init')) {
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'ChamaServico/1.0');
+                $response = curl_exec($ch);
+                $curlErr = curl_error($ch);
+                curl_close($ch);
+                if ($response === false) {
+                    error_log("ClientePerfilController::buscarPorCEP - cURL erro: {$curlErr}");
+                }
+            }
+
+            if ($response === false || empty($response)) {
+                throw new Exception('Erro ao consultar CEP. Verifique conexão com a API externa.');
+            }
+
+            $data = json_decode($response, true);
+            error_log("ClientePerfilController::buscarPorCEP - ViaCEP resposta: " . substr($response, 0, 500));
+
+            if (!$data || isset($data['erro'])) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'CEP não encontrado.']);
+                exit;
+            }
+
+            $endereco = [
+                'cep' => $cep_clean,
+                'logradouro' => $data['logradouro'] ?? '',
+                'bairro' => $data['bairro'] ?? '',
+                'cidade' => $data['localidade'] ?? '',
+                'estado' => $data['uf'] ?? ''
+            ];
+
+            echo json_encode(['success' => true, 'endereco' => $endereco, 'message' => 'CEP encontrado']);
+            exit;
+        } catch (Exception $e) {
+            error_log("ClientePerfilController::buscarPorCEP - Exception: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
             exit;
         }
-
-        // Tenta buscar no banco local
-        if (file_exists('models/Endereco.php')) {
-            require_once 'models/Endereco.php';
-            $enderecoModel = new Endereco();
-            $endereco = $enderecoModel->buscarPorCEP($cep);
-
-            if ($endereco) {
-                echo json_encode(['success' => true, 'endereco' => $endereco]);
-                exit;
-            }
-        }
-
-        // Tenta buscar na API ViaCEP
-        $url = "https://viacep.com.br/ws/{$cep}/json/";
-        $response = @file_get_contents($url);
-        if ($response) {
-            $data = json_decode($response, true);
-            if (!isset($data['erro'])) {
-                echo json_encode([
-                    'success' => true,
-                    'endereco' => [
-                        'cep' => $data['cep'],
-                        'logradouro' => $data['logradouro'],
-                        'bairro' => $data['bairro'],
-                        'cidade' => $data['localidade'],
-                        'estado' => $data['uf'],
-                        'complemento' => $data['complemento']
-                    ]
-                ]);
-                exit;
-            }
-        }
-
-        echo json_encode(['success' => false, 'message' => 'Endereço não encontrado']);
-        exit;
     }
 }
 ?>

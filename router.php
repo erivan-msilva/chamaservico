@@ -300,6 +300,7 @@ $router->post('/cliente/perfil/editar', 'ClientePerfilController', 'editar');
 $router->get('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
 $router->post('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
 $router->get('/cliente/perfil/api/buscar-cpf', 'ClientePerfilController', 'buscarPorCPF');
+// Garantir rota API CEP
 $router->get('/cliente/perfil/api/buscar-cep', 'ClientePerfilController', 'buscarPorCEP');
 
 // Solicitações do Cliente
@@ -397,7 +398,7 @@ $router->get('/ordem-servico/listar', 'OrdemServicoController', 'listar');
 
 // Rotas de redefinição de senha
 $router->get('/redefinir-senha', function () {
-    include 'views/auth/redefini.php';
+    include 'views/auth/redefinir.php';
 });
 $router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
 $router->get('/redefinir-senha-nova', function () {
