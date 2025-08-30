@@ -57,7 +57,7 @@ ob_start();
                             <h3 class="text-info mb-0">R$ <?= number_format($stats['valor_total_aceitas'] ?? 0, 2, ',', '.') ?></h3>
                             <small class="text-muted">Valor Total Aceitas</small>
                         </div>
-                        <span class="fs-2 text-info" style="opacity: 0.7;">R$</span>
+                        <i class="bi bi-currency-dollar text-info" style="font-size: 2rem; opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>

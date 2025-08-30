@@ -128,24 +128,16 @@ class PrestadorController {
                 header('Location: /chamaservico/prestador/solicitacoes');
                 exit;
             }
-
-            // Exemplo de obtenção dos dados do formulário POST
-            $solicitacaoId = $_POST['solicitacao_id'] ?? null;
-            $prestadorId = Session::getUserId();
-            $valor = $_POST['valor'] ?? null;
-            $descricao = $_POST['descricao'] ?? '';
-            $prazoExecucao = $_POST['prazo_execucao'] ?? null;
-
-            // Chamada correta do método usando $propostaModel
-            $resultado = $this->propostaModel->enviarProposta(
-                $solicitacaoId,
-                $prestadorId,
-                $valor,
-                $descricao,
-                $prazoExecucao
-            );
-
-            if ($resultado) {
+            
+            $dados = [
+                'solicitacao_id' => $_POST['solicitacao_id'],
+                'prestador_id' => Session::getUserId(),
+                'valor' => $_POST['valor'],
+                'descricao' => $_POST['descricao'],
+                'prazo_execucao' => $_POST['prazo_execucao']
+            ];
+            
+            if ($this->propostaModel->enviarProposta($dados)) {
                 Session::setFlash('success', 'Proposta enviada com sucesso!', 'success');
                 header('Location: /chamaservico/prestador/propostas');
             } else {
@@ -242,39 +234,72 @@ class PrestadorController {
     
     // NOVO: Atualizar status do serviço
     public function atualizarStatusServico() {
-        Session::requirePrestadorLogin();
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $propostaId = $_POST['proposta_id'] ?? 0;
             $novoStatus = $_POST['novo_status'] ?? '';
             $observacoes = $_POST['observacoes'] ?? '';
             $prestadorId = Session::getUserId();
-
-            require_once 'models/Proposta.php';
-            $propostaModel = new Proposta();
-
-            $sucesso = $propostaModel->atualizarStatusServico($propostaId, $prestadorId, $novoStatus, $observacoes);
-
-            // NOVO: Se status for "concluido", criar Ordem de Serviço
-            if ($sucesso && $novoStatus === 'concluido') {
-                require_once 'models/OrdemServico.php';
-                $ordemServicoModel = new OrdemServico();
-                $osCriada = $ordemServicoModel->criarOrdemServico($propostaId);
-
-                if ($osCriada) {
-                    Session::setFlash('success', 'Serviço concluído e Ordem de Serviço gerada!', 'success');
-                } else {
-                    Session::setFlash('warning', 'Serviço concluído, mas houve erro ao gerar a Ordem de Serviço.', 'warning');
-                }
-            } else if ($sucesso) {
-                Session::setFlash('success', 'Status do serviço atualizado com sucesso!', 'success');
-            } else {
-                Session::setFlash('error', 'Erro ao atualizar status do serviço!', 'danger');
+            
+            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+                header('Location: /chamaservico/prestador/servicos/andamento');
+                exit;
             }
+            
+            try {
+                // Atualizar status da solicitação
+                $sql = "UPDATE tb_solicita_servico s
+                        JOIN tb_proposta p ON s.id = p.solicitacao_id
+                        SET s.status_id = ?
+                        WHERE p.id = ? AND p.prestador_id = ?";
+                
+                $stmt = $this->propostaModel->db->prepare($sql);
+                $resultado = $stmt->execute([$novoStatus, $propostaId, $prestadorId]);
+                
+                if ($resultado) {
+                    // Criar notificação para o cliente
+                    require_once 'models/Notificacao.php';
+                    $notificacaoModel = new Notificacao();
+                    
+                    // Buscar dados do cliente
+                    $sqlCliente = "SELECT s.cliente_id, s.titulo, st.nome as status_nome
+                                   FROM tb_solicita_servico s
+                                   JOIN tb_proposta p ON s.id = p.solicitacao_id
+                                   JOIN tb_status_solicitacao st ON s.status_id = st.id
+                                   WHERE p.id = ?";
+                    
+                    $stmtCliente = $this->propostaModel->db->prepare($sqlCliente);
+                    $stmtCliente->execute([$propostaId]);
+                    $dadosCliente = $stmtCliente->fetch();
+                    
+                    if ($dadosCliente) {
+                        $titulo = "Status do serviço atualizado";
+                        $mensagem = "O prestador atualizou o status do serviço '{$dadosCliente['titulo']}' para: {$dadosCliente['status_nome']}";
+                        
+                        if (!empty($observacoes)) {
+                            $mensagem .= "\n\nObservações: " . $observacoes;
+                        }
+                        
+                        $notificacaoModel->criarNotificacao(
+                            $dadosCliente['cliente_id'],
+                            $titulo,
+                            $mensagem,
+                            'status_atualizado',
+                            $propostaId
+                        );
+                    }
+                    
+                    Session::setFlash('success', 'Status do serviço atualizado com sucesso!', 'success');
+                } else {
+                    Session::setFlash('error', 'Erro ao atualizar status do serviço!', 'danger');
+                }
+            } catch (Exception $e) {
+                Session::setFlash('error', 'Erro interno: ' . $e->getMessage(), 'danger');
+            }
+            
+            header('Location: /chamaservico/prestador/servicos/andamento');
+            exit;
         }
-
-        header('Location: /chamaservico/prestador/servicos/andamento');
-        exit;
     }
 }
 ?>

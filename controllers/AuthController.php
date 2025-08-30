@@ -49,13 +49,9 @@ class AuthController
                     Session::set('foto_perfil', basename($pessoa['foto_perfil']));
                 }
 
-                Session::setLoginSuccessMessage();
-
                 // Redirecionar conforme o tipo de usuário
                 if ($pessoa['tipo'] === 'prestador') {
                     header('Location: /chamaservico/prestador/dashboard');
-                } elseif ($pessoa['tipo'] === 'cliente') {
-                    header('Location: /chamaservico/cliente/dashboard');
                 } else {
                     header('Location: /chamaservico/');
                 }
@@ -74,8 +70,7 @@ class AuthController
     public function logout()
     {
         Session::logout();
-        Session::setLogoutSuccessMessage();
-        header('Location: /chamaservico/');
+        header('Location: /chamaservico/login');
         exit;
     }
 
@@ -161,159 +156,70 @@ class AuthController
     public function redefinirSenha()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
+            $email = trim($_POST['email'] ?? '');
+            if (empty($email)) {
+                Session::setFlash('error', 'Informe o e-mail cadastrado!', 'danger');
+                header('Location: /chamaservico/redefinir-senha');
+                exit;
+            }
 
+            // Buscar usuário pelo e-mail
             require_once 'models/Pessoa.php';
             $pessoaModel = new Pessoa();
             $usuario = $pessoaModel->buscarPorEmail($email);
 
-            if ($usuario) {
-                $token = bin2hex(random_bytes(32));
-                $pessoaModel->salvarTokenRedefinicao($usuario['id'], $token);
-
-                // Corpo do e-mail
-                $link = "http://localhost:8083/chamaservico/redefinir-senha-nova?token=$token";
-                $assunto = 'Redefinição de Senha - ChamaServiço';
-                $corpo = "
-                    <html>
-                    <head>
-                        <meta charset='UTF-8'>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                                background-color: #f9f9f9;
-                                padding: 20px;
-                            }
-                            .email-container {
-                                max-width: 600px;
-                                margin: 0 auto;
-                                background: #ffffff;
-                                border: 1px solid #ddd;
-                                border-radius: 8px;
-                                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                                overflow: hidden;
-                            }
-                            .email-header {
-                                background: #283579;
-                                color: #ffffff;
-                                padding: 20px;
-                                text-align: center;
-                                font-size: 1.5rem;
-                            }
-                            .email-body {
-                                padding: 20px;
-                            }
-                            .email-body p {
-                                margin: 0 0 15px;
-                            }
-                            .email-footer {
-                                background: #f5f5f5;
-                                padding: 15px;
-                                text-align: center;
-                                font-size: 0.9rem;
-                                color: #666;
-                            }
-                            .btn {
-                                display: inline-block;
-                                padding: 10px 20px;
-                                background: #f5a522;
-                                color: #ffffff;
-                                text-decoration: none;
-                                border-radius: 5px;
-                                font-weight: bold;
-                                margin-top: 15px;
-                            }
-                            .btn:hover {
-                                background: #d48c00;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class='email-container'>
-                            <div class='email-header'>
-                                Redefinição de Senha
-                            </div>
-                            <div class='email-body'>
-                                <p>Olá, <strong>{$usuario['nome']}</strong>,</p>
-                                <p>Recebemos uma solicitação para redefinir sua senha no <strong>ChamaServiço</strong>.</p>
-                                <p>Para criar uma nova senha, clique no botão abaixo:</p>
-                                <p style='text-align: center;'>
-                                    <a href='$link' class='btn'>Redefinir Senha</a>
-                                </p>
-                                <p>Se você não solicitou a redefinição, ignore este e-mail. Sua senha permanecerá segura.</p>
-                            </div>
-                            <div class='email-footer'>
-                                <p>Equipe ChamaServiço</p>
-                                <p><a href='http://localhost:8083/chamaservico' style='color: #283579; text-decoration: none;'>www.chamaservico.com</a></p>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                ";
-
-                require_once 'core/Email.php';
-                $emailService = new Email();
-                if ($emailService->enviarEmail($email, $assunto, $corpo)) {
-                    Session::setFlash('success', 'E-mail enviado com instruções para redefinir a senha.');
-                } else {
-                    Session::setFlash('error', 'Erro ao enviar e-mail. Tente novamente mais tarde.');
-                }
-            } else {
-                Session::setFlash('error', 'E-mail não encontrado.');
+            if (!$usuario) {
+                Session::setFlash('error', 'E-mail não encontrado!', 'danger');
+                header('Location: /chamaservico/redefinir-senha');
+                exit;
             }
 
-            header('Location: /chamaservico/redefinir-senha');
+            // Gerar token de redefinição (simples, para exemplo)
+            $token = bin2hex(random_bytes(32));
+            // Salve o token no banco (implemente no model se necessário)
+            $pessoaModel->salvarTokenRedefinicao($usuario['id'], $token);
+
+            // Envie o e-mail com o link de redefinição (implemente envio real)
+            // $link = BASE_URL . "redefinir-senha-nova?token=$token";
+            // mail($email, "Redefinição de senha", "Clique no link para redefinir: $link");
+
+            Session::setFlash('success', 'Instruções enviadas para seu e-mail!', 'success');
+            header('Location: /chamaservico/login');
             exit;
         }
 
-        require 'views/auth/redefini.php';
+        include 'views/auth/redefini.php';
     }
 
     public function redefinirSenhaNova()
     {
+        $token = $_GET['token'] ?? '';
+        require_once 'models/Pessoa.php';
+        $pessoaModel = new Pessoa();
+        $usuario = $pessoaModel->buscarPorTokenRedefinicao($token);
+
+        if (!$usuario) {
+            Session::setFlash('error', 'Token inválido ou expirado!', 'danger');
+            header('Location: /chamaservico/redefinir-senha');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $token = $_POST['token'] ?? '';
             $novaSenha = $_POST['nova_senha'] ?? '';
             $confirmarSenha = $_POST['confirmar_senha'] ?? '';
-
-            // Validação básica
-            if (empty($novaSenha) || empty($confirmarSenha)) {
-                Session::setFlash('error', 'Preencha todos os campos.');
-                header("Location: /chamaservico/redefinir-senha-nova?token=$token");
-                exit;
-            }
-
-            if ($novaSenha !== $confirmarSenha) {
-                Session::setFlash('error', 'As senhas não coincidem.');
-                header("Location: /chamaservico/redefinir-senha-nova?token=$token");
-                exit;
-            }
-
-            require_once 'models/Pessoa.php';
-            $pessoaModel = new Pessoa();
-            $usuario = $pessoaModel->buscarPorTokenRedefinicao($token);
-
-            if ($usuario) {
-                if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                    Session::setFlash('error', 'Token de segurança inválido!');
-                    header('Location: /chamaservico/redefinir-senha-nova?token=' . urlencode($token));
-                    exit;
-                }
-
+            if (empty($novaSenha) || strlen($novaSenha) < 6) {
+                Session::setFlash('error', 'A senha deve ter pelo menos 6 caracteres!', 'danger');
+            } elseif ($novaSenha !== $confirmarSenha) {
+                Session::setFlash('error', 'As senhas não coincidem!', 'danger');
+            } else {
                 $pessoaModel->alterarSenha($usuario['id'], $novaSenha);
                 $pessoaModel->removerTokenRedefinicao($usuario['id']);
-                Session::setFlash('success', 'Senha redefinida com sucesso!');
+                Session::setFlash('success', 'Senha redefinida com sucesso!', 'success');
                 header('Location: /chamaservico/login');
-                exit;
-            } else {
-                Session::setFlash('error', 'Token inválido ou expirado.');
-                header('Location: /chamaservico/redefinir-senha');
                 exit;
             }
         }
 
-        require 'views/auth/redefinir_nova.php';
+        include 'views/auth/redefinir_nova.php';
     }
 }

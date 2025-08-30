@@ -8,7 +8,7 @@ require_once 'controllers/HomeController.php';
 require_once 'controllers/SolicitacaoController.php';
 require_once 'controllers/PerfilController.php';
 require_once 'controllers/ClientePerfilController.php';
-require_once 'controllers/ClientePropostaController.php'; // CORRIGIDO: Adicionada extensão .php
+
 require_once 'controllers/PrestadorPerfilController.php';
 require_once 'controllers/PrestadorController.php';
 require_once 'controllers/PropostaController.php';
@@ -22,37 +22,27 @@ if (file_exists('controllers/AdminController.php')) {
     require_once 'controllers/AdminController.php';
 }
 
-class Router
-{
+class Router {
     private $routes = [];
 
-    public function get($path, $controller, $method = null)
-    {
-        if (is_callable($controller)) {
-            // Se o segundo argumento for uma Closure, armazene diretamente
-            $this->routes['GET'][$path] = $controller;
-        } else {
-            // Caso contrário, armazene como controlador e método
-            $this->routes['GET'][$path] = ['controller' => $controller, 'method' => $method];
-        }
+    public function get($path, $controller, $method) {
+        $this->routes['GET'][$path] = ['controller' => $controller, 'method' => $method];
     }
 
-    public function post($path, $controller, $method)
-    {
+    public function post($path, $controller, $method) {
         $this->routes['POST'][$path] = ['controller' => $controller, 'method' => $method];
     }
 
-    public function run()
-    {
+    public function run() {
         $method = $_SERVER['REQUEST_METHOD'];
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
+        
         // Remover o prefixo do projeto se estiver presente
         $basePath = '/chamaservico';
         if (strpos($path, $basePath) === 0) {
             $path = substr($path, strlen($basePath));
         }
-
+        
         // Se path está vazio, definir como /
         if (empty($path) || $path === '') {
             $path = '/';
@@ -61,39 +51,32 @@ class Router
         // Buscar rota
         if (isset($this->routes[$method][$path])) {
             $route = $this->routes[$method][$path];
+            $controllerName = $route['controller'];
+            $methodName = $route['method'];
 
-            if (is_callable($route)) {
-                // Se a rota for uma Closure, execute-a
-                call_user_func($route);
-            } else {
-                $controllerName = $route['controller'];
-                $methodName = $route['method'];
-
-                try {
-                    // Verificar se a classe existe
-                    if (!class_exists($controllerName)) {
-                        throw new Exception("Controller '$controllerName' não encontrado");
-                    }
-
-                    $controller = new $controllerName();
-
-                    // Verificar se o método existe
-                    if (!method_exists($controller, $methodName)) {
-                        throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
-                    }
-
-                    $controller->$methodName();
-                } catch (Exception $e) {
-                    $this->showError("Erro interno: " . $e->getMessage());
+            try {
+                // Verificar se a classe existe
+                if (!class_exists($controllerName)) {
+                    throw new Exception("Controller '$controllerName' não encontrado");
                 }
+                
+                $controller = new $controllerName();
+                
+                // Verificar se o método existe
+                if (!method_exists($controller, $methodName)) {
+                    throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
+                }
+                
+                $controller->$methodName();
+            } catch (Exception $e) {
+                $this->showError("Erro interno: " . $e->getMessage());
             }
         } else {
             $this->showNotFound($path, $method);
         }
     }
 
-    private function showNotFound($path, $method)
-    {
+    private function showNotFound($path, $method) {
         http_response_code(404);
         echo "<!DOCTYPE html>
         <html lang='pt-BR'>
@@ -121,13 +104,13 @@ class Router
                                     <div class='text-start mt-2'>
                                         <small><strong>Rotas disponíveis:</strong></small>
                                         <ul class='list-unstyled small'>";
-
+        
         foreach ($this->routes as $method => $routes) {
             foreach ($routes as $route => $config) {
                 echo "<li>$method $route → {$config['controller']}::{$config['method']}</li>";
             }
         }
-
+        
         echo "                        </ul>
                                     </div>
                                 </details>
@@ -140,8 +123,7 @@ class Router
         </html>";
     }
 
-    private function showError($message)
-    {
+    private function showError($message) {
         http_response_code(500);
         echo "<!DOCTYPE html>
         <html lang='pt-BR'>
@@ -171,112 +153,36 @@ $router = new Router();
 // ========================================
 // ROTAS PÚBLICAS
 // ========================================
+$router->get('/', 'HomeController', 'index');
+$router->get('/home', 'HomeController', 'index');
 
-// Página inicial pública
-$router->get('/', function () {
-    include 'views/public/HomePage.php';
-});
-
-// Página de login
-$router->get('/login', function () {
-    include 'views/auth/login.php';
-});
+// Rotas de autenticação
+$router->get('/login', 'AuthController', 'login');
 $router->post('/login', 'AuthController', 'authenticate');
-
-// Página de registro
-$router->get('/registro', function () {
-    include 'views/auth/registro.php';
-});
+$router->get('/registro', 'AuthController', 'registro');
 $router->post('/registro', 'AuthController', 'store');
+$router->get('/logout', 'AuthController', 'logout');
 
-// Logout
-$router->get('/logout', function () {
-    Session::logout();
-    header('Location: /chamaservico/');
-    exit;
-});
+// Rotas de redefinição de senha
+$router->get('/redefinir-senha', 'AuthController', 'redefinirSenha');
+$router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
+$router->get('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
+$router->post('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
 
-// Rotas protegidas (exigem login)
-$router->get('/cliente/dashboard', function () {
-    if (!Session::isLoggedIn() || !Session::isCliente()) {
-        header('Location: /chamaservico/login');
-        exit;
-    }
-    include 'views/cliente/dashboard.php';
-});
-
-$router->get('/prestador/dashboard', function () {
-    if (!Session::isLoggedIn() || !Session::isPrestador()) {
-        header('Location: /chamaservico/login');
-        exit;
-    }
-    include 'views/prestador/dashboard.php';
-});
-
-// Exemplo de rota protegida adicional
-$router->get('/cliente/solicitacoes', function () {
-    if (!Session::isLoggedIn() || !Session::isCliente()) {
-        header('Location: /chamaservico/login');
-        exit;
-    }
-    include 'views/cliente/solicitacoes/listar.php';
-});
+// Rota de acesso negado
+$router->get('/acesso-negado', 'HomeController', 'acessoNegado');
 
 // ========================================
 // ROTAS DO ADMINISTRADOR
 // ========================================
-
-// Verificar se AdminController está disponível antes de definir rotas admin
 if (class_exists('AdminController')) {
-    // Dashboard do Admin
-    $router->get('/admin', 'AdminController', 'redirectToDashboard');
-    $router->get('/admin/dashboard', 'AdminController', 'dashboard');
+    $router->get('/admin', 'AdminController', 'index');
     $router->get('/admin/login', 'AdminController', 'login');
     $router->post('/admin/login', 'AdminController', 'authenticate');
+    $router->get('/admin/dashboard', 'AdminController', 'dashboard');
     $router->get('/admin/logout', 'AdminController', 'logout');
-
-    // Gerenciamento de Usuários
-    $router->get('/admin/usuarios', 'AdminController', 'usuarios');
-    $router->get('/admin/usuarios/dados', 'AdminController', 'getDadosUsuarios');
-    $router->post('/admin/usuarios/toggle-status', 'AdminController', 'toggleStatusUsuario');
-    $router->post('/admin/usuarios/editar', 'AdminController', 'editarUsuario');
-    $router->post('/admin/usuarios/deletar', 'AdminController', 'deletarUsuario');
-
-    // Gerenciamento de Tipos de Serviço
-    $router->get('/admin/tipos-servico', 'AdminController', 'tiposServico');
-    $router->post('/admin/tipos-servico/criar', 'AdminController', 'criarTipoServico');
-    $router->post('/admin/tipos-servico/editar', 'AdminController', 'editarTipoServico');
-    $router->post('/admin/tipos-servico/deletar', 'AdminController', 'deletarTipoServico');
-
-    // Gerenciamento de Status de Solicitação
-    $router->get('/admin/status-solicitacao', 'AdminController', 'statusSolicitacao');
-    $router->post('/admin/status-solicitacao/criar', 'AdminController', 'criarStatusSolicitacao');
-    $router->post('/admin/status-solicitacao/editar', 'AdminController', 'editarStatusSolicitacao');
-    $router->post('/admin/status-solicitacao/deletar', 'AdminController', 'deletarStatusSolicitacao');
-
-    // Relatórios
-    $router->get('/admin/relatorios', 'AdminController', 'relatorios');
-    $router->get('/admin/relatorios/dados', 'AdminController', 'getDadosRelatorios');
-    $router->get('/admin/relatorios/exportar', 'AdminController', 'exportarRelatorio');
-
-    // Monitoramento do Sistema
-    $router->get('/admin/monitor', 'AdminController', 'monitor');
-    $router->get('/admin/monitor/dados', 'AdminController', 'getDadosMonitor');
-
-    // APIs do Admin (para requisições AJAX)
-    $router->get('/admin/api/dashboard', 'AdminController', 'apiDashboard');
-    $router->get('/admin/api/usuarios', 'AdminController', 'apiUsuarios');
-    $router->get('/admin/api/usuario', 'AdminController', 'apiUsuario');
-    $router->post('/admin/api/criar-usuario', 'AdminController', 'apiCriarUsuario');
-    $router->post('/admin/api/editar-usuario', 'AdminController', 'apiEditarUsuario');
-    $router->post('/admin/api/deletar-usuario', 'AdminController', 'apiDeletarUsuario');
-    $router->get('/admin/api/exportar-usuarios', 'AdminController', 'apiExportarUsuarios');
-    $router->post('/admin/api/criar-admin', 'AdminController', 'apiCriarAdmin');
-    $router->post('/admin/toggle-status-usuario', 'AdminController', 'toggleStatusUsuario');
 } else {
-    // Rotas de fallback se AdminController não estiver disponível
-    $router->get('/admin', 'HomeController', 'acessoNegado');
-    $router->get('/admin/login', 'HomeController', 'acessoNegado');
+    error_log('AdminController não encontrado. Verifique se o arquivo controllers/AdminController.php existe.');
 }
 
 // ========================================
@@ -299,9 +205,6 @@ $router->get('/cliente/perfil/editar', 'ClientePerfilController', 'editar');
 $router->post('/cliente/perfil/editar', 'ClientePerfilController', 'editar');
 $router->get('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
 $router->post('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
-$router->get('/cliente/perfil/api/buscar-cpf', 'ClientePerfilController', 'buscarPorCPF');
-// Garantir rota API CEP
-$router->get('/cliente/perfil/api/buscar-cep', 'ClientePerfilController', 'buscarPorCEP');
 
 // Solicitações do Cliente
 $router->get('/cliente/solicitacoes', 'SolicitacaoController', 'listar');
@@ -311,7 +214,6 @@ $router->get('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
 $router->post('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
 $router->get('/cliente/solicitacoes/visualizar', 'SolicitacaoController', 'visualizar');
 $router->post('/cliente/solicitacoes/deletar', 'SolicitacaoController', 'deletar');
-$router->get('/cliente/solicitacoes/baixar-imagens', 'SolicitacaoController', 'baixarImagens'); // NOVA ROTA
 
 // Propostas para Clientes
 $router->get('/cliente/propostas/recebidas', 'ClientePropostaController', 'recebidas');
@@ -360,7 +262,6 @@ $router->post('/prestador/servicos/atualizar-status', 'PrestadorController', 'at
 // ========================================
 $router->get('/notificacoes', 'NotificacaoController', 'index');
 $router->get('/notificacoes/contador', 'NotificacaoController', 'contador');
-$router->get('/notificacoes/recentes', 'NotificacaoController', 'recentes');
 $router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarComoLida');
 $router->post('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas');
 $router->post('/notificacoes/deletar', 'NotificacaoController', 'deletar');
@@ -396,15 +297,6 @@ $router->post('/ordem-servico/enviar-email', 'OrdemServicoController', 'enviarEm
 $router->post('/ordem-servico/assinar', 'OrdemServicoController', 'assinar');
 $router->get('/ordem-servico/listar', 'OrdemServicoController', 'listar');
 
-// Rotas de redefinição de senha
-$router->get('/redefinir-senha', function () {
-    include 'views/auth/redefinir.php';
-});
-$router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
-$router->get('/redefinir-senha-nova', function () {
-    include 'views/auth/redefinir_nova.php';
-});
-$router->post('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
-
 // Executar roteamento
 $router->run();
+?>

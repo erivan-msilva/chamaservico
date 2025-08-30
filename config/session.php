@@ -196,5 +196,12 @@ class Session {
     public static function setLogoutSuccessMessage() {
         self::setFlash('success', 'Você saiu do sistema com sucesso!', 'success');
     }
+
+    public static function requireAdminLogin() {
+        if (!isset($_SESSION['admin_id'])) {
+            header('Location: /chamaservico/admin/login');
+            exit;
+        }
+    }
 }
 ?>

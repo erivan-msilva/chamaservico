@@ -57,22 +57,5 @@ class ClienteDashboardController {
         ]);
         exit;
     }
-
-    private function getNotificacoesRecentes($clienteId) {
-        try {
-            require_once 'models/Notificacao.php';
-            $notificacaoModel = new Notificacao();
-            
-            // CORREÇÃO: Garantir que clienteId seja um valor único
-            if (is_array($clienteId)) {
-                $clienteId = $clienteId[0] ?? 0;
-            }
-            
-            return $notificacaoModel->buscarPorUsuario($clienteId, 5);
-        } catch (Exception $e) {
-            error_log("Erro ao buscar notificações recentes: " . $e->getMessage());
-            return [];
-        }
-    }
 }
 ?>

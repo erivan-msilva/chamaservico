@@ -112,25 +112,6 @@ function confirmarExclusao() {
     }
 }
 </script>
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body text-center">
-                <i class="bi bi-exclamation-triangle display-4 text-warning mb-3"></i>
-                <p class="mb-0 fs-5">Tem certeza que deseja <strong>sair do sistema</strong>?</p>
-                <small class="text-muted">Sua sessão será encerrada imediatamente.</small>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Cancelar
-                </button>
-                <button type="button" class="btn btn-danger" id="btnConfirmLogout">
-                    <i class="bi bi-box-arrow-right"></i> Sair Agora
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Modal para Status -->
 <div class="modal fade" id="modalStatus" tabindex="-1">
@@ -145,6 +126,25 @@ function confirmarExclusao() {
                     <input type="hidden" id="statusId">
                     <div class="mb-3">
                         <label for="nomeStatus" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="nomeStatus" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricaoStatus" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricaoStatus" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="corStatus" class="form-label">Cor</label>
+                        <input type="color" class="form-control" id="corStatus" value="#007bff">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                         <input type="text" class="form-control" id="nomeStatus" required>
                     </div>
                     <div class="mb-3">

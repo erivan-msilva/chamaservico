@@ -114,7 +114,3 @@ document.getElementById('formRedefinir').addEventListener('submit', function(e) 
 });
 </script>
 
-<?php
-$content = ob_get_clean();
-include 'views/layouts/app.php';
-?>

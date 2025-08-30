@@ -96,8 +96,8 @@ ob_start();
             <?php else: ?>
                 <div id="notificacoesList">
                     <?php foreach ($notificacoes as $notificacao): ?>
-                        <div class="notification-item <?= !$notificacao['lida'] ? 'bg-light' : '' ?>" 
-                             data-id="<?= $notificacao['id'] ?>">
+                        <div class="notification-item <?= !$notificacao['lida'] ? 'bg-light' : '' ?>"
+                            data-id="<?= $notificacao['id'] ?>">
                             <div class="d-flex p-3 border-bottom">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="notification-icon <?= getNotificationIconClass($notificacao['tipo'] ?? '') ?>">
@@ -124,15 +124,15 @@ ob_start();
                                         </small>
                                         <div class="btn-group btn-group-sm">
                                             <?php if (!$notificacao['lida']): ?>
-                                                <button type="button" class="btn btn-outline-success btn-sm" 
-                                                        onclick="marcarComoLida(<?= $notificacao['id'] ?>)"
-                                                        title="Marcar como lida">
+                                                <button type="button" class="btn btn-outline-success btn-sm"
+                                                    onclick="marcarComoLida(<?= $notificacao['id'] ?>)"
+                                                    title="Marcar como lida">
                                                     <i class="bi bi-check"></i>
                                                 </button>
                                             <?php endif; ?>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" 
-                                                    onclick="deletarNotificacao(<?= $notificacao['id'] ?>)"
-                                                    title="Excluir">
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                onclick="deletarNotificacao(<?= $notificacao['id'] ?>)"
+                                                title="Excluir">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -148,81 +148,121 @@ ob_start();
 </div>
 
 <style>
-.notification-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-}
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
 
-.notification-icon.bg-success { background-color: #28a745; }
-.notification-icon.bg-danger { background-color: #dc3545; }
-.notification-icon.bg-info { background-color: #17a2b8; }
-.notification-icon.bg-warning { background-color: #ffc107; color: #212529; }
-.notification-icon.bg-primary { background-color: #007bff; }
+    .notification-icon.bg-success {
+        background-color: #28a745;
+    }
 
-.notification-item {
-    transition: all 0.3s ease;
-}
+    .notification-icon.bg-danger {
+        background-color: #dc3545;
+    }
 
-.notification-item:hover {
-    background-color: #f8f9fa !important;
-}
+    .notification-icon.bg-info {
+        background-color: #17a2b8;
+    }
+
+    .notification-icon.bg-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .notification-icon.bg-primary {
+        background-color: #007bff;
+    }
+
+    .notification-item {
+        transition: all 0.3s ease;
+    }
+
+    .notification-item:hover {
+        background-color: #f8f9fa !important;
+    }
 </style>
 
 <?php
 // Funções auxiliares para as notificações
-function getNotificationIcon($tipo) {
+function getNotificationIcon($tipo)
+{
     switch ($tipo) {
-        case 'proposta_aceita': return 'check-circle';
-        case 'proposta_recusada': return 'x-circle';
-        case 'status_servico': return 'gear';
-        case 'nova_proposta': return 'envelope';
-        default: return 'bell';
+        case 'proposta_aceita':
+            return 'check-circle';
+        case 'proposta_recusada':
+            return 'x-circle';
+        case 'status_servico':
+            return 'gear';
+        case 'nova_proposta':
+            return 'envelope';
+        default:
+            return 'bell';
     }
 }
 
-function getNotificationIconClass($tipo) {
+function getNotificationIconClass($tipo)
+{
     switch ($tipo) {
-        case 'proposta_aceita': return 'bg-success';
-        case 'proposta_recusada': return 'bg-danger';
-        case 'status_servico': return 'bg-info';
-        case 'nova_proposta': return 'bg-warning';
-        default: return 'bg-primary';
+        case 'proposta_aceita':
+            return 'bg-success';
+        case 'proposta_recusada':
+            return 'bg-danger';
+        case 'status_servico':
+            return 'bg-info';
+        case 'nova_proposta':
+            return 'bg-warning';
+        default:
+            return 'bg-primary';
     }
 }
 
-function getNotificationBadgeColor($tipo) {
+function getNotificationBadgeColor($tipo)
+{
     switch ($tipo) {
-        case 'proposta_aceita': return 'success';
-        case 'proposta_recusada': return 'danger';
-        case 'status_servico': return 'info';
-        case 'nova_proposta': return 'warning';
-        default: return 'primary';
+        case 'proposta_aceita':
+            return 'success';
+        case 'proposta_recusada':
+            return 'danger';
+        case 'status_servico':
+            return 'info';
+        case 'nova_proposta':
+            return 'warning';
+        default:
+            return 'primary';
     }
 }
 
-function getNotificationTypeLabel($tipo) {
+function getNotificationTypeLabel($tipo)
+{
     switch ($tipo) {
-        case 'proposta_aceita': return 'Proposta Aceita';
-        case 'proposta_recusada': return 'Proposta Recusada';
-        case 'status_servico': return 'Status do Serviço';
-        case 'nova_proposta': return 'Nova Proposta';
-        default: return 'Sistema';
+        case 'proposta_aceita':
+            return 'Proposta Aceita';
+        case 'proposta_recusada':
+            return 'Proposta Recusada';
+        case 'status_servico':
+            return 'Status do Serviço';
+        case 'nova_proposta':
+            return 'Nova Proposta';
+        default:
+            return 'Sistema';
     }
 }
 
-function timeAgo($datetime) {
+function timeAgo($datetime)
+{
     $time = time() - strtotime($datetime);
-    
+
     if ($time < 60) return 'agora';
-    if ($time < 3600) return floor($time/60) . 'm';
-    if ($time < 86400) return floor($time/3600) . 'h';
-    if ($time < 2592000) return floor($time/86400) . 'd';
-    
+    if ($time < 3600) return floor($time / 60) . 'm';
+    if ($time < 86400) return floor($time / 3600) . 'h';
+    if ($time < 2592000) return floor($time / 86400) . 'd';
+
     return date('d/m/Y', strtotime($datetime));
 }
 
@@ -347,4 +387,3 @@ async function atualizarContadorGlobal() {
 
 $content = ob_get_clean();
 include 'views/layouts/app.php';
-?>
