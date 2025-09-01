@@ -34,7 +34,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-3">
             <div class="card border-success h-100">
                 <div class="card-body text-center">
@@ -48,7 +48,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-3">
             <div class="card border-info h-100">
                 <div class="card-body text-center">
@@ -57,12 +57,12 @@ ob_start();
                             <h3 class="text-info mb-0">R$ <?= number_format($stats['valor_total_aceitas'] ?? 0, 2, ',', '.') ?></h3>
                             <small class="text-muted">Valor Total Aceitas</small>
                         </div>
-                        <i class="bi bi-currency-dollar text-info" style="font-size: 2rem; opacity: 0.7;"></i>
+                        <i class="bi bi-cash-coin me-1" style="font-size: 2rem; opacity: 0.7;"></i>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-3">
             <div class="card border-warning h-100">
                 <div class="card-body text-center">
@@ -92,7 +92,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
@@ -134,7 +134,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -156,86 +156,86 @@ ob_start();
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Dados dos gráficos vindos do PHP
-    const propostasMes = <?= json_encode($graficos['propostas_mes'] ?? []) ?>;
-    const statusPropostas = <?= json_encode($graficos['status_propostas'] ?? []) ?>;
-    
-    // Gráfico de Propostas por Mês
-    const ctxMes = document.getElementById('chartPropostasMes');
-    if (ctxMes) {
-        const meses = propostasMes.map(item => {
-            const [ano, mes] = item.mes.split('-');
-            const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-            return nomesMeses[parseInt(mes) - 1] + '/' + ano.substr(2);
-        });
-        const valores = propostasMes.map(item => item.total);
-        
-        new Chart(ctxMes, {
-            type: 'line',
-            data: {
-                labels: meses.length > 0 ? meses : ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                datasets: [{
-                    label: 'Propostas Enviadas',
-                    data: valores.length > 0 ? valores : [0, 0, 0, 0, 0, 0],
-                    borderColor: '#f5a522',
-                    backgroundColor: 'rgba(245, 165, 34, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dados dos gráficos vindos do PHP
+        const propostasMes = <?= json_encode($graficos['propostas_mes'] ?? []) ?>;
+        const statusPropostas = <?= json_encode($graficos['status_propostas'] ?? []) ?>;
+
+        // Gráfico de Propostas por Mês
+        const ctxMes = document.getElementById('chartPropostasMes');
+        if (ctxMes) {
+            const meses = propostasMes.map(item => {
+                const [ano, mes] = item.mes.split('-');
+                const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                return nomesMeses[parseInt(mes) - 1] + '/' + ano.substr(2);
+            });
+            const valores = propostasMes.map(item => item.total);
+
+            new Chart(ctxMes, {
+                type: 'line',
+                data: {
+                    labels: meses.length > 0 ? meses : ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Propostas Enviadas',
+                        data: valores.length > 0 ? valores : [0, 0, 0, 0, 0, 0],
+                        borderColor: '#f5a522',
+                        backgroundColor: 'rgba(245, 165, 34, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
-        });
-    }
-    
-    // Gráfico de Status das Propostas
-    const ctxStatus = document.getElementById('chartStatusPropostas');
-    if (ctxStatus) {
-        const labels = statusPropostas.map(item => {
-            const statusLabels = {
-                'pendente': 'Pendentes',
-                'aceita': 'Aceitas',
-                'recusada': 'Recusadas',
-                'cancelada': 'Canceladas'
-            };
-            return statusLabels[item.status] || item.status;
-        });
-        const dados = statusPropostas.map(item => item.total);
-        
-        new Chart(ctxStatus, {
-            type: 'doughnut',
-            data: {
-                labels: labels.length > 0 ? labels : ['Sem dados'],
-                datasets: [{
-                    data: dados.length > 0 ? dados : [1],
-                    backgroundColor: dados.length > 0 ? ['#ffc107', '#28a745', '#dc3545', '#6c757d'] : ['#e9ecef']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
+            });
+        }
+
+        // Gráfico de Status das Propostas
+        const ctxStatus = document.getElementById('chartStatusPropostas');
+        if (ctxStatus) {
+            const labels = statusPropostas.map(item => {
+                const statusLabels = {
+                    'pendente': 'Pendentes',
+                    'aceita': 'Aceitas',
+                    'recusada': 'Recusadas',
+                    'cancelada': 'Canceladas'
+                };
+                return statusLabels[item.status] || item.status;
+            });
+            const dados = statusPropostas.map(item => item.total);
+
+            new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length > 0 ? labels : ['Sem dados'],
+                    datasets: [{
+                        data: dados.length > 0 ? dados : [1],
+                        backgroundColor: dados.length > 0 ? ['#ffc107', '#28a745', '#dc3545', '#6c757d'] : ['#e9ecef']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
                     }
                 }
-            }
-        });
-    }
-});
+            });
+        }
+    });
 </script>
 
 <?php

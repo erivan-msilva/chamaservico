@@ -51,7 +51,7 @@ ob_start();
                             </small>
                         </p>
                         <p class="card-text"><?= htmlspecialchars(substr($servico['descricao'], 0, 100)) ?>...</p>
-                        
+
                         <!-- Informações do serviço -->
                         <div class="mb-3">
                             <div class="mb-2">
@@ -60,7 +60,7 @@ ob_start();
                                     <?= htmlspecialchars($servico['cidade'] . ', ' . $servico['estado']) ?>
                                 </small>
                             </div>
-                            
+
                             <?php if ($servico['data_atendimento']): ?>
                                 <div class="mb-2">
                                     <small class="text-info">
@@ -69,19 +69,19 @@ ob_start();
                                     </small>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <div class="mb-2">
                                 <small class="text-success">
-                                    <i class="bi bi-currency-dollar me-1"></i>
+                                    <i class="bi bi-cash-coin me-1"></i>
                                     R$ <?= number_format($servico['valor'], 2, ',', '.') ?>
                                 </small>
                             </div>
-                            
+
                             <span class="badge bg-<?= ($servico['urgencia'] ?? 'baixa') === 'alta' ? 'danger' : (($servico['urgencia'] ?? 'baixa') === 'media' ? 'warning' : 'info') ?>">
                                 <?= ucfirst($servico['urgencia'] ?? 'baixa') ?>
                             </span>
                         </div>
-                        
+
                         <!-- Informações de contato -->
                         <?php if ($servico['cliente_telefone']): ?>
                             <div class="mb-2">
@@ -94,19 +94,19 @@ ob_start();
                     </div>
                     <div class="card-footer bg-transparent">
                         <div class="d-flex gap-1 mb-2">
-                            <a href="/chamaservico/prestador/servicos/detalhes?id=<?= $servico['id'] ?>" 
-                               class="btn btn-primary btn-sm flex-fill">
+                            <a href="/chamaservico/prestador/servicos/detalhes?id=<?= $servico['id'] ?>"
+                                class="btn btn-primary btn-sm flex-fill">
                                 <i class="bi bi-eye me-1"></i>Ver Detalhes
                             </a>
-                            
-                            <button type="button" 
-                                    class="btn btn-success btn-sm flex-fill"
-                                    onclick="atualizarStatus(<?= $servico['id'] ?>, '<?= htmlspecialchars($servico['titulo']) ?>')">
+
+                            <button type="button"
+                                class="btn btn-success btn-sm flex-fill"
+                                onclick="atualizarStatus(<?= $servico['id'] ?>, '<?= htmlspecialchars($servico['titulo']) ?>')">
                                 <i class="bi bi-gear me-1"></i>Atualizar
                             </button>
                         </div>
-                    
-                        
+
+
                         <!-- Botão para visualizar Ordem de Serviço se concluído -->
                         <?php if ($servico['status_nome'] === 'Concluído'): ?>
                             <?php
@@ -140,11 +140,11 @@ ob_start();
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaId">
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Serviço: <span id="tituloServico" class="fw-bold"></span></label>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="status" class="form-label">Novo Status *</label>
                         <select class="form-select" name="status" id="status" required>
@@ -155,11 +155,11 @@ ob_start();
                             <option value="suspenso">Suspenso Temporariamente</option>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="observacoes" class="form-label">Observações</label>
                         <textarea class="form-control" name="observacoes" id="observacoes" rows="3"
-                                  placeholder="Informe detalhes sobre a atualização (opcional)"></textarea>
+                            placeholder="Informe detalhes sobre a atualização (opcional)"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

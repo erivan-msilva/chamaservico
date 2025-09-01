@@ -35,7 +35,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-3 mb-3">
             <div class="card stat-card h-100 border-0 shadow-sm">
                 <div class="card-body">
@@ -51,7 +51,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-3 mb-3">
             <div class="card stat-card h-100 border-0 shadow-sm">
                 <div class="card-body">
@@ -67,7 +67,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-3 mb-3">
             <div class="card stat-card h-100 border-0 shadow-sm">
                 <div class="card-body">
@@ -105,8 +105,8 @@ ob_start();
                     <?php else: ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($solicitacoesRecentes as $solicitacao): ?>
-                                <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>" 
-                                   class="list-group-item list-group-item-action py-3">
+                                <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                    class="list-group-item list-group-item-action py-3">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?= htmlspecialchars($solicitacao['titulo']) ?></h6>
                                         <span class="badge" style="background-color: <?= $solicitacao['status_cor'] ?>;">
@@ -126,7 +126,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <!-- Propostas Recentes -->
         <div class="col-md-6 mb-4">
             <div class="card border-0 shadow-sm h-100">
@@ -146,19 +146,18 @@ ob_start();
                     <?php else: ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($propostasRecentes as $proposta): ?>
-                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
-                                   class="list-group-item list-group-item-action py-3">
+                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>"
+                                    class="list-group-item list-group-item-action py-3">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></h6>
-                                        <span class="badge bg-<?= $proposta['status'] === 'pendente' ? 'warning' : 
-                                                               ($proposta['status'] === 'aceita' ? 'success' : 'danger') ?>">
+                                        <span class="badge bg-<?= $proposta['status'] === 'pendente' ? 'warning' : ($proposta['status'] === 'aceita' ? 'success' : 'danger') ?>">
                                             <?= ucfirst($proposta['status']) ?>
                                         </span>
                                     </div>
                                     <p class="mb-1 small text-muted">
                                         <i class="bi bi-person me-1"></i><?= htmlspecialchars($proposta['prestador_nome']) ?>
                                         <span class="ms-2">
-                                            <i class="bi bi-currency-dollar me-1"></i>R$ <?= number_format($proposta['valor'], 2, ',', '.') ?>
+                                            <i class="bi bi-cash-coin me-1"></i>R$ <?= number_format($proposta['valor'], 2, ',', '.') ?>
                                         </span>
                                     </p>
                                 </a>
@@ -199,8 +198,8 @@ ob_start();
                     <?php else: ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($notificacoesRecentes as $notificacao): ?>
-                                <a href="/chamaservico/notificacoes" 
-                                   class="list-group-item list-group-item-action py-3 <?= $notificacao['lida'] ? '' : 'bg-light' ?>">
+                                <a href="/chamaservico/notificacoes"
+                                    class="list-group-item list-group-item-action py-3 <?= $notificacao['lida'] ? '' : 'bg-light' ?>">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?= htmlspecialchars($notificacao['titulo']) ?></h6>
                                         <small><?= date('d/m/Y H:i', strtotime($notificacao['data_notificacao'])) ?></small>

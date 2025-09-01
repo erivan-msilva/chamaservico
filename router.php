@@ -8,7 +8,6 @@ require_once 'controllers/HomeController.php';
 require_once 'controllers/SolicitacaoController.php';
 require_once 'controllers/PerfilController.php';
 require_once 'controllers/ClientePerfilController.php';
-
 require_once 'controllers/PrestadorPerfilController.php';
 require_once 'controllers/PrestadorController.php';
 require_once 'controllers/PropostaController.php';
@@ -173,16 +172,54 @@ $router->post('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
 $router->get('/acesso-negado', 'HomeController', 'acessoNegado');
 
 // ========================================
-// ROTAS DO ADMINISTRADOR
+// ROTAS DO ADMINISTRADOR - ESTRUTURA MODULAR
 // ========================================
 if (class_exists('AdminController')) {
+    // Rotas principais
     $router->get('/admin', 'AdminController', 'index');
+    $router->get('/admin/', 'AdminController', 'index');
+    
+    // Autenticação
     $router->get('/admin/login', 'AdminController', 'login');
     $router->post('/admin/login', 'AdminController', 'authenticate');
-    $router->get('/admin/dashboard', 'AdminController', 'dashboard');
     $router->get('/admin/logout', 'AdminController', 'logout');
+    
+    // Dashboard
+    $router->get('/admin/dashboard', 'AdminController', 'dashboard');
+    
+    // Gestão de Usuários
+    $router->get('/admin/usuarios', 'AdminController', 'usuarios');
+    $router->get('/admin/usuarios/visualizar', 'AdminController', 'usuarioVisualizar');
+    $router->post('/admin/usuarios/ativar', 'AdminController', 'usuarioAtivar');
+    $router->post('/admin/usuarios/desativar', 'AdminController', 'usuarioDesativar');
+    
+    // Gestão de Solicitações
+    $router->get('/admin/solicitacoes', 'AdminController', 'solicitacoes');
+    $router->get('/admin/solicitacoes/visualizar', 'AdminController', 'solicitacaoVisualizar');
+    $router->post('/admin/solicitacoes/alterar-status', 'AdminController', 'solicitacaoAlterarStatus');
+    $router->get('/admin/solicitacoes/estatisticas', 'AdminController', 'solicitacoesEstatisticas');
+    
+    // Tipos de Serviços
+    $router->get('/admin/tipos-servico', 'AdminController', 'tiposServico');
+    $router->post('/admin/tipos-servico/criar', 'AdminController', 'tiposServicoCriar');
+    $router->get('/admin/tipos-servico/editar', 'AdminController', 'tiposServicoEditar');
+    $router->post('/admin/tipos-servico/editar', 'AdminController', 'tiposServicoEditar');
+    $router->post('/admin/tipos-servico/alterar-status', 'AdminController', 'tiposServicoAlterarStatus');
+    $router->post('/admin/tipos-servico/excluir', 'AdminController', 'tiposServicoExcluir');
+    $router->post('/admin/tipos-servico/ordenar', 'AdminController', 'tiposServicoOrdenar');
+    
+    // Funcionalidades futuras (mostram página "em desenvolvimento")
+    $router->get('/admin/propostas', 'AdminController', 'propostas');
+    $router->get('/admin/relatorios', 'AdminController', 'relatorios');
+    $router->get('/admin/configuracoes', 'AdminController', 'configuracoes');
+    $router->post('/admin/configuracoes/salvar', 'AdminController', 'configuracoesSalvar');
+    $router->post('/admin/configuracoes/testar-email', 'AdminController', 'configuracaoTestarEmail');
+    $router->post('/admin/configuracoes/backup', 'AdminController', 'configuracaoBackup');
 } else {
-    error_log('AdminController não encontrado. Verifique se o arquivo controllers/AdminController.php existe.');
+    // Se AdminController não existir, criar uma rota de fallback
+    $router->get('/admin', 'HomeController', 'adminNotFound');
+    $router->get('/admin/', 'HomeController', 'adminNotFound');
+    $router->get('/admin/login', 'HomeController', 'adminNotFound');
 }
 
 // ========================================

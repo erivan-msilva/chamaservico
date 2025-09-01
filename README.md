@@ -256,4 +256,79 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 **⭐ Se este projeto foi útil para você, considere dar uma estrela no repositório!**
 
-*Desenvolvido com ❤️ para conectar pessoas e serviços de qualidade.*
+
+
+# ChamaServiço - Sistema de Gestão de Serviços
+
+## 📁 Estrutura Modular do Sistema Admin
+
+O sistema administrativo foi refatorado para uma arquitetura modular e escalável:
+
+### 🏗️ Arquitetura
+
+```
+controllers/admin/
+├── BaseAdminController.php      # Classe base com funcionalidades comuns
+├── AuthAdminController.php      # Autenticação e controle de sessão
+├── DashboardAdminController.php # Dashboard e estatísticas
+└── UsuariosAdminController.php  # Gestão de usuários
+```
+
+### 🎯 Vantagens da Nova Estrutura
+
+✅ **Separação de Responsabilidades**: Cada controller tem uma função específica
+✅ **Facilidade de Manutenção**: Código organizado e localizado
+✅ **Escalabilidade**: Fácil adição de novos módulos
+✅ **Reutilização**: BaseAdminController compartilha funcionalidades comuns
+✅ **Testabilidade**: Controllers menores e mais focados
+
+### 🔧 Controllers Disponíveis
+
+#### BaseAdminController
+- Autenticação base
+- Verificação de sessão
+- Métodos utilitários (renderView, jsonResponse)
+- Controle de timeout
+
+#### AuthAdminController  
+- Login/logout de administradores
+- Gestão de sessões admin
+- Validação de credenciais
+
+#### DashboardAdminController
+- Estatísticas do sistema
+- Gráficos e relatórios
+- Atividades recentes
+- Alertas do sistema
+
+#### UsuariosAdminController
+- Listagem de usuários
+- Visualização de perfis
+- Ativação/desativação
+- Estatísticas por usuário
+
+### 🚀 Próximos Módulos
+
+- **RelatoriosAdminController**: Relatórios avançados
+- **ConfiguracoesAdminController**: Configurações do sistema
+- **SolicitacoesAdminController**: Gestão de solicitações
+- **PropostasAdminController**: Gestão de propostas
+
+### 💡 Como Adicionar Novos Módulos
+
+1. Criar novo controller em `controllers/admin/`
+2. Estender `BaseAdminController`
+3. Adicionar métodos no `AdminController` principal
+4. Configurar rotas no `router.php`
+
+Exemplo:
+```php
+class RelatoriosAdminController extends BaseAdminController {
+    public function index() {
+        $dados = $this->gerarRelatorios();
+        $this->renderView('relatorios/index', compact('dados'));
+    }
+}
+```
+
+Esta estrutura garante um código mais limpo, organizad e fácil de manter! 🎯
