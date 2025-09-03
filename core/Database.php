@@ -11,7 +11,7 @@ class Database
 
     // CORREÇÃO: Configurações do banco conforme fornecidas
     private $host = 'localhost';
-    private $db_name = 'bd_servicos'; 
+    private $db_name = 'bd_servicos';
     private $username = '';
     private $password = '';
     private $charset = 'utf8mb4';
@@ -21,7 +21,7 @@ class Database
     {
         // MELHORIA: Detectar ambiente e usar configurações apropriadas
         $this->detectEnvironment();
-        
+
         // NOVA ABORDAGEM: Tentar diferentes métodos de conexão
         $this->connection = $this->tryConnection();
     }
@@ -30,11 +30,11 @@ class Database
     {
         // Verificar se estamos em localhost (desenvolvimento)
         $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8083']);
-        
+
         if ($isLocalhost) {
             // Configurações para desenvolvimento local (XAMPP)
             $this->host = 'localhost';
-            $this->db_name = 'td187899_chamaservico'; // Usar mesmo nome da produção
+            $this->db_name = 'bd_servicos'; // Usar o banco que você já tem
             $this->username = 'root';
             $this->password = '';
             error_log("Database: Usando configuração LOCAL");
@@ -99,21 +99,20 @@ class Database
         ];
 
         $lastError = null;
-        
+
         foreach ($attempts as $index => $attempt) {
             try {
                 error_log("Database: Tentativa " . ($index + 1) . " - {$this->host}/{$this->db_name}");
-                
+
                 $pdo = new PDO($attempt['dsn'], $this->username, $this->password, $attempt['options']);
-                
+
                 // Se tentativa 3 funcionou, selecionar o banco
                 if ($index === 2) {
                     $pdo->exec("USE `{$this->db_name}`");
                 }
-                
+
                 error_log("Database: Conexão bem-sucedida na tentativa " . ($index + 1));
                 return $pdo;
-                
             } catch (PDOException $e) {
                 $lastError = $e;
                 error_log("Database: Tentativa " . ($index + 1) . " falhou: " . $e->getMessage());
@@ -130,7 +129,7 @@ class Database
     {
         $errorMessage = $exception->getMessage();
         error_log("Database: ERRO FINAL de conexão: " . $errorMessage);
-        
+
         if (defined('DEBUG_MODE') && DEBUG_MODE) {
             $debugInfo = "
             <div style='background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; margin: 20px; font-family: Arial, sans-serif;'>

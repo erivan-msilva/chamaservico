@@ -8,202 +8,394 @@
     <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Incluir configurações globais -->
-    <?php
-    if (file_exists('config/config.php')) {
-        require_once 'config/config.php';
-    }
-    ?>
+    
     <style>
+        :root {
+            --cor-primaria: #283579;     /* Azul escuro */
+            --cor-secundaria: #f5a522;   /* Amarelo/dourado */
+            --cor-branco: #ffffff;       /* Branco */
+            --cor-cinza-claro: #f8f9fa;  /* Cinza claro */
+            --cor-texto: #212529;        /* Texto escuro */
+            --cor-hover: #1e2a5f;        /* Azul mais escuro para hover */
+            --cor-dourado-hover: #d48c00; /* Dourado mais escuro para hover */
+            --cor-nav-text: rgba(255, 255, 255, 0.9);  /* Texto nav normal */
+            --cor-nav-active: #ffffff;   /* Texto nav ativo */
+            --cor-nav-hover: rgba(255, 255, 255, 0.75); /* Texto nav hover */
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--cor-cinza-claro);
+            color: var(--cor-texto);
+        }
+
+        /* ========================================
+           NAVBAR SIMPLIFICADA - SEM GRADIENTES
+           ======================================== */
         .navbar {
-            box-shadow: 0 2px 12px rgba(40, 53, 121, 0.08);
-            font-family: 'Inter', Arial, sans-serif;
-            font-size: 1.05rem;
+            background-color: var(--cor-primaria) !important;
+            box-shadow: 0 2px 10px rgba(40, 53, 121, 0.15);
+            border-bottom: 2px solid var(--cor-secundaria);
+            padding: 1rem 0;
+            min-height: 70px;
         }
 
+        /* LOGO - Limpo e Simples */
         .navbar-brand {
-            font-weight: bold;
-            color: #f5a522 !important;
-            /* amarelo sólido */
-            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--cor-branco) !important;
+            font-size: 1.4rem;
             letter-spacing: 1px;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
         }
 
-        .card-login {
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            border: none;
+        .navbar-brand:hover {
+            transform: translateY(-1px);
+            color: var(--cor-branco) !important;
         }
 
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #283579 0%, #0a112e 100%);
+        .navbar-brand .logo-circle {
+            width: 18px;
+            height: 18px;
+            background-color: var(--cor-secundaria);
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+            vertical-align: middle;
         }
 
-        .btn-primary {
-            background: #f5a522;
-            color: #fff !important;
-            border-radius: 24px;
-            border: none;
-            font-weight: 600;
+        .navbar-brand .brand-text {
+            color: var(--cor-branco);
+            font-weight: 700;
         }
 
-        .btn-primary:hover {
-            background: #d48c00;
-            color: #fff;
+        .navbar-brand .brand-accent {
+            color: var(--cor-secundaria);
+            font-weight: 300;
+            margin-left: 2px;
         }
 
-        .text-primary-custom {
-            color: #b02a37 !important;
+        /* NAVEGAÇÃO PRINCIPAL - Links Limpos */
+        .navbar-nav {
+            gap: 2rem;
         }
 
-        .profile-img {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border: 4px solid #4e5264;
-        }
-
-        .profile-img-sm {
-            width: 38px;
-            height: 38px;
-            object-fit: cover;
-            border: 2px solid #f5a522;
-            margin-right: 8px;
-        }
-
-        .stat-card {
-            transition: transform 0.2s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        /* Melhorias no menu */
         .navbar-nav .nav-link {
-            transition: all 0.2s;
-            border-radius: 10px;
-            margin: 0 4px;
-            padding: 10px 18px !important;
+            color: var(--cor-nav-text) !important;
             font-weight: 500;
-            font-size: 1.08rem;
-            color: #fff !important;
-            background: transparent;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 1rem;
+            padding: 0.75rem 0 !important;
+            margin: 0;
+            border: none;
+            background: none !important;
+            border-radius: 0;
             position: relative;
-        }
-
-        .navbar-nav .nav-link:hover,
-        .navbar-nav .nav-link.active {
-            background: transparent !important;
-            color: #f5a522 !important;
+            transition: all 0.3s ease;
             text-decoration: none;
         }
 
-        .navbar-nav .nav-link:hover::after,
+        /* Estado Normal */
+        .navbar-nav .nav-link:hover {
+            color: var(--cor-nav-hover) !important;
+            transform: translateY(-1px);
+        }
+
+        /* Estado Ativo - Sublinhado Amarelo */
+        .navbar-nav .nav-link.active {
+            color: var(--cor-nav-active) !important;
+            font-weight: 600;
+        }
+
         .navbar-nav .nav-link.active::after {
-            content: "";
-            display: block;
+            content: '';
             position: absolute;
-            left: 12px;
-            right: 12px;
-            bottom: 6px;
+            bottom: 0;
+            left: 0;
+            width: 100%;
             height: 3px;
-            background: #f5a522;
-            border-radius: 2px;
-            transition: width 0.2s;
+            background-color: var(--cor-secundaria);
+            border-radius: 2px 2px 0 0;
         }
 
-        .navbar-nav .dropdown-menu {
+        /* Dropdown da Navegação */
+        .navbar-nav .dropdown-toggle::after {
+            margin-left: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .dropdown-menu {
+            background-color: var(--cor-branco);
+            border: 1px solid rgba(40, 53, 121, 0.1);
             border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(40, 53, 121, 0.10);
-            border: none;
+            box-shadow: 0 8px 30px rgba(40, 53, 121, 0.15);
+            padding: 0.75rem 0;
             min-width: 220px;
-            padding: 10px 0;
-            font-size: 1rem;
-        }
-
-        .dropdown-item {
-            padding: 10px 24px;
-            transition: background 0.2s;
-            border-radius: 8px;
-            font-size: 1.01rem;
-        }
-
-        .dropdown-item:hover {
-            background: transparent !important;
-            color: #f5a522 !important;
-            text-decoration: underline;
-            text-underline-offset: 4px;
-            text-decoration-thickness: 3px;
-            text-decoration-color: #f5a522;
+            margin-top: 0.5rem;
         }
 
         .dropdown-header {
-            font-size: 1.05rem;
-            color: #283579;
+            color: var(--cor-primaria);
             font-weight: 600;
-            padding-left: 24px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.5rem 1.25rem 0.25rem;
+            border-bottom: 1px solid rgba(245, 165, 34, 0.2);
+            margin-bottom: 0.5rem;
         }
 
-        .user-info {
-            font-weight: 600;
-            color: #fff;
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 1.05rem;
+        .dropdown-item {
+            color: var(--cor-texto);
+            padding: 0.6rem 1.25rem;
+            border-radius: 0;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(245, 165, 34, 0.1);
+            color: var(--cor-primaria);
+            transform: translateX(3px);
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            margin-right: 0.5rem;
+        }
+
+        /* ÁREA DO USUÁRIO - Status, Não Botão */
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--cor-nav-text);
+        }
+
+        /* Sino de Notificações */
+        .notification-area {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .notification-area:hover {
+            transform: translateY(-1px);
+        }
+
+        .notification-bell {
+            font-size: 1.4rem;
+            color: var(--cor-nav-text);
+            transition: all 0.3s ease;
+        }
+
+        .notification-area:hover .notification-bell {
+            color: var(--cor-secundaria);
         }
 
         .notification-badge {
-            background: #f44336cc !important;
-            color: #fff !important;
-            font-size: 0.95rem;
-            padding: 4px 8px;
-            border-radius: 12px;
-            margin-left: 6px;
-            animation: pulse 2s infinite;
-        }
-
-        /* NOVOS ESTILOS para notificações - LADO ESQUERDO */
-        .notification-bell-left {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .notification-badge-left {
             position: absolute;
-            top: -8px;
+            top: -6px;
             right: -8px;
-            background: #dc3545 !important;
-            color: white !important;
+            background-color: #dc3545 !important;
+            color: var(--cor-branco) !important;
             font-size: 0.7rem;
-            font-weight: bold;
+            font-weight: 600;
             padding: 2px 6px;
+            border-radius: 10px;
+            border: 2px solid var(--cor-primaria);
+            animation: pulse 2s infinite;
+        }
+
+        /* Dropdown Toggle do Usuário */
+        .user-dropdown {
+            color: var(--cor-nav-text) !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
+            padding: 0 !important;
+            border: none !important;
+            background: none !important;
+        }
+
+        .user-dropdown:hover {
+            color: var(--cor-nav-active) !important;
+            transform: translateY(-1px);
+        }
+
+        .user-dropdown::after {
+            margin-left: 0.5rem;
+            opacity: 0.8;
+        }
+
+        /* Avatar do Usuário */
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border: 2px solid rgba(245, 165, 34, 0.3);
             border-radius: 50%;
-            min-width: 18px;
-            height: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown:hover .user-avatar {
+            border-color: var(--cor-secundaria);
+        }
+
+        .user-avatar-placeholder {
+            width: 38px;
+            height: 38px;
+            background-color: rgba(245, 165, 34, 0.2);
+            color: var(--cor-secundaria);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: pulse 2s infinite;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-size: 1.2rem;
+            border: 2px solid rgba(245, 165, 34, 0.3);
+            transition: all 0.3s ease;
         }
 
+        .user-dropdown:hover .user-avatar-placeholder {
+            background-color: rgba(245, 165, 34, 0.3);
+            border-color: var(--cor-secundaria);
+        }
+
+        /* BOTÕES SIMPLIFICADOS */
+        .btn-primary {
+            background-color: var(--cor-secundaria);
+            border-color: var(--cor-secundaria);
+            color: var(--cor-primaria);
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--cor-dourado-hover);
+            border-color: var(--cor-dourado-hover);
+            color: var(--cor-branco);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--cor-secundaria);
+            color: var(--cor-secundaria);
+            background-color: transparent;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--cor-secundaria);
+            color: var(--cor-primaria);
+            border-color: var(--cor-secundaria);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--cor-primaria);
+            border-color: var(--cor-primaria);
+            color: var(--cor-branco);
+            border-radius: 8px;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--cor-hover);
+            border-color: var(--cor-hover);
+            color: var(--cor-branco);
+        }
+
+        /* BADGES SIMPLIFICADOS */
         .notification-badge-menu {
-            background: #dc3545 !important;
-            color: white !important;
-            font-size: 0.75rem;
-            padding: 3px 7px;
+            background-color: #dc3545 !important;
+            color: var(--cor-branco) !important;
+            font-size: 0.7rem;
+            padding: 2px 6px;
             border-radius: 12px;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
+            margin-left: 0.5rem;
         }
 
+        /* CARDS LIMPOS */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(40, 53, 121, 0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40, 53, 121, 0.15);
+        }
+
+        .card-header {
+            background-color: var(--cor-primaria);
+            color: var(--cor-branco);
+            border: none;
+            padding: 20px;
+            font-weight: 600;
+        }
+
+        /* ALERTAS SIMPLIFICADOS */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left: 4px solid var(--cor-secundaria);
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid var(--cor-primaria);
+        }
+
+        /* CORES UTILITÁRIAS */
+        .text-primary {
+            color: var(--cor-primaria) !important;
+        }
+
+        .text-secondary {
+            color: var(--cor-secundaria) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--cor-primaria) !important;
+        }
+
+        .bg-secondary {
+            background-color: var(--cor-secundaria) !important;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--cor-primaria);
+            color: var(--cor-branco);
+            border-top: 3px solid var(--cor-secundaria);
+        }
+
+        /* ANIMAÇÕES MANTIDAS */
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -220,52 +412,80 @@
             animation: shake 0.8s ease-in-out;
         }
 
-        @media (max-width: 991px) {
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem 0;
+            }
+            
+            .navbar-nav {
+                gap: 0;
+                margin-top: 1rem;
+            }
+            
             .navbar-nav .nav-link {
-                padding: 10px 12px !important;
-                font-size: 1rem;
+                padding: 0.75rem 1rem !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .navbar-nav .nav-link.active::after {
+                left: 1rem;
+                width: calc(100% - 2rem);
+            }
+            
+            .navbar-brand {
+                font-size: 1.2rem;
             }
 
-            .user-info {
-                font-size: 1rem;
+            .user-area {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                justify-content: center;
             }
+        }
+
+        /* ACESSIBILIDADE */
+        .btn:focus,
+        .nav-link:focus,
+        .dropdown-item:focus {
+            outline: 2px solid var(--cor-secundaria);
+            outline-offset: 2px;
         }
     </style>
 </head>
 
-<body class="bg-light">
-    <!-- Navbar -->
+<body>
+    <!-- Navbar Simplificada -->
     <?php if (Session::isLoggedIn()): ?>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
             <div class="container">
-                <!-- Logo/Brand -->
-                <a href="<?= Session::isLoggedIn() ? (Session::isCliente() ? '/chamaservico/cliente/dashboard' : '/chamaservico/prestador/dashboard') : '/chamaservico/' ?>" 
-                   class="navbar-brand d-flex align-items-center" style="gap: 8px;">
-                    <span style="display:inline-block;width:18px;height:18px;background:#f5a522;border-radius:50%;margin-right:6px;"></span>
-                    <span class="fw-bold" style="letter-spacing:0.5px;color:#fff;">CHAMA</span>
-                    <span class="fw-light" style="color:#f5a522;">SERVIÇO</span>
+                <!-- Logo Limpo -->
+                <a href="<?= Session::isLoggedIn() ? (Session::isCliente() ? '/chamaservico/cliente/dashboard' : '/chamaservico/prestador/dashboard') : '/chamaservico/' ?>"
+                    class="navbar-brand d-flex align-items-center">
+                    <span class="logo-circle"></span>
+                    <span class="brand-text">CHAMA</span>
+                    <span class="brand-accent">SERVIÇO</span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <!-- Menu Principal -->
+                    <!-- Navegação Principal - Links Limpos -->
                     <ul class="navbar-nav me-auto">
                         <!-- Dashboard/Início -->
                         <li class="nav-item">
                             <?php if (Session::isPrestador() && !Session::isCliente()): ?>
-                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') !== false ? ' active' : '' ?>" href="/chamaservico/prestador/dashboard">
-                                    <i class="bi bi-speedometer2 fs-5"></i>Dashboard Prestador
+                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') !== false ? ' active' : '' ?>" 
+                                   href="/chamaservico/prestador/dashboard">
+                                    Dashboard
                                 </a>
                             <?php elseif (Session::isCliente()): ?>
-                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/cliente/dashboard') !== false ? ' active' : '' ?>" href="/chamaservico/cliente/dashboard">
-                                    <i class="bi bi-speedometer2 fs-5"></i>Dashboard Cliente
-                                </a>
-                            <?php else: ?>
-                                <a class="nav-link<?= $_SERVER['REQUEST_URI'] === '/chamaservico/' ? ' active' : '' ?>" href="/chamaservico/">
-                                    <i class="bi bi-house fs-5"></i>Início
+                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/cliente/dashboard') !== false ? ' active' : '' ?>" 
+                                   href="/chamaservico/cliente/dashboard">
+                                    Dashboard
                                 </a>
                             <?php endif; ?>
                         </li>
@@ -273,24 +493,23 @@
                         <!-- Menu do Cliente -->
                         <?php if (Session::isCliente()): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/cliente/') !== false ? ' active' : '' ?>" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-person fs-5"></i>Cliente
+                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/cliente/') !== false ? ' active' : '' ?>" 
+                                   href="#" role="button" data-bs-toggle="dropdown">
+                                    Cliente
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li>
-                                        <h6 class="dropdown-header"><i class="bi bi-list-task me-1"></i>Solicitações</h6>
-                                    </li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes"><i class="bi bi-list me-1"></i>Minhas Solicitações</a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar"><i class="bi bi-plus-circle me-1"></i>Nova Solicitação</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <h6 class="dropdown-header"><i class="bi bi-inbox me-1"></i>Propostas</h6>
-                                    </li>
+                                    <li><h6 class="dropdown-header">Solicitações</h6></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes">
+                                        <i class="bi bi-list"></i>Minhas Solicitações
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar">
+                                        <i class="bi bi-plus-circle"></i>Nova Solicitação
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Propostas</h6></li>
                                     <li>
                                         <a class="dropdown-item" href="/chamaservico/cliente/propostas/recebidas">
-                                            <i class="bi bi-envelope me-1"></i>Propostas Recebidas
+                                            <i class="bi bi-envelope"></i>Propostas Recebidas
                                             <?php
                                             try {
                                                 require_once 'models/Proposta.php';
@@ -298,10 +517,26 @@
                                                 $propostas = $propostaModel->buscarPropostasRecebidas(Session::getUserId(), ['status' => 'pendente']);
                                                 $pendentes = count($propostas);
                                                 if ($pendentes > 0): ?>
-                                                    <span class="notification-badge"><?= $pendentes ?></span>
+                                                    <span class="notification-badge-menu"><?= $pendentes ?></span>
                                             <?php endif;
-                                            } catch (Exception $e) {
-                                            }
+                                            } catch (Exception $e) {}
+                                            ?>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Serviços</h6></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/chamaservico/cliente/servicos/concluidos">
+                                            <i class="bi bi-check-circle"></i>Serviços Concluídos
+                                            <?php
+                                            try {
+                                                require_once 'models/SolicitacaoServico.php';
+                                                $solicitacaoModel = new SolicitacaoServico();
+                                                $servicosConcluidos = $solicitacaoModel->contarSolicitacoesPorUsuarioEStatus(Session::getUserId(), 5);
+                                                if ($servicosConcluidos > 0): ?>
+                                                    <span class="notification-badge-menu"><?= $servicosConcluidos ?></span>
+                                            <?php endif;
+                                            } catch (Exception $e) {}
                                             ?>
                                         </a>
                                     </li>
@@ -312,113 +547,98 @@
                         <!-- Menu do Prestador -->
                         <?php if (Session::isPrestador()): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/prestador/') !== false ? ' active' : '' ?>" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-tools fs-5"></i>Prestador
+                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/prestador/') !== false && strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') === false ? ' active' : '' ?>" 
+                                   href="#" role="button" data-bs-toggle="dropdown">
+                                    Prestador
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li>
-                                        <h6 class="dropdown-header"><i class="bi bi-graph-up me-1"></i>Gestão</h6>
-                                    </li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/dashboard"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/servicos/andamento"><i class="bi bi-tools me-1"></i>Serviços em Andamento</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <h6 class="dropdown-header"><i class="bi bi-briefcase me-1"></i>Trabalho</h6>
-                                    </li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes"><i class="bi bi-search me-1"></i>Buscar Serviços</a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/propostas"><i class="bi bi-file-earmark-text me-1"></i>Minhas Propostas</a></li>
+                                    <li><h6 class="dropdown-header">Trabalho</h6></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes">
+                                        <i class="bi bi-search"></i>Buscar Serviços
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/prestador/propostas">
+                                        <i class="bi bi-file-earmark-text"></i>Minhas Propostas
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/prestador/servicos/andamento">
+                                        <i class="bi bi-tools"></i>Serviços em Andamento
+                                    </a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
 
-                        <!-- Rápido -->
+                        <!-- Menu Rápido -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-lightning fs-5"></i>Rápido
+                                Rápido
                             </a>
                             <ul class="dropdown-menu">
                                 <?php if (Session::isCliente()): ?>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar"><i class="bi bi-plus-circle me-1 text-primary"></i><strong>Nova Solicitação</strong></a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/propostas/recebidas"><i class="bi bi-inbox me-1 text-warning"></i>Ver Propostas</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
+                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar">
+                                        <i class="bi bi-plus-circle"></i>Nova Solicitação
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/cliente/propostas/recebidas">
+                                        <i class="bi bi-inbox"></i>Ver Propostas
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
                                 <?php endif; ?>
                                 <?php if (Session::isPrestador()): ?>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes"><i class="bi bi-search me-1 text-success"></i><strong>Buscar Trabalhos</strong></a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/propostas"><i class="bi bi-file-earmark-text me-1 text-info"></i>Minhas Propostas</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
+                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes">
+                                        <i class="bi bi-search"></i>Buscar Trabalhos
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/prestador/propostas">
+                                        <i class="bi bi-file-earmark-text"></i>Minhas Propostas
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
                                 <?php endif; ?>
-                                <li><a class="dropdown-item" href="/chamaservico/perfil"><i class="bi bi-person-gear me-1 text-secondary"></i>Editar Perfil</a></li>
-                                <li><a class="dropdown-item" href="<?= Session::isPrestador() && !Session::isCliente() ? '/chamaservico/prestador/perfil/enderecos' : '/chamaservico/cliente/perfil/enderecos' ?>"><i class="bi bi-geo-alt me-1 text-secondary"></i>Meus Endereços</a></li>
+                                <li><a class="dropdown-item" href="/chamaservico/perfil">
+                                    <i class="bi bi-person-gear"></i>Editar Perfil
+                                </a></li>
                             </ul>
                         </li>
                     </ul>
 
-                    <!-- Menu do Usuário -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center user-info" href="#" role="button" data-bs-toggle="dropdown">
-                                <!-- NOVO: Container para sino e foto -->
-                                <div class="d-flex align-items-center position-relative">
-                                    <!-- SINO DE NOTIFICAÇÕES - LADO ESQUERDO -->
-                                    <?php
-                                    $notificacoesNaoLidas = 0;
-                                    try {
-                                        if (file_exists('models/Notificacao.php')) {
-                                            require_once 'models/Notificacao.php';
-                                            $notificacaoModel = new Notificacao();
-                                            $userId = Session::getUserId();
-                                            
-                                            if (is_array($userId)) {
-                                                $userId = $userId[0] ?? 0;
-                                            }
-                                            
-                                            if ($userId) {
-                                                $notificacoesNaoLidas = $notificacaoModel->contarNaoLidas($userId);
-                                            }
-                                        }
-                                    } catch (Exception $e) {
-                                        error_log("Erro ao contar notificações: " . $e->getMessage());
-                                        $notificacoesNaoLidas = 0;
-                                    }
-                                    
-                                    if ($notificacoesNaoLidas > 0): ?>
-                                        <div class="notification-bell-left me-2" id="notificationBell">
-                                            <i class="bi bi-bell-fill text-warning fs-5"></i>
-                                            <span class="notification-badge-left" id="notificationCount"><?= $notificacoesNaoLidas ?></span>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="notification-bell-left me-2" id="notificationBell" style="display: none;">
-                                            <i class="bi bi-bell-fill text-warning fs-5"></i>
-                                            <span class="notification-badge-left" id="notificationCount">0</span>
-                                        </div>
-                                    <?php endif; ?>
+                    <!-- Área do Usuário Simplificada -->
+                    <div class="user-area">
+                        <!-- Notificações -->
+                        <?php
+                        $notificacoesNaoLidas = 0;
+                        try {
+                            if (file_exists('models/Notificacao.php')) {
+                                require_once 'models/Notificacao.php';
+                                $notificacaoModel = new Notificacao();
+                                $userId = Session::getUserId();
+                                if (is_array($userId)) $userId = $userId[0] ?? 0;
+                                if ($userId) $notificacoesNaoLidas = $notificacaoModel->contarNaoLidas($userId);
+                            }
+                        } catch (Exception $e) {
+                            $notificacoesNaoLidas = 0;
+                        }
 
-                                    <!-- FOTO DO USUÁRIO - LADO DIREITO -->
-                                    <div class="position-relative">
-                                        <?php
-                                        $fotoPerfil = Session::get('foto_perfil');
-                                        if ($fotoPerfil) {
-                                            $fotoPerfil = basename($fotoPerfil);
-                                            $caminhoCompleto = "uploads/perfil/" . $fotoPerfil;
-                                            $arquivoExiste = file_exists($caminhoCompleto);
-                                        }
-                                        if ($fotoPerfil && $arquivoExiste):
-                                        ?>
-                                            <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
-                                                class="rounded-circle profile-img-sm" alt="Foto do perfil"
-                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                                            <i class="bi bi-person-circle" style="font-size: 2rem; display: none;"></i>
-                                        <?php else: ?>
-                                            <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
-                                        <?php endif; ?>
+                        if ($notificacoesNaoLidas > 0): ?>
+                            <div class="notification-area" onclick="window.location.href='/chamaservico/notificacoes'">
+                                <i class="bi bi-bell-fill notification-bell"></i>
+                                <span class="notification-badge"><?= $notificacoesNaoLidas ?></span>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Dropdown do Usuário -->
+                        <div class="dropdown">
+                            <a class="user-dropdown d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <?php
+                                $fotoPerfil = Session::get('foto_perfil');
+                                if ($fotoPerfil) {
+                                    $fotoPerfil = basename($fotoPerfil);
+                                    $caminhoCompleto = "uploads/perfil/" . $fotoPerfil;
+                                    $arquivoExiste = file_exists($caminhoCompleto);
+                                }
+                                if ($fotoPerfil && $arquivoExiste): ?>
+                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
+                                        class="user-avatar" alt="Foto do perfil">
+                                <?php else: ?>
+                                    <div class="user-avatar-placeholder">
+                                        <i class="bi bi-person"></i>
                                     </div>
-                                </div>
+                                <?php endif; ?>
 
                                 <span class="d-none d-md-inline ms-2">
                                     <?php
@@ -428,15 +648,14 @@
                                     ?>
                                 </span>
                             </a>
+                            
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     <div class="dropdown-item-text">
                                         <div class="d-flex align-items-center">
                                             <?php if ($fotoPerfil && file_exists("uploads/perfil/" . $fotoPerfil)): ?>
                                                 <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
-                                                    class="rounded-circle me-2" width="40" height="40" alt="Foto do perfil"
-                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                                                <i class="bi bi-person-circle me-2" style="font-size: 2.5rem; color: #6c757d; display: none;"></i>
+                                                    class="rounded-circle me-2" width="40" height="40" alt="Foto do perfil">
                                             <?php else: ?>
                                                 <i class="bi bi-person-circle me-2" style="font-size: 2.5rem; color: #6c757d;"></i>
                                             <?php endif; ?>
@@ -457,102 +676,73 @@
                                         </div>
                                     </div>
                                 </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="/chamaservico/notificacoes">
-                                        <i class="bi bi-bell me-2"></i>Notificações
-                                        <span class="notification-badge-menu" id="notificationBadgeMenu" <?= $notificacoesNaoLidas > 0 ? '' : 'style="display: none;"' ?>>
-                                            <?= $notificacoesNaoLidas ?>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <h6 class="dropdown-header"><i class="bi bi-person-gear me-1"></i>Minha Conta</h6>
-                                </li>
-                                <li><a class="dropdown-item" href="/chamaservico/perfil"><i class="bi bi-person me-2"></i>Meu Perfil</a></li>
-                                <li><a class="dropdown-item" href="<?= Session::isPrestador() && !Session::isCliente() ? '/chamaservico/prestador/perfil/enderecos' : '/chamaservico/cliente/perfil/enderecos' ?>"><i class="bi bi-geo-alt me-2"></i>Meus Endereços</a></li>
-                                <?php if (Session::isCliente()): ?>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <h6 class="dropdown-header"><i class="bi bi-person me-1"></i>Cliente</h6>
-                                    </li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/propostas/recebidas"><i class="bi bi-inbox me-2"></i>Propostas Recebidas</a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes"><i class="bi bi-list-task me-2"></i>Minhas Solicitações</a></li>
-                                <?php endif; ?>
-                                <?php if (Session::isPrestador()): ?>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <h6 class="dropdown-header"><i class="bi bi-tools me-1"></i>Prestador</h6>
-                                    </li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/dashboard"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/propostas"><i class="bi bi-file-earmark-text me-2"></i>Minhas Propostas</a></li>
-                                <?php endif; ?>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item text-danger" href="/chamaservico/logout"><i class="bi bi-box-arrow-right me-2"></i>Sair da Conta</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/chamaservico/notificacoes">
+                                    <i class="bi bi-bell"></i>Notificações
+                                    <?php if ($notificacoesNaoLidas > 0): ?>
+                                        <span class="notification-badge-menu"><?= $notificacoesNaoLidas ?></span>
+                                    <?php endif; ?>
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">Minha Conta</h6></li>
+                                <li><a class="dropdown-item" href="/chamaservico/perfil">
+                                    <i class="bi bi-person"></i>Meu Perfil
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= Session::isPrestador() && !Session::isCliente() ? '/chamaservico/prestador/perfil/enderecos' : '/chamaservico/cliente/perfil/enderecos' ?>">
+                                    <i class="bi bi-geo-alt"></i>Meus Endereços
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/chamaservico/logout">
+                                    <i class="bi bi-box-arrow-right"></i>Sair da Conta
+                                </a></li>
                             </ul>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
     <?php endif; ?>
-    <!-- FIM Navbar -->
+
     <!-- Flash Messages -->
     <!-- Flash Messages centralizadas e temporárias -->
-<?php if (Session::hasFlash('success')): ?>
-    <?php $flash = Session::getFlash('success'); ?>
-    <div id="alertCenter" class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show position-fixed top-50 start-50 translate-middle shadow-lg text-center" role="alert" style="z-index:1055; min-width:320px; max-width:90vw;">
-        <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($flash['message']) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
+    <?php if (Session::hasFlash('success')): ?>
+        <?php $flash = Session::getFlash('success'); ?>
+        <div id="alertCenter" class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show position-fixed top-50 start-50 translate-middle shadow-lg text-center" role="alert" style="z-index:1055; min-width:320px; max-width:90vw;">
+            <i class="bi bi-check-circle me-2"></i><?= htmlspecialchars($flash['message']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
 
-<?php if (Session::hasFlash('error')): ?>
-    <?php $flash = Session::getFlash('error'); ?>
-    <div id="alertCenter" class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show position-fixed top-50 start-50 translate-middle shadow-lg text-center" role="alert" style="z-index:1055; min-width:320px; max-width:90vw;">
-        <i class="bi bi-exclamation-triangle me-2"></i><?= htmlspecialchars($flash['message']) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
+    <?php if (Session::hasFlash('error')): ?>
+        <?php $flash = Session::getFlash('error'); ?>
+        <div id="alertCenter" class="alert alert-<?= $flash['type'] ?> alert-dismissible fade show position-fixed top-50 start-50 translate-middle shadow-lg text-center" role="alert" style="z-index:1055; min-width:320px; max-width:90vw;">
+            <i class="bi bi-exclamation-triangle me-2"></i><?= htmlspecialchars($flash['message']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
 
-<script>
-    // Fechar alertas automaticamente após 5 segundos
-    document.addEventListener('DOMContentLoaded', function () {
-        const alertCenter = document.getElementById('alertCenter');
-        if (alertCenter) {
-            setTimeout(() => {
-                alertCenter.classList.remove('show');
-                setTimeout(() => alertCenter.remove(), 400); // Remover do DOM após animação
-            }, 4000);
-        }
-    });
-</script>
+    <script>
+        // Fechar alertas automaticamente após 5 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertCenter = document.getElementById('alertCenter');
+            if (alertCenter) {
+                setTimeout(() => {
+                    alertCenter.classList.remove('show');
+                    setTimeout(() => alertCenter.remove(), 400); // Remover do DOM após animação
+                }, 4000);
+            }
+        });
+    </script>
 
     <!-- Conteúdo Principal -->
     <main class="container my-4">
         <?= $content ?>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-light border-top mt-auto py-3">
-        <div class="container">
-            <div class="row">
-                
-                    <span class="text-center">&copy; 2025 ChamaServiço. Todos os direitos reservados.</span>
-                </div>
-              
-            </div>
+    <!-- Footer com nova paleta -->
+    <footer class="border-top mt-auto py-4">
+        <div class="container text-center">
+            <span>&copy; 2025 ChamaServiço. Todos os direitos reservados.</span>
         </div>
     </footer>
 
@@ -584,17 +774,17 @@
     </script>
 
     <script>
-async function carregarEnderecosCard() {
-    const card = document.getElementById('enderecoCard');
-    const overlay = document.getElementById('enderecoCardOverlay');
-    const content = document.getElementById('enderecoCardContent');
-    
-    // Mostrar card com carregamento
-    card.style.display = 'block';
-    overlay.style.display = 'block';
-    
-    // Resetar conteúdo para carregamento
-    content.innerHTML = `
+        async function carregarEnderecosCard() {
+            const card = document.getElementById('enderecoCard');
+            const overlay = document.getElementById('enderecoCardOverlay');
+            const content = document.getElementById('enderecoCardContent');
+
+            // Mostrar card com carregamento
+            card.style.display = 'block';
+            overlay.style.display = 'block';
+
+            // Resetar conteúdo para carregamento
+            content.innerHTML = `
         <div class="text-center py-3">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Carregando...</span>
@@ -602,25 +792,25 @@ async function carregarEnderecosCard() {
             <p class="mt-2 text-muted">Carregando endereços...</p>
         </div>
     `;
-    
-    try {
-        const response = await fetch('/chamaservico/cliente/perfil/enderecos?action=api_list');
-        
-        if (!response.ok) {
-            throw new Error('Erro ao carregar endereços');
-        }
-        
-        const data = await response.json();
-        
-        if (data.sucesso) {
-            mostrarEnderecos(data.enderecos);
-        } else {
-            throw new Error(data.mensagem || 'Erro desconhecido');
-        }
-        
-    } catch (error) {
-        console.error('Erro:', error);
-        content.innerHTML = `
+
+            try {
+                const response = await fetch('/chamaservico/cliente/perfil/enderecos?action=api_list');
+
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar endereços');
+                }
+
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    mostrarEnderecos(data.enderecos);
+                } else {
+                    throw new Error(data.mensagem || 'Erro desconhecido');
+                }
+
+            } catch (error) {
+                console.error('Erro:', error);
+                content.innerHTML = `
             <div class="text-center py-4">
                 <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
                 <h6 class="text-muted mt-2">Erro ao carregar endereços</h6>
@@ -630,152 +820,152 @@ async function carregarEnderecosCard() {
                 </button>
             </div>
         `;
-    }
-}
-
-async function definirPrincipalCard(id) {
-    if (confirm('Definir este endereço como principal?')) {
-        try {
-            const formData = new FormData();
-            formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
-            formData.append('acao', 'definir_principal');
-            formData.append('endereco_id', id);
-            
-            const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            if (data.sucesso) {
-                // Recarregar a lista
-                carregarEnderecosCard();
-            } else {
-                alert('Erro ao definir endereço principal: ' + data.mensagem);
             }
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao definir endereço principal');
         }
-    }
-}
 
-async function excluirEnderecoCard(id) {
-    if (confirm('Tem certeza que deseja excluir este endereço?')) {
-        try {
-            const formData = new FormData();
-            formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
-            formData.append('acao', 'excluir');
-            formData.append('endereco_id', id);
-            
-            const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            if (data.sucesso) {
-                // Recarregar a lista
-                carregarEnderecosCard();
-            } else {
-                alert('Erro ao excluir endereço: ' + data.mensagem);
+        async function definirPrincipalCard(id) {
+            if (confirm('Definir este endereço como principal?')) {
+                try {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
+                    formData.append('acao', 'definir_principal');
+                    formData.append('endereco_id', id);
+
+                    const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.sucesso) {
+                        // Recarregar a lista
+                        carregarEnderecosCard();
+                    } else {
+                        alert('Erro ao definir endereço principal: ' + data.mensagem);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao definir endereço principal');
+                }
             }
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao excluir endereço');
         }
-    }
-}
-</script>
+
+        async function excluirEnderecoCard(id) {
+            if (confirm('Tem certeza que deseja excluir este endereço?')) {
+                try {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
+                    formData.append('acao', 'excluir');
+                    formData.append('endereco_id', id);
+
+                    const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.sucesso) {
+                        // Recarregar a lista
+                        carregarEnderecosCard();
+                    } else {
+                        alert('Erro ao excluir endereço: ' + data.mensagem);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao excluir endereço');
+                }
+            }
+        }
+    </script>
 
     <script>
-// Sistema global de notificações em tempo real
-let sistemaNotificacoes = {
-    ultimaVerificacao: new Date().toISOString(),
-    intervalo: null,
-    ultimoContador: <?= $notificacoesNaoLidas ?>,
-    
-    iniciar() {
-        // Verificar a cada 10 segundos
-        this.intervalo = setInterval(() => {
-            this.verificarNovas();
-        }, 10000);
-        
-        // Verificar imediatamente após 5 segundos
-        setTimeout(() => {
-            this.verificarNovas();
-        }, 5000);
-    },
-    
-    parar() {
-        if (this.intervalo) {
-            clearInterval(this.intervalo);
-            this.intervalo = null;
-        }
-    },
-    
-    async verificarNovas() {
-        try {
-            const response = await fetch('/chamaservico/notificacoes/contador');
-            const data = await response.json();
-            
-            if (data.sucesso) {
-                const novoContador = data.contador;
-                
-                // Se aumentou o contador, mostrar animações
-                if (novoContador > this.ultimoContador) {
-                    this.animarNovaNotificacao();
-                    this.mostrarToastRapido();
+        // Sistema global de notificações em tempo real
+        let sistemaNotificacoes = {
+            ultimaVerificacao: new Date().toISOString(),
+            intervalo: null,
+            ultimoContador: <?= $notificacoesNaoLidas ?>,
+
+            iniciar() {
+                // Verificar a cada 10 segundos
+                this.intervalo = setInterval(() => {
+                    this.verificarNovas();
+                }, 10000);
+
+                // Verificar imediatamente após 5 segundos
+                setTimeout(() => {
+                    this.verificarNovas();
+                }, 5000);
+            },
+
+            parar() {
+                if (this.intervalo) {
+                    clearInterval(this.intervalo);
+                    this.intervalo = null;
                 }
-                
-                this.atualizarBadges(novoContador);
-                this.ultimoContador = novoContador;
-            }
-        } catch (error) {
-            console.error('Erro ao verificar notificações:', error);
-        }
-    },
-    
-    atualizarBadges(contador) {
-        const bell = document.getElementById('notificationBell');
-        const count = document.getElementById('notificationCount');
-        const menuBadge = document.getElementById('notificationBadgeMenu');
-        
-        if (contador > 0) {
-            // Mostrar sino e contador
-            if (bell) bell.style.display = 'flex';
-            if (count) count.textContent = contador;
-            if (menuBadge) {
-                menuBadge.textContent = contador;
-                menuBadge.style.display = 'inline-block';
-            }
-        } else {
-            // Esconder sino
-            if (bell) bell.style.display = 'none';
-            if (menuBadge) menuBadge.style.display = 'none';
-        }
-    },
-    
-    animarNovaNotificacao() {
-        const bell = document.getElementById('notificationBell');
-        const icon = bell?.querySelector('.bi-bell-fill');
-        
-        if (icon) {
-            icon.classList.add('bell-shake');
-            setTimeout(() => {
-                icon.classList.remove('bell-shake');
-            }, 800);
-        }
-    },
-    
-    mostrarToastRapido() {
-        // Toast discreto para nova notificação
-        const toast = document.createElement('div');
-        toast.className = 'position-fixed top-0 end-0 p-3';
-        toast.style.zIndex = '9999';
-        toast.innerHTML = `
+            },
+
+            async verificarNovas() {
+                try {
+                    const response = await fetch('/chamaservico/notificacoes/contador');
+                    const data = await response.json();
+
+                    if (data.sucesso) {
+                        const novoContador = data.contador;
+
+                        // Se aumentou o contador, mostrar animações
+                        if (novoContador > this.ultimoContador) {
+                            this.animarNovaNotificacao();
+                            this.mostrarToastRapido();
+                        }
+
+                        this.atualizarBadges(novoContador);
+                        this.ultimoContador = novoContador;
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar notificações:', error);
+                }
+            },
+
+            atualizarBadges(contador) {
+                const bell = document.getElementById('notificationBell');
+                const count = document.getElementById('notificationCount');
+                const menuBadge = document.getElementById('notificationBadgeMenu');
+
+                if (contador > 0) {
+                    // Mostrar sino e contador
+                    if (bell) bell.style.display = 'flex';
+                    if (count) count.textContent = contador;
+                    if (menuBadge) {
+                        menuBadge.textContent = contador;
+                        menuBadge.style.display = 'inline-block';
+                    }
+                } else {
+                    // Esconder sino
+                    if (bell) bell.style.display = 'none';
+                    if (menuBadge) menuBadge.style.display = 'none';
+                }
+            },
+
+            animarNovaNotificacao() {
+                const bell = document.getElementById('notificationBell');
+                const icon = bell?.querySelector('.bi-bell-fill');
+
+                if (icon) {
+                    icon.classList.add('bell-shake');
+                    setTimeout(() => {
+                        icon.classList.remove('bell-shake');
+                    }, 800);
+                }
+            },
+
+            mostrarToastRapido() {
+                // Toast discreto para nova notificação
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed top-0 end-0 p-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
             <div class="toast show" role="alert">
                 <div class="toast-header">
                     <i class="bi bi-bell-fill text-warning me-2"></i>
@@ -787,19 +977,19 @@ let sistemaNotificacoes = {
                 </div>
             </div>
         `;
-        
-        document.body.appendChild(toast);
-        
-        // Auto remover
-        setTimeout(() => {
-            toast.remove();
-        }, 4000);
-    }
-};
 
-// CSS para animação do sininho
-const style = document.createElement('style');
-style.textContent = `
+                document.body.appendChild(toast);
+
+                // Auto remover
+                setTimeout(() => {
+                    toast.remove();
+                }, 4000);
+            }
+        };
+
+        // CSS para animação do sininho
+        const style = document.createElement('style');
+        style.textContent = `
     @keyframes shake {
         0%, 100% { transform: rotate(0deg); }
         10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
@@ -816,24 +1006,23 @@ style.textContent = `
         100% { transform: scale(1); }
     }
 `;
-document.head.appendChild(style);
+        document.head.appendChild(style);
 
-// Inicializar quando a página carregar
-document.addEventListener('DOMContentLoaded', function() {
-    // Só inicializar se o usuário estiver logado
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-        sistemaNotificacoes.iniciar();
-    }
-});
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Só inicializar se o usuário estiver logado
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                sistemaNotificacoes.iniciar();
+            }
+        });
 
-// Parar quando sair da página
-window.addEventListener('beforeunload', function() {
-    sistemaNotificacoes.parar();
-});
-</script>
+        // Parar quando sair da página
+        window.addEventListener('beforeunload', function() {
+            sistemaNotificacoes.parar();
+        });
+    </script>
 
     <?= $scripts ?? '' ?>
 </body>
-
 </html>

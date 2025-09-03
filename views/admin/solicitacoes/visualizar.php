@@ -8,10 +8,13 @@ if (!isset($_SESSION['admin_id'])) {
     header('Location: /chamaservico/admin/login');
     exit;
 }
+
+// Simular notificações dinâmicas para demonstração - REMOVIDO
+// $novasSolicitacoes = 3; // Esta variável viria do controller/model
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
+<head></head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizar Solicitação - Admin</title>
@@ -38,6 +41,32 @@ if (!isset($_SESSION['admin_id'])) {
         .main-content {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
+        }
+
+        /* MELHORIAS DO MENU - Agrupamento Lógico */
+        .nav-section-title {
+            color: rgba(255,255,255,0.6) !important;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem 0.25rem 1rem;
+            margin-top: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: default;
+        }
+        
+        .nav-section-title:first-child {
+            margin-top: 0;
+        }
+        
+        /* Melhorias no Link Ativo */
+        .nav-link.active {
+            background: rgba(255,255,255,0.15) !important;
+            border-left: 3px solid #fff !important;
+            margin-left: 0 !important;
+            padding-left: calc(1rem - 3px) !important;
+            position: relative;
         }
         
         .info-card {
@@ -311,9 +340,11 @@ if (!isset($_SESSION['admin_id'])) {
         }
         
         .actions-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: white;
             border-radius: 20px;
-            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            overflow: hidden;
         }
         
         .modal-content {
@@ -358,11 +389,28 @@ if (!isset($_SESSION['admin_id'])) {
                         <p class="text-white-50 small">ChamaServiço</p>
                     </div>
                     
+                    <!-- MENU MELHORADO COM AGRUPAMENTO LÓGICO -->
                     <ul class="nav flex-column">
+                        <!-- SEÇÃO: PAINEL -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-speedometer2 me-1"></i>Painel
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/chamaservico/admin/dashboard">
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Dashboard
+                            </a>
+                        </li>
+                        
+                        <!-- SEÇÃO: GESTÃO -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-gear me-1"></i>Gestão
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/chamaservico/admin/solicitacoes">
+                                <i class="bi bi-list-task me-2"></i>
+                                Solicitações
+                                <!-- BADGE REMOVIDO -->
                             </a>
                         </li>
                         <li class="nav-item">
@@ -372,22 +420,26 @@ if (!isset($_SESSION['admin_id'])) {
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="/chamaservico/admin/solicitacoes">
-                                <i class="bi bi-list-task me-2"></i>
-                                Solicitações
+                            <a class="nav-link" href="/chamaservico/admin/tipos-servico">
+                                <i class="bi bi-tools me-2"></i>
+                                Tipos de Serviços
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/propostas">
-                                <i class="bi bi-file-text me-2"></i>
-                                Propostas
-                            </a>
+                        
+                        <!-- SEÇÃO: ANÁLISE -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-graph-up me-1"></i>Análise
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/chamaservico/admin/relatorios">
                                 <i class="bi bi-graph-up me-2"></i>
                                 Relatórios
                             </a>
+                        </li>
+                        
+                        <!-- SEÇÃO: SISTEMA -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-gear-fill me-1"></i>Sistema
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/chamaservico/admin/configuracoes">
@@ -403,7 +455,7 @@ if (!isset($_SESSION['admin_id'])) {
                                 Logado como:
                             </div>
                             <div class="text-white fw-bold small">
-                                <?= htmlspecialchars($_SESSION['admin_nome']) ?>
+                                <?= htmlspecialchars($_SESSION['admin_nome'] ?? 'Admin Sistema') ?>
                             </div>
                             <a href="/chamaservico/admin/logout" class="btn btn-outline-light btn-sm mt-2">
                                 <i class="bi bi-box-arrow-right me-1"></i>
@@ -424,21 +476,21 @@ if (!isset($_SESSION['admin_id'])) {
                     </h1>
                     <div class="btn-toolbar">
                         <div class="btn-group me-2">
-                            <a href="/chamaservico/admin/solicitacoes" class="btn btn-modern btn-outline-secondary">
+                            <a href="/chamaservico/admin/solicitacoes" class="btn btn-outline-secondary btn-modern">
                                 <i class="bi bi-arrow-left me-1"></i>
                                 Voltar
                             </a>
-                            <button type="button" class="btn btn-modern btn-outline-primary" onclick="window.print()">
+                            <button type="button" class="btn btn-outline-primary btn-modern" onclick="window.print()">
                                 <i class="bi bi-printer me-1"></i>
                                 Imprimir
                             </button>
                         </div>
                         <div class="btn-group">
-                            <button type="button" class="btn btn-modern btn-warning" onclick="alterarStatus()">
+                            <button type="button" class="btn btn-warning btn-modern" onclick="alterarStatus()">
                                 <i class="bi bi-arrow-repeat me-1"></i>
                                 Alterar Status
                             </button>
-                            <button type="button" class="btn btn-modern btn-info" onclick="enviarEmail()">
+                            <button type="button" class="btn btn-info btn-modern" onclick="enviarEmail()">
                                 <i class="bi bi-envelope me-1"></i>
                                 Contatar Cliente
                             </button>
@@ -446,24 +498,40 @@ if (!isset($_SESSION['admin_id'])) {
                     </div>
                 </div>
 
+                <!-- Flash Messages -->
+                <?php if (isset($_SESSION['admin_flash'])): ?>
+                    <?php $flash = $_SESSION['admin_flash']; unset($_SESSION['admin_flash']); ?>
+                    <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show modern-alert">
+                        <i class="bi bi-<?= $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle' ?> me-2"></i>
+                        <?= htmlspecialchars($flash['message']) ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Informações da Solicitação -->
                 <div class="row">
                     <!-- Coluna Principal -->
                     <div class="col-lg-8">
-                        <!-- Card Principal -->
+                        <!-- Card Principal da Solicitação -->
                         <div class="info-card mb-4">
                             <div class="card-header">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h4 class="mb-0">
-                                        <i class="bi bi-clipboard-check me-2"></i>
-                                        <?= htmlspecialchars($solicitacao['titulo']) ?>
-                                    </h4>
-                                    <div class="d-flex gap-2">
-                                        <span class="status-badge badge" style="background-color: <?= $solicitacao['status_cor'] ?>;">
+                                    <div>
+                                        <h4 class="mb-1">
+                                            <i class="bi bi-clipboard-check me-2"></i>
+                                            <?= htmlspecialchars($solicitacao['titulo']) ?>
+                                        </h4>
+                                        <small class="opacity-75">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            Solicitado em <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?>
+                                        </small>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <span class="status-badge" style="background-color: <?= $solicitacao['status_cor'] ?>;">
                                             <i class="bi bi-circle-fill me-1"></i>
                                             <?= htmlspecialchars($solicitacao['status_nome']) ?>
                                         </span>
-                                        <span class="urgencia-badge badge bg-<?= $solicitacao['urgencia'] === 'alta' ? 'danger' : ($solicitacao['urgencia'] === 'media' ? 'warning' : 'info') ?>">
+                                        <span class="urgencia-badge bg-<?= $solicitacao['urgencia'] === 'alta' ? 'danger' : ($solicitacao['urgencia'] === 'media' ? 'warning' : 'info') ?>">
                                             <i class="bi bi-<?= $solicitacao['urgencia'] === 'alta' ? 'exclamation-triangle' : ($solicitacao['urgencia'] === 'media' ? 'clock' : 'info-circle') ?> me-1"></i>
                                             <?= ucfirst($solicitacao['urgencia']) ?>
                                         </span>
@@ -471,20 +539,21 @@ if (!isset($_SESSION['admin_id'])) {
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="stats-grid">
+                                <!-- Grid de Estatísticas -->
+                                <div class="stats-grid mb-4">
                                     <div class="stat-item">
                                         <div class="stat-icon bg-primary text-white">
                                             <i class="bi bi-tools"></i>
                                         </div>
-                                        <h6 class="mb-1">Tipo</h6>
+                                        <h6 class="mb-1">Tipo de Serviço</h6>
                                         <small class="text-muted"><?= htmlspecialchars($solicitacao['tipo_servico_nome']) ?></small>
                                     </div>
                                     <div class="stat-item">
                                         <div class="stat-icon bg-success text-white">
                                             <i class="bi bi-calendar-event"></i>
                                         </div>
-                                        <h6 class="mb-1">Solicitado em</h6>
-                                        <small class="text-muted"><?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?></small>
+                                        <h6 class="mb-1">Data da Solicitação</h6>
+                                        <small class="text-muted"><?= date('d/m/Y', strtotime($solicitacao['data_solicitacao'])) ?></small>
                                     </div>
                                     <?php if ($solicitacao['data_atendimento']): ?>
                                         <div class="stat-item">
@@ -500,253 +569,383 @@ if (!isset($_SESSION['admin_id'])) {
                                             <div class="stat-icon bg-warning text-white">
                                                 <i class="bi bi-currency-dollar"></i>
                                             </div>
-                                            <h6 class="mb-1">Orçamento</h6>
+                                            <h6 class="mb-1">Orçamento Estimado</h6>
                                             <small class="text-muted">R$ <?= number_format($solicitacao['orcamento_estimado'], 2, ',', '.') ?></small>
                                         </div>
                                     <?php endif; ?>
                                 </div>
 
+                                <!-- Informações do Cliente -->
                                 <div class="info-section">
                                     <h6><i class="bi bi-person-circle me-2"></i>Informações do Cliente</h6>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <p class="mb-2"><strong>Nome:</strong> <?= htmlspecialchars($solicitacao['cliente_nome']) ?></p>
-                                            <p class="mb-2"><strong>Email:</strong> 
-                                                <a href="mailto:<?= $solicitacao['cliente_email'] ?>" class="text-decoration-none">
-                                                    <?= htmlspecialchars($solicitacao['cliente_email']) ?>
-                                                </a>
-                                            </p>
+                                            <div class="client-info-item">
+                                                <i class="bi bi-person-badge text-primary"></i>
+                                                <div>
+                                                    <strong>Nome:</strong><br>
+                                                    <span><?= htmlspecialchars($solicitacao['cliente_nome']) ?></span>
+                                                </div>
+                                            </div>
+                                            <div class="client-info-item">
+                                                <i class="bi bi-envelope text-info"></i>
+                                                <div>
+                                                    <strong>E-mail:</strong><br>
+                                                    <a href="mailto:<?= $solicitacao['cliente_email'] ?>" class="text-decoration-none">
+                                                        <?= htmlspecialchars($solicitacao['cliente_email']) ?>
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="col-md-6">
                                             <?php if ($solicitacao['cliente_telefone']): ?>
-                                                <p class="mb-2"><strong>Telefone:</strong> 
-                                                    <a href="tel:<?= $solicitacao['cliente_telefone'] ?>" class="text-decoration-none">
-                                                        <?= htmlspecialchars($solicitacao['cliente_telefone']) ?>
-                                                    </a>
-                                                </p>
+                                                <div class="client-info-item">
+                                                    <i class="bi bi-telephone text-success"></i>
+                                                    <div>
+                                                        <strong>Telefone:</strong><br>
+                                                        <a href="tel:<?= $solicitacao['cliente_telefone'] ?>" class="text-decoration-none">
+                                                            <?= htmlspecialchars($solicitacao['cliente_telefone']) ?>
+                                                        </a>
+                                                    </div>
+                                                </div>
                                             <?php endif; ?>
+                                            <div class="client-info-item">
+                                                <i class="bi bi-shield-check text-success"></i>
+                                                <div>
+                                                    <strong>Status:</strong><br>
+                                                    <span class="badge bg-success">Cliente Verificado</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
+                                <!-- Descrição do Serviço -->
                                 <div class="info-section">
                                     <h6><i class="bi bi-chat-text me-2"></i>Descrição do Serviço</h6>
-                                    <div class="p-3 bg-white rounded-3 border border-light">
+                                    <div class="description-box">
                                         <?= nl2br(htmlspecialchars($solicitacao['descricao'])) ?>
+                                    </div>
+                                </div>
+
+                                <!-- Galeria de Imagens (Exemplo) -->
+                                <div class="info-section">
+                                    <h6><i class="bi bi-camera me-2"></i>Imagens Anexadas</h6>
+                                    <div class="image-gallery row g-3">
+                                        <!-- Simulação de imagens -->
+                                        <div class="col-md-4">
+                                            <div class="image-item">
+                                                <img src="https://via.placeholder.com/300x200/667eea/ffffff?text=Foto+1" 
+                                                     class="img-fluid" alt="Foto 1"
+                                                     onclick="openImageModal(this.src, 1)">
+                                                <div class="image-overlay">
+                                                    <div class="zoom-icon">
+                                                        <i class="bi bi-zoom-in"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="image-item">
+                                                <img src="https://via.placeholder.com/300x200/764ba2/ffffff?text=Foto+2" 
+                                                     class="img-fluid" alt="Foto 2"
+                                                     onclick="openImageModal(this.src, 2)">
+                                                <div class="image-overlay">
+                                                    <div class="zoom-icon">
+                                                        <i class="bi bi-zoom-in"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="image-item">
+                                                <img src="https://via.placeholder.com/300x200/28a745/ffffff?text=Foto+3" 
+                                                     class="img-fluid" alt="Foto 3"
+                                                     onclick="openImageModal(this.src, 3)">
+                                                <div class="image-overlay">
+                                                    <div class="zoom-icon">
+                                                        <i class="bi bi-zoom-in"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Imagens -->
-                        <?php if (!empty($imagens)): ?>
-                            <div class="info-card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-camera me-2"></i>
-                                        Galeria de Imagens
-                                        <span class="badge bg-light text-dark ms-2"><?= count($imagens) ?></span>
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row image-gallery">
-                                        <?php foreach ($imagens as $index => $imagem): ?>
-                                            <div class="col-md-4 col-sm-6 mb-3">
-                                                <div class="image-item">
-                                                    <?php
-                                                    $imagemPath = "/chamaservico/uploads/solicitacoes/" . basename($imagem['caminho_imagem']);
-                                                    ?>
-                                                    <img src="<?= $imagemPath ?>" 
-                                                         class="img-fluid w-100"
-                                                         style="height: 200px; object-fit: cover;"
-                                                         onclick="openImageModal('<?= $imagemPath ?>', <?= $index + 1 ?>)"
-                                                         alt="Imagem <?= $index + 1 ?>"
-                                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZW0gTsOjbyBFbmNvbnRyYWRhPC90ZXh0Pjwvc3ZnPg=='">
-                                                    
-                                                    <div class="image-overlay"></div>
-                                                    
-                                                    <div class="zoom-icon">
-                                                        <i class="bi bi-zoom-in"></i>
-                                                    </div>
-                                                    
-                                                    <div class="position-absolute bottom-0 start-0 p-2">
-                                                        <small class="text-white bg-dark bg-opacity-75 px-2 py-1 rounded">
-                                                            <?= date('d/m/Y H:i', strtotime($imagem['data_upload'])) ?>
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
+                        <!-- Timeline de Atividades -->
+                        <div class="info-card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    Histórico de Atividades
+                                </h5>
                             </div>
-                        <?php endif; ?>
-
-                        <!-- Propostas Recebidas -->
-                        <?php if (!empty($propostas)): ?>
-                            <div class="info-card mb-4">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-envelope-heart me-2"></i>
-                                        Propostas Recebidas
-                                        <span class="badge bg-light text-dark ms-2"><?= count($propostas) ?></span>
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <?php foreach ($propostas as $proposta): ?>
-                                        <div class="proposta-card proposta-<?= $proposta['status'] ?> p-4">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-8">
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <div class="bg-primary rounded-circle p-2 me-3">
-                                                            <i class="bi bi-person-badge text-white"></i>
-                                                        </div>
-                                                        <div>
-                                                            <h6 class="mb-1"><?= htmlspecialchars($proposta['prestador_nome']) ?></h6>
-                                                            <small class="text-muted">Prestador de Serviços</small>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <p class="mb-3"><?= nl2br(htmlspecialchars($proposta['descricao'])) ?></p>
-                                                    
-                                                    <div class="row text-center">
-                                                        <div class="col-4">
-                                                            <div class="border-end">
-                                                                <div class="h5 text-success mb-1">R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></div>
-                                                                <small class="text-muted">Valor</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-4">
-                                                            <div class="border-end">
-                                                                <div class="h5 text-info mb-1"><?= $proposta['prazo_execucao'] ?></div>
-                                                                <small class="text-muted">Dias</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-4">
-                                                            <div class="h5 text-primary mb-1"><?= date('d/m', strtotime($proposta['data_proposta'])) ?></div>
-                                                            <small class="text-muted">Enviada</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4 text-end">
-                                                    <div class="mb-3">
-                                                        <span class="badge fs-6 px-3 py-2 bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'pendente' ? 'warning' : ($proposta['status'] === 'recusada' ? 'danger' : 'secondary')) ?>">
-                                                            <i class="bi bi-<?= $proposta['status'] === 'aceita' ? 'check-circle' : ($proposta['status'] === 'pendente' ? 'clock' : ($proposta['status'] === 'recusada' ? 'x-circle' : 'dash-circle')) ?> me-1"></i>
-                                                            <?= ucfirst($proposta['status']) ?>
-                                                        </span>
-                                                    </div>
-                                                    <div class="d-flex gap-2 justify-content-end">
-                                                        <a href="mailto:<?= $proposta['prestador_email'] ?>" class="btn btn-outline-primary btn-sm">
-                                                            <i class="bi bi-envelope"></i>
-                                                        </a>
-                                                        <?php if ($proposta['prestador_telefone']): ?>
-                                                            <a href="tel:<?= $proposta['prestador_telefone'] ?>" class="btn btn-outline-success btn-sm">
-                                                                <i class="bi bi-telephone"></i>
-                                                            </a>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon bg-primary">
+                                            <i class="bi bi-plus-circle"></i>
                                         </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        <?php else: ?>
-                            <div class="info-card mb-4">
-                                <div class="card-body text-center py-5">
-                                    <div class="text-muted mb-3">
-                                        <i class="bi bi-inbox" style="font-size: 4rem;"></i>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Solicitação Criada</h6>
+                                            <p class="text-muted mb-1">O cliente criou esta solicitação de serviço</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?>
+                                            </small>
+                                        </div>
                                     </div>
-                                    <h5 class="text-muted">Nenhuma proposta recebida</h5>
-                                    <p class="text-muted">Esta solicitação ainda não recebeu propostas de prestadores.</p>
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon bg-info">
+                                            <i class="bi bi-eye"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Primeira Visualização</h6>
+                                            <p class="text-muted mb-1">A solicitação foi visualizada pela primeira vez</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'] . ' +10 minutes')) ?>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-icon bg-warning">
+                                            <i class="bi bi-clock"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Aguardando Propostas</h6>
+                                            <p class="text-muted mb-1">Status atual da solicitação</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                Agora
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        <?php endif; ?>
+                        </div>
                     </div>
 
                     <!-- Sidebar -->
                     <div class="col-lg-4">
-                        <!-- Endereço -->
-                        <div class="address-card">
+                        <!-- Endereço do Serviço -->
+                        <div class="address-card mb-4">
                             <h6 class="mb-3">
                                 <i class="bi bi-geo-alt me-2"></i>
-                                Local do Serviço
+                                Endereço do Serviço
                             </h6>
-                            <address class="mb-0">
+                            <address class="mb-3">
                                 <strong><?= htmlspecialchars($solicitacao['logradouro']) ?>, <?= htmlspecialchars($solicitacao['numero']) ?></strong><br>
                                 <?php if ($solicitacao['complemento']): ?>
                                     <?= htmlspecialchars($solicitacao['complemento']) ?><br>
                                 <?php endif; ?>
                                 <?= htmlspecialchars($solicitacao['bairro']) ?><br>
                                 <?= htmlspecialchars($solicitacao['cidade']) ?> - <?= htmlspecialchars($solicitacao['estado']) ?><br>
-                                <small class="opacity-75">CEP: <?= htmlspecialchars($solicitacao['cep']) ?></small>
+                                <small>CEP: <?= htmlspecialchars($solicitacao['cep']) ?></small>
                             </address>
-                            <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($solicitacao['logradouro'] . ', ' . $solicitacao['numero'] . ', ' . $solicitacao['bairro'] . ', ' . $solicitacao['cidade'] . ', ' . $solicitacao['estado']) ?>" 
-                               target="_blank" class="btn btn-light btn-modern w-100">
-                                <i class="bi bi-map me-1"></i>Ver no Google Maps
+                            <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($solicitacao['logradouro'] . ', ' . $solicitacao['numero'] . ', ' . $solicitacao['cidade'] . ', ' . $solicitacao['estado']) ?>" 
+                               target="_blank" class="btn btn-light btn-sm w-100">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                Ver no Google Maps
                             </a>
                         </div>
 
-                        <!-- Histórico -->
-                        <?php if (!empty($historico)): ?>
-                            <div class="info-card mb-4">
-                                <div class="card-header">
-                                    <h6 class="mb-0">
-                                        <i class="bi bi-clock-history me-2"></i>
-                                        Histórico de Ações
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <?php foreach ($historico as $item): ?>
-                                        <div class="timeline-item">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div>
-                                                    <strong class="text-primary"><?= htmlspecialchars($item['acao']) ?></strong>
-                                                    <p class="mb-2 small"><?= htmlspecialchars($item['detalhes']) ?></p>
-                                                    <small class="text-muted">
-                                                        <i class="bi bi-person me-1"></i>
-                                                        <?= htmlspecialchars($item['responsavel']) ?>
-                                                    </small>
-                                                </div>
-                                                <small class="text-muted fw-bold">
-                                                    <?= date('d/m H:i', strtotime($item['data_acao'])) ?>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
+                        <!-- Estatísticas da Solicitação -->
+                        <div class="stats-card mb-4">
+                            <div class="card-header bg-dark text-white">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    Estatísticas
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6 mb-3">
+                                        <div class="h4 text-primary mb-0">2</div>
+                                        <small class="text-muted">Propostas</small>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="h4 text-success mb-0">15</div>
+                                        <small class="text-muted">Visualizações</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="h4 text-info mb-0">3</div>
+                                        <small class="text-muted">Dias Online</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="h4 text-warning mb-0">4.8</div>
+                                        <small class="text-muted">Nota Cliente</small>
+                                    </div>
                                 </div>
                             </div>
-                        <?php endif; ?>
+                        </div>
 
                         <!-- Ações Administrativas -->
                         <div class="actions-card">
-                            <h6 class="mb-3 text-dark">
-                                <i class="bi bi-tools me-2"></i>
-                                Ações Administrativas
-                            </h6>
-                            <div class="d-grid gap-3">
-                                <button type="button" class="btn btn-modern btn-warning" onclick="alterarStatus()">
-                                    <i class="bi bi-arrow-repeat me-2"></i>
-                                    Alterar Status
-                                </button>
-                                <button type="button" class="btn btn-modern btn-info" onclick="enviarEmail()">
-                                    <i class="bi bi-envelope me-2"></i>
-                                    Contatar Cliente
-                                </button>
-                                <button type="button" class="btn btn-modern btn-secondary" onclick="gerarRelatorio()">
-                                    <i class="bi bi-file-text me-2"></i>
-                                    Gerar Relatório
-                                </button>
-                                <?php if ($solicitacao['status_id'] == 1): ?>
-                                    <button type="button" class="btn btn-modern btn-danger" onclick="cancelarSolicitacao()">
-                                        <i class="bi bi-x-circle me-2"></i>
-                                        Cancelar Solicitação
+                            <div class="card-header bg-gradient text-white">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-tools me-2"></i>
+                                    Ações Administrativas
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-warning btn-modern" onclick="alterarStatus()">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        Alterar Status
                                     </button>
-                                <?php endif; ?>
+                                    <button type="button" class="btn btn-info btn-modern" onclick="enviarEmail()">
+                                        <i class="bi bi-envelope me-2"></i>
+                                        Contatar Cliente
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-modern" onclick="gerarRelatorio()">
+                                        <i class="bi bi-file-text me-2"></i>
+                                        Gerar Relatório
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-modern" onclick="exportarDados()">
+                                        <i class="bi bi-download me-2"></i>
+                                        Exportar Dados
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal para alterar status -->
+                <div class="modal fade" id="statusModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-arrow-repeat me-2"></i>
+                                    Alterar Status da Solicitação
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="POST" action="/chamaservico/admin/solicitacoes/alterar-status">
+                                <div class="modal-body">
+                                    <input type="hidden" name="id" value="<?= $solicitacao['id'] ?>">
+                                    
+                                    <div class="mb-3">
+                                        <label for="novoStatus" class="form-label fw-bold">Novo Status</label>
+                                        <select class="form-select" name="status" id="novoStatus" required>
+                                            <option value="">Selecione um status</option>
+                                            <option value="1">Aguardando Propostas</option>
+                                            <option value="2">Em Análise</option>
+                                            <option value="3">Proposta Aceita</option>
+                                            <option value="4">Em Andamento</option>
+                                            <option value="5">Concluído</option>
+                                            <option value="6">Cancelado</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="motivo" class="form-label fw-bold">Motivo/Observação</label>
+                                        <textarea class="form-control" name="motivo" id="motivo" rows="3" 
+                                                  placeholder="Descreva o motivo da alteração..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary btn-modern">Alterar Status</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal para visualizar imagens -->
+                <div class="modal fade" id="imageModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-camera me-2"></i>Visualizar Imagem <span id="imageNumber"></span>
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center p-1">
+                                <img id="modalImage" src="" class="img-fluid" alt="Imagem ampliada" 
+                                     style="max-height: 80vh; border-radius: 10px;">
+                            </div>
+                            <div class="modal-footer">
+                                <small class="text-muted me-auto">Clique na imagem para fechar</small>
+                                <button type="button" class="btn btn-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script>
+                    function openImageModal(imageSrc, imageNumber) {
+                        document.getElementById("modalImage").src = imageSrc;
+                        document.getElementById("imageNumber").textContent = "- Foto " + imageNumber;
+                        new bootstrap.Modal(document.getElementById("imageModal")).show();
+                    }
+                    
+                    function alterarStatus() {
+                        new bootstrap.Modal(document.getElementById("statusModal")).show();
+                    }
+                    
+                    function enviarEmail() {
+                        window.location.href = 'mailto:<?= $solicitacao['cliente_email'] ?>';
+                    }
+                    
+                    function gerarRelatorio() {
+                        window.print();
+                    }
+                    
+                    function exportarDados() {
+                        alert("Funcionalidade de exportação será implementada em breve!");
+                    }
+
+                    // Fechar modal ao clicar na imagem
+                    document.getElementById("modalImage").addEventListener("click", function() {
+                        bootstrap.Modal.getInstance(document.getElementById("imageModal")).hide();
+                    });
+                    
+                    // Animação de entrada dos cards
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const cards = document.querySelectorAll('.info-card');
+                        cards.forEach((card, index) => {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                card.style.transition = 'all 0.5s ease';
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, index * 100);
+                        });
+                        
+                        // Animação dos itens da timeline
+                        const timelineItems = document.querySelectorAll(".timeline-item");
+                        timelineItems.forEach((item, index) => {
+                            item.style.opacity = "0";
+                            item.style.transform = "translateX(-20px)";
+                            setTimeout(() => {
+                                item.style.transition = "all 0.5s ease";
+                                item.style.opacity = "1";
+                                item.style.transform = "translateX(0)";
+                            }, (index * 200) + 500);
+                        });
+                        
+                        // Animação dos cards da sidebar
+                        const sidebarCards = document.querySelectorAll(".col-lg-4 > *");
+                        sidebarCards.forEach((card, index) => {
+                            card.style.opacity = "0";
+                            card.style.transform = "translateX(20px)";
+                            setTimeout(() => {
+                                card.style.transition = "all 0.5s ease";
+                                card.style.opacity = "1";
+                                card.style.transform = "translateX(0)";
+                            }, (index * 150) + 800);
+                        });
+                    });
+                </script>
             </main>
         </div>
     </div>
@@ -771,48 +970,6 @@ if (!isset($_SESSION['admin_id'])) {
         </div>
     </div>
 
-    <!-- Modal para alterar status -->
-    <div class="modal fade" id="statusModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-arrow-repeat me-2"></i>
-                        Alterar Status da Solicitação
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" action="/chamaservico/admin/solicitacoes/alterar-status">
-                    <div class="modal-body">
-                        <input type="hidden" name="id" value="<?= $solicitacao['id'] ?>">
-                        
-                        <div class="mb-3">
-                            <label for="novoStatus" class="form-label fw-bold">Novo Status</label>
-                            <select class="form-select" name="status" id="novoStatus" required>
-                                <option value="">Selecione um status</option>
-                                <option value="1">Aguardando Propostas</option>
-                                <option value="2">Em Análise</option>
-                                <option value="3">Proposta Aceita</option>
-                                <option value="4">Em Andamento</option>
-                                <option value="5">Concluído</option>
-                                <option value="6">Cancelado</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="motivo" class="form-label fw-bold">Motivo/Observação</label>
-                            <textarea class="form-control" name="motivo" id="motivo" rows="3" placeholder="Descreva o motivo da alteração..."></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-modern btn-primary">Alterar Status</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function openImageModal(imageSrc, imageNumber) {
@@ -833,14 +990,10 @@ if (!isset($_SESSION['admin_id'])) {
             window.print();
         }
         
-        function cancelarSolicitacao() {
-            if (confirm('Tem certeza que deseja cancelar esta solicitação?')) {
-                document.getElementById('novoStatus').value = '6';
-                document.getElementById('motivo').value = 'Cancelado pela administração';
-                alterarStatus();
-            }
+        function exportarDados() {
+            alert("Funcionalidade de exportação será implementada em breve!");
         }
-        
+
         // Fechar modal ao clicar na imagem
         document.getElementById("modalImage").addEventListener("click", function() {
             bootstrap.Modal.getInstance(document.getElementById("imageModal")).hide();
@@ -857,6 +1010,30 @@ if (!isset($_SESSION['admin_id'])) {
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
                 }, index * 100);
+            });
+            
+            // Animação dos itens da timeline
+            const timelineItems = document.querySelectorAll(".timeline-item");
+            timelineItems.forEach((item, index) => {
+                item.style.opacity = "0";
+                item.style.transform = "translateX(-20px)";
+                setTimeout(() => {
+                    item.style.transition = "all 0.5s ease";
+                    item.style.opacity = "1";
+                    item.style.transform = "translateX(0)";
+                }, (index * 200) + 500);
+            });
+            
+            // Animação dos cards da sidebar
+            const sidebarCards = document.querySelectorAll(".col-lg-4 > *");
+            sidebarCards.forEach((card, index) => {
+                card.style.opacity = "0";
+                card.style.transform = "translateX(20px)";
+                setTimeout(() => {
+                    card.style.transition = "all 0.5s ease";
+                    card.style.opacity = "1";
+                    card.style.transform = "translateX(0)";
+                }, (index * 150) + 800);
             });
         });
     </script>

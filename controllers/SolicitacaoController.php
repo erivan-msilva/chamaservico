@@ -137,15 +137,15 @@ class SolicitacaoController
                     if (!$this->model->salvarImagem($solicitacaoId, $newFileName)) {
                         $uploadSuccess = false;
                     }
-                    } else {
-                        $uploadSuccess = false;
-                    }
+                } else {
+                    $uploadSuccess = false;
                 }
             }
-    
-            return $uploadSuccess;
         }
-    
+
+        return $uploadSuccess;
+    }
+
 
     public function editar()
     {
@@ -284,7 +284,8 @@ class SolicitacaoController
         exit;
     }
 
-    public function baixarImagens() {
+    public function baixarImagens()
+    {
         Session::requireClientLogin();
         $solicitacaoId = $_GET['id'] ?? 0;
         $clienteId = Session::getUserId();

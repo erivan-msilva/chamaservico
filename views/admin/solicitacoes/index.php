@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Definir variáveis padrão se não existirem
-$tipoVisualizacao = $_GET['view'] ?? 'cards';
+$tipoVisualizacao = $tipoVisualizacao ?? 'cards';
 $solicitacoes = $solicitacoes ?? [];
 $estatisticas = $estatisticas ?? [
     'total_solicitacoes' => 0,
@@ -21,10 +21,12 @@ $estatisticas = $estatisticas ?? [
 $statusList = $statusList ?? [];
 $tiposServico = $tiposServico ?? [];
 $filtros = $filtros ?? [];
+
+// Simular notificações dinâmicas para demonstração
+$novasSolicitacoes = 3; // Esta variável viria do controller/model
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,65 +38,113 @@ $filtros = $filtros ?? [];
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
+        
         .nav-link {
-            color: rgba(255, 255, 255, 0.8) !important;
+            color: rgba(255,255,255,0.8) !important;
             transition: all 0.3s ease;
         }
-
+        
         .nav-link:hover,
         .nav-link.active {
             color: #fff !important;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.1);
             border-radius: 8px;
         }
-
+        
         .main-content {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
         }
-
+        
         .stats-widget {
             background: white;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             border-left: 4px solid;
             margin-bottom: 1.5rem;
         }
-
+        
         .solicitacao-card {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             border: none;
             transition: all 0.3s ease;
         }
-
+        
         .solicitacao-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
-
+        
         .view-toggle {
             background: white;
             border-radius: 8px;
             padding: 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
+        
         .view-toggle .btn {
             border: none;
             border-radius: 6px;
             padding: 8px 16px;
             font-size: 0.875rem;
         }
+
+        /* MELHORIAS DO MENU - Agrupamento Lógico */
+        .nav-section-title {
+            color: rgba(255,255,255,0.6) !important;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem 0.25rem 1rem;
+            margin-top: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: default;
+        }
+        
+        .nav-section-title:first-child {
+            margin-top: 0;
+        }
+        
+        /* Melhorias no Link Ativo */
+        .nav-link.active {
+            background: rgba(255,255,255,0.15) !important;
+            border-left: 3px solid #fff !important;
+            margin-left: 0 !important;
+            padding-left: calc(1rem - 3px) !important;
+            position: relative;
+        }
+        
+        /* Badge de Notificação */
+        .notification-badge {
+            background: #dc3545 !important;
+            color: white !important;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
-
 <body>
     <div class="container-fluid">
         <div class="row">
+            <!-- Sidebar -->
             <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
                 <div class="position-sticky pt-3">
                     <div class="text-center mb-4">
@@ -104,12 +154,33 @@ $filtros = $filtros ?? [];
                         </h4>
                         <p class="text-white-50 small">ChamaServiço</p>
                     </div>
-
+                    
+                    <!-- MENU MELHORADO COM AGRUPAMENTO LÓGICO -->
                     <ul class="nav flex-column">
+                        <!-- SEÇÃO: PAINEL -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-speedometer2 me-1"></i>Painel
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/chamaservico/admin/dashboard">
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Dashboard
+                            </a>
+                        </li>
+                        
+                        <!-- SEÇÃO: GESTÃO -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-gear me-1"></i>Gestão
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex justify-content-between align-items-center active" href="/chamaservico/admin/solicitacoes">
+                                <span>
+                                    <i class="bi bi-list-task me-2"></i>
+                                    Solicitações
+                                </span>
+                                <?php if ($novasSolicitacoes > 0): ?>
+                                    <span class="notification-badge"><?= $novasSolicitacoes ?></span>
+                                <?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -119,22 +190,26 @@ $filtros = $filtros ?? [];
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="/chamaservico/admin/solicitacoes">
-                                <i class="bi bi-list-task me-2"></i>
-                                Solicitações
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="/chamaservico/admin/tipos-servico">
                                 <i class="bi bi-tools me-2"></i>
                                 Tipos de Serviços
                             </a>
+                        </li>
+                        
+                        <!-- SEÇÃO: ANÁLISE -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-graph-up me-1"></i>Análise
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/chamaservico/admin/relatorios">
                                 <i class="bi bi-graph-up me-2"></i>
                                 Relatórios
                             </a>
+                        </li>
+                        
+                        <!-- SEÇÃO: SISTEMA -->
+                        <li class="nav-section-title">
+                            <i class="bi bi-gear-fill me-1"></i>Sistema
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/chamaservico/admin/configuracoes">
@@ -143,7 +218,7 @@ $filtros = $filtros ?? [];
                             </a>
                         </li>
                     </ul>
-
+                    
                     <div class="mt-auto pt-4">
                         <div class="text-center">
                             <div class="text-white-50 small">
@@ -161,34 +236,37 @@ $filtros = $filtros ?? [];
                 </div>
             </nav>
 
+            <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Header -->
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4">
                     <h1 class="h2 text-dark">
                         <i class="bi bi-list-task me-2"></i>
                         Gestão de Solicitações
-                    </h1>
-
+                    </h1
+                    
+                    <!-- Controles de visualização -->
                     <div class="view-toggle">
                         <div class="btn-group" role="group">
-                            <a href="?view=cards&<?= http_build_query(array_diff_key($_GET, ['view' => ''])) ?>"
-                                class="btn btn-<?= $tipoVisualizacao === 'cards' ? 'primary' : 'outline-primary' ?> btn-sm">
+                            <a href="?view=cards&<?= http_build_query(array_diff_key($_GET, ['view' => ''])) ?>" 
+                               class="btn btn-<?= $tipoVisualizacao === 'cards' ? 'primary' : 'outline-primary' ?> btn-sm">
                                 <i class="bi bi-grid-3x3-gap me-1"></i>Cards
                             </a>
-                            <a href="?view=table&<?= http_build_query(array_diff_key($_GET, ['view' => ''])) ?>"
-                                class="btn btn-<?= $tipoVisualizacao === 'table' ? 'primary' : 'outline-primary' ?> btn-sm">
+                            <a href="?view=table&<?= http_build_query(array_diff_key($_GET, ['view' => ''])) ?>" 
+                               class="btn btn-<?= $tipoVisualizacao === 'table' ? 'primary' : 'outline-primary' ?> btn-sm">
                                 <i class="bi bi-table me-1"></i>Tabela
                             </a>
-                            <a href="?view=mapa&<?= http_build_query(array_diff_key($_GET, ['view' => ''])) ?>"
-                                class="btn btn-<?= $tipoVisualizacao === 'mapa' ? 'primary' : 'outline-primary' ?> btn-sm">
+                            <a href="?view=mapa&<?= http_build_query(array_diff_key($_GET, ['view' => ''])) ?>" 
+                               class="btn btn-<?= $tipoVisualizacao === 'mapa' ? 'primary' : 'outline-primary' ?> btn-sm">
                                 <i class="bi bi-map me-1"></i>Mapa
                             </a>
                         </div>
                     </div>
                 </div>
 
+                <!-- Flash Messages -->
                 <?php if (isset($_SESSION['admin_flash'])): ?>
-                    <?php $flash = $_SESSION['admin_flash'];
-                    unset($_SESSION['admin_flash']); ?>
+                    <?php $flash = $_SESSION['admin_flash']; unset($_SESSION['admin_flash']); ?>
                     <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show">
                         <i class="bi bi-<?= $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle' ?> me-2"></i>
                         <?= htmlspecialchars($flash['message']) ?>
@@ -665,5 +743,4 @@ $filtros = $filtros ?? [];
         });
     </script>
 </body>
-
 </html>

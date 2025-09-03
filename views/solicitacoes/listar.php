@@ -35,8 +35,8 @@ ob_start();
             </div>
             <div class="col-md-4">
                 <label for="busca" class="form-label">Buscar</label>
-                <input type="text" class="form-control" name="busca" id="busca" 
-                       placeholder="Título ou descrição..." value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
+                <input type="text" class="form-control" name="busca" id="busca"
+                    placeholder="Título ou descrição..." value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-outline-primary w-100">
@@ -52,7 +52,7 @@ ob_start();
         <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
         <h4 class="text-muted mt-3">Nenhuma solicitação encontrada</h4>
         <p class="text-muted">
-            <?= !empty($_GET['status']) || !empty($_GET['urgencia']) || !empty($_GET['busca']) 
+            <?= !empty($_GET['status']) || !empty($_GET['urgencia']) || !empty($_GET['busca'])
                 ? 'Tente ajustar os filtros ou ' : '' ?>
             Crie sua primeira solicitação de serviço!
         </p>
@@ -90,7 +90,7 @@ ob_start();
                             </small>
                         </p>
                         <p class="card-text"><?= htmlspecialchars(substr($solicitacao['descricao'] ?? 'Sem descrição', 0, 100)) ?>...</p>
-                        
+
                         <!-- Indicadores -->
                         <div class="mb-3">
                             <?php if (($solicitacao['total_imagens'] ?? 0) > 0): ?>
@@ -99,19 +99,19 @@ ob_start();
                                     <?= $solicitacao['total_imagens'] ?> foto<?= $solicitacao['total_imagens'] > 1 ? 's' : '' ?>
                                 </span>
                             <?php endif; ?>
-                            
+
                             <span class="badge bg-<?= ($solicitacao['urgencia'] ?? 'media') === 'alta' ? 'danger' : (($solicitacao['urgencia'] ?? 'media') === 'media' ? 'warning' : 'info') ?>">
                                 <?= ucfirst($solicitacao['urgencia'] ?? 'media') ?>
                             </span>
                         </div>
-                        
+
                         <div class="mb-2">
                             <small class="text-muted">
                                 <i class="bi bi-geo-alt me-1"></i>
                                 <?= htmlspecialchars(($solicitacao['cidade'] ?? 'Cidade') . ', ' . ($solicitacao['estado'] ?? 'UF')) ?>
                             </small>
                         </div>
-                        
+
                         <?php if (!empty($solicitacao['orcamento_estimado'])): ?>
                             <div class="mb-2">
                                 <small class="text-success">
@@ -123,29 +123,29 @@ ob_start();
                     </div>
                     <div class="card-footer bg-transparent">
                         <div class="d-flex gap-1">
-                            <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>" 
-                               class="btn btn-outline-primary btn-sm flex-fill">
+                            <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                class="btn btn-outline-primary btn-sm flex-fill">
                                 <i class="bi bi-eye me-1"></i>Ver
                             </a>
-                            
+
                             <?php if (in_array($solicitacao['status_id'] ?? 0, [1, 2])): ?>
-                                <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" 
-                                   class="btn btn-outline-secondary btn-sm flex-fill">
+                                <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>"
+                                    class="btn btn-outline-secondary btn-sm flex-fill">
                                     <i class="bi bi-pencil me-1"></i>Editar
                                 </a>
                             <?php endif; ?>
-                            
-                            <button type="button" 
-                                    class="btn btn-outline-danger btn-sm flex-fill"
-                                    onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)">
+
+                            <button type="button"
+                                class="btn btn-outline-danger btn-sm flex-fill"
+                                onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)">
                                 <i class="bi bi-trash me-1"></i>Excluir
                             </button>
                         </div>
-                        
+
                         <?php if ($solicitacao['status_id'] == 1): ?>
                             <div class="mt-2">
-                                <a href="/chamaservico/cliente/propostas/recebidas?solicitacao_id=<?= $solicitacao['id'] ?>" 
-                                   class="btn btn-success btn-sm w-100">
+                                <a href="/chamaservico/cliente/propostas/recebidas?solicitacao_id=<?= $solicitacao['id'] ?>"
+                                    class="btn btn-success btn-sm w-100">
                                     <i class="bi bi-inbox me-1"></i>Ver Propostas Recebidas
                                 </a>
                             </div>

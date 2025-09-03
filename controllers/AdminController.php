@@ -89,8 +89,125 @@ class AdminController {
     
     // Métodos para futuras funcionalidades
     public function relatorios() {
-        // TODO: Implementar RelatoriosAdminController
-        $this->showNotImplemented('Relatórios');
+        Session::requireAdminLogin();
+        
+        try {
+            require_once 'core/Database.php';
+            $db = Database::getInstance();
+            
+            // Buscar estatísticas gerais
+            $sqlEstatisticas = "
+                SELECT 
+                    (SELECT COUNT(*) FROM tb_solicita_servico) as total_solicitacoes,
+                    (SELECT COUNT(*) FROM tb_pessoa WHERE tipo IN ('cliente', 'ambos')) as total_clientes,
+                    (SELECT COUNT(*) FROM tb_pessoa WHERE tipo IN ('prestador', 'ambos')) as total_prestadores,
+                    (SELECT COUNT(*) FROM tb_proposta) as total_propostas,
+                    (SELECT COUNT(*) FROM tb_proposta WHERE status = 'aceita') as propostas_aceitas,
+                    (SELECT SUM(valor) FROM tb_proposta WHERE status = 'aceita') as valor_total_aceito,
+                    (SELECT COUNT(*) FROM tb_solicita_servico WHERE status_id = 5) as servicos_concluidos,
+                    (SELECT COUNT(*) FROM tb_avaliacao) as total_avaliacoes,
+                    (SELECT AVG(nota) FROM tb_avaliacao) as nota_media_geral
+            ";
+            
+            $stmt = $db->prepare($sqlEstatisticas);
+            $stmt->execute();
+            $estatisticas = $stmt->fetch() ?: [
+                'total_solicitacoes' => 0,
+                'total_clientes' => 0,
+                'total_prestadores' => 0,
+                'total_propostas' => 0,
+                'propostas_aceitas' => 0,
+                'valor_total_aceito' => 0,
+                'servicos_concluidos' => 0,
+                'total_avaliacoes' => 0,
+                'nota_media_geral' => 0
+            ];
+            
+            // Buscar dados para gráficos dos últimos 12 meses
+            $sqlSolicitacoesMes = "
+                SELECT 
+                    DATE_FORMAT(data_solicitacao, '%Y-%m') as mes,
+                    COUNT(*) as total
+                FROM tb_solicita_servico 
+                WHERE data_solicitacao >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+                GROUP BY DATE_FORMAT(data_solicitacao, '%Y-%m')
+                ORDER BY mes ASC
+            ";
+            
+            $stmt = $db->prepare($sqlSolicitacoesMes);
+            $stmt->execute();
+            $solicitacoesPorMes = $stmt->fetchAll();
+            
+            // Buscar tipos de serviços mais solicitados
+            $sqlTiposPopulares = "
+                SELECT 
+                    ts.nome,
+                    COUNT(s.id) as total,
+                    AVG(s.orcamento_estimado) as orcamento_medio
+                FROM tb_tipo_servico ts
+                LEFT JOIN tb_solicita_servico s ON ts.id = s.tipo_servico_id
+                GROUP BY ts.id, ts.nome
+                ORDER BY total DESC
+                LIMIT 10
+            ";
+            
+            $stmt = $db->prepare($sqlTiposPopulares);
+            $stmt->execute();
+            $tiposPopulares = $stmt->fetchAll();
+            
+            // Buscar distribuição por status
+            $sqlStatusDistribuicao = "
+                SELECT 
+                    st.nome,
+                    st.cor,
+                    COUNT(s.id) as total
+                FROM tb_status_solicitacao st
+                LEFT JOIN tb_solicita_servico s ON st.id = s.status_id
+                GROUP BY st.id, st.nome, st.cor
+                ORDER BY total DESC
+            ";
+            
+            $stmt = $db->prepare($sqlStatusDistribuicao);
+            $stmt->execute();
+            $statusDistribuicao = $stmt->fetchAll();
+            
+            // Buscar cidades com mais atividade
+            $sqlCidadesAtivas = "
+                SELECT 
+                    e.cidade,
+                    e.estado,
+                    COUNT(s.id) as total_solicitacoes
+                FROM tb_endereco e
+                JOIN tb_solicita_servico s ON e.id = s.endereco_id
+                GROUP BY e.cidade, e.estado
+                ORDER BY total_solicitacoes DESC
+                LIMIT 10
+            ";
+            
+            $stmt = $db->prepare($sqlCidadesAtivas);
+            $stmt->execute();
+            $cidadesAtivas = $stmt->fetchAll();
+            
+        } catch (Exception $e) {
+            error_log("Erro ao buscar dados de relatórios: " . $e->getMessage());
+            $estatisticas = [
+                'total_solicitacoes' => 0,
+                'total_clientes' => 0,
+                'total_prestadores' => 0,
+                'total_propostas' => 0,
+                'propostas_aceitas' => 0,
+                'valor_total_aceito' => 0,
+                'servicos_concluidos' => 0,
+                'total_avaliacoes' => 0,
+                'nota_media_geral' => 0
+            ];
+            $solicitacoesPorMes = [];
+            $tiposPopulares = [];
+            $statusDistribuicao = [];
+            $cidadesAtivas = [];
+        }
+        
+        include 'views/admin/relatorios/index.php';
     }
     
     public function configuracoes() {

@@ -3,7 +3,7 @@ require_once 'core/Database.php';
 
 class SolicitacaoServico
 {
-    private $db;
+    public $db; // MUDANÇA: private para public
 
     public function __construct()
     {
@@ -13,6 +13,9 @@ class SolicitacaoServico
     public function criar($dados)
     {
         try {
+            error_log("=== MODELO: Iniciando criação da solicitação ===");
+            error_log("Dados recebidos: " . print_r($dados, true));
+            
             $this->db->getConnection()->beginTransaction();
 
             $sql = "INSERT INTO tb_solicita_servico 
@@ -20,8 +23,7 @@ class SolicitacaoServico
                      orcamento_estimado, data_atendimento, status_id, urgencia) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            $stmt = $this->db->prepare($sql);
-            $resultado = $stmt->execute([
+            $params = [
                 $dados['cliente_id'],
                 $dados['tipo_servico_id'],
                 $dados['endereco_id'],
@@ -31,28 +33,53 @@ class SolicitacaoServico
                 $dados['data_atendimento'],
                 $dados['status_id'] ?? 1, // Aguardando Propostas
                 $dados['urgencia']
-            ]);
+            ];
+            
+            error_log("SQL: $sql");
+            error_log("Parâmetros: " . print_r($params, true));
+
+            $stmt = $this->db->prepare($sql);
+            $resultado = $stmt->execute($params);
 
             if ($resultado) {
                 $solicitacaoId = $this->db->lastInsertId();
                 $this->db->getConnection()->commit();
+                
+                error_log("Solicitação criada com sucesso! ID: $solicitacaoId");
                 return $solicitacaoId;
             } else {
                 $this->db->getConnection()->rollBack();
+                $errorInfo = $stmt->errorInfo();
+                error_log("Erro ao executar SQL: " . print_r($errorInfo, true));
                 return false;
             }
         } catch (Exception $e) {
-            $this->db->getConnection()->rollBack();
-            return false;
+            if ($this->db->getConnection()->inTransaction()) {
+                $this->db->getConnection()->rollBack();
+            }
+            error_log("EXCEÇÃO no modelo: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            throw $e; // Re-throw para o controller capturar
         }
     }
 
     // Novo: Salvar imagens da solicitação
     public function salvarImagem($solicitacaoId, $caminhoImagem)
     {
-        $sql = "INSERT INTO tb_imagem_solicitacao (solicitacao_id, caminho_imagem) VALUES (?, ?)";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([$solicitacaoId, $caminhoImagem]);
+        try {
+            $sql = "INSERT INTO tb_imagem_solicitacao (solicitacao_id, caminho_imagem) VALUES (?, ?)";
+            $stmt = $this->db->prepare($sql);
+            $resultado = $stmt->execute([$solicitacaoId, $caminhoImagem]);
+            
+            if (!$resultado) {
+                error_log("Erro ao salvar imagem: " . print_r($stmt->errorInfo(), true));
+            }
+            
+            return $resultado;
+        } catch (Exception $e) {
+            error_log("Exceção ao salvar imagem: " . $e->getMessage());
+            return false;
+        }
     }
 
     // Novo: Buscar imagens da solicitação
@@ -330,6 +357,37 @@ class SolicitacaoServico
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$clienteId, $limit]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Atualizar status da solicitação
+     */
+    public function atualizarStatus($solicitacaoId, $novoStatus, $clienteId)
+    {
+        try {
+            $sql = "UPDATE tb_solicita_servico SET status_id = ? WHERE id = ? AND cliente_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$novoStatus, $solicitacaoId, $clienteId]);
+        } catch (Exception $e) {
+            error_log("Erro ao atualizar status: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Solicitar revisão do serviço
+     */
+    public function solicitarRevisao($solicitacaoId, $clienteId, $motivo)
+    {
+        try {
+            // Atualizar status para "Em Revisão" (assumindo status_id = 12)
+            $sql = "UPDATE tb_solicita_servico SET status_id = 12 WHERE id = ? AND cliente_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$solicitacaoId, $clienteId]);
+        } catch (Exception $e) {
+            error_log("Erro ao solicitar revisão: " . $e->getMessage());
+            return false;
+        }
     }
 }
 

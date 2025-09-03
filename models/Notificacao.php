@@ -10,256 +10,181 @@ class Notificacao
         $this->db = Database::getInstance();
     }
 
-    // Criar nova notificação
+    /**
+     * Criar nova notificação
+     */
     public function criarNotificacao($pessoaId, $titulo, $mensagem, $tipo = null, $referenciaId = null)
     {
         try {
-            // CORREÇÃO: Garantir que pessoaId seja um valor único
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
-
             $sql = "INSERT INTO tb_notificacao (pessoa_id, titulo, mensagem, tipo, referencia_id) 
                     VALUES (?, ?, ?, ?, ?)";
+            
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([$pessoaId, $titulo, $mensagem, $tipo, $referenciaId]);
+            $resultado = $stmt->execute([$pessoaId, $titulo, $mensagem, $tipo, $referenciaId]);
+            
+            if ($resultado) {
+                error_log("Notificação criada: Usuário $pessoaId, Tipo: $tipo, Título: $titulo");
+                return $this->db->lastInsertId();
+            }
+            
+            return false;
+            
         } catch (Exception $e) {
             error_log("Erro ao criar notificação: " . $e->getMessage());
             return false;
         }
     }
 
-    // Contar notificações não lidas
-    public function contarNaoLidas($pessoaId)
+    /**
+     * Buscar notificações por usuário
+     */
+    public function buscarPorUsuario($userId, $filtros = [])
     {
-        try {
-            // CORREÇÃO: Garantir que $pessoaId seja um valor único
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
+        $sql = "SELECT * FROM tb_notificacao WHERE pessoa_id = ?";
+        $params = [$userId];
 
-            // CORREÇÃO LINHA 54: Adicionar validação e casting
-            if (empty($pessoaId) || !is_numeric($pessoaId)) {
-                error_log("ID de pessoa inválido para contagem de notificações: " . print_r($pessoaId, true));
-                return 0;
-            }
-
-            $sql = "SELECT COUNT(*) FROM tb_notificacao WHERE pessoa_id = ? AND lida = 0";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([(int)$pessoaId]);
-            return (int) $stmt->fetchColumn();
-        } catch (Exception $e) {
-            error_log("Erro ao contar notificações não lidas: " . $e->getMessage());
-            return 0;
+        if (!empty($filtros['tipo'])) {
+            $sql .= " AND tipo = ?";
+            $params[] = $filtros['tipo'];
         }
+
+        if (!empty($filtros['status'])) {
+            if ($filtros['status'] === 'lidas') {
+                $sql .= " AND lida = 1";
+            } elseif ($filtros['status'] === 'nao_lidas') {
+                $sql .= " AND lida = 0";
+            }
+        }
+
+        $sql .= " ORDER BY data_notificacao DESC LIMIT 50";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
-    // Buscar notificações de um usuário
-    public function buscarPorUsuario($pessoaId, $limit = 10, $filtros = [])
+    /**
+     * Contar notificações não lidas
+     */
+    public function contarNaoLidas($userId)
     {
-        try {
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
-
-            $sql = "SELECT * FROM tb_notificacao WHERE pessoa_id = ?";
-            $params = [(int)$pessoaId];
-
-            // Aplicar filtros
-            if (!empty($filtros['tipo'])) {
-                $sql .= " AND tipo = ?";
-                $params[] = $filtros['tipo'];
-            }
-
-            if (isset($filtros['lida']) && $filtros['lida'] !== '') {
-                $sql .= " AND lida = ?";
-                $params[] = (int)$filtros['lida'];
-            }
-
-            $sql .= " ORDER BY data_notificacao DESC LIMIT ?";
-            $params[] = (int)$limit;
-
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-            return $stmt->fetchAll();
-        } catch (Exception $e) {
-            error_log("Erro ao buscar notificações: " . $e->getMessage());
-            return [];
-        }
+        $sql = "SELECT COUNT(*) FROM tb_notificacao WHERE pessoa_id = ? AND lida = 0";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId]);
+        return (int) $stmt->fetchColumn();
     }
 
-    // Marcar notificação como lida
-    public function marcarComoLida($notificacaoId, $pessoaId)
+    /**
+     * Marcar notificação como lida
+     */
+    public function marcarComoLida($notificacaoId, $userId)
     {
-        try {
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
-
-            if (is_array($notificacaoId)) {
-                $notificacaoId = $notificacaoId[0] ?? 0;
-            }
-
-            $sql = "UPDATE tb_notificacao SET lida = 1 
-                    WHERE id = ? AND pessoa_id = ?";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([(int)$notificacaoId, (int)$pessoaId]);
-        } catch (Exception $e) {
-            error_log("Erro ao marcar notificação como lida: " . $e->getMessage());
-            return false;
-        }
+        $sql = "UPDATE tb_notificacao SET lida = 1 WHERE id = ? AND pessoa_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$notificacaoId, $userId]);
     }
 
-    // Marcar todas as notificações como lidas
-    public function marcarTodasComoLidas($pessoaId)
+    /**
+     * Marcar todas as notificações como lidas
+     */
+    public function marcarTodasComoLidas($userId)
     {
-        try {
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
-
-            $sql = "UPDATE tb_notificacao SET lida = 1 WHERE pessoa_id = ?";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([(int)$pessoaId]);
-        } catch (Exception $e) {
-            error_log("Erro ao marcar todas as notificações como lidas: " . $e->getMessage());
-            return false;
-        }
+        $sql = "UPDATE tb_notificacao SET lida = 1 WHERE pessoa_id = ? AND lida = 0";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$userId]);
     }
 
-    // Deletar notificação
-    public function deletar($notificacaoId, $pessoaId)
+    /**
+     * Deletar notificação
+     */
+    public function deletar($notificacaoId, $userId)
     {
-        try {
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
-
-            if (is_array($notificacaoId)) {
-                $notificacaoId = $notificacaoId[0] ?? 0;
-            }
-
-            $sql = "DELETE FROM tb_notificacao WHERE id = ? AND pessoa_id = ?";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([(int)$notificacaoId, (int)$pessoaId]);
-        } catch (Exception $e) {
-            error_log("Erro ao deletar notificação: " . $e->getMessage());
-            return false;
-        }
+        $sql = "DELETE FROM tb_notificacao WHERE id = ? AND pessoa_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$notificacaoId, $userId]);
     }
 
-    // Buscar notificação por ID
-    public function buscarPorId($notificacaoId, $pessoaId = null)
+    /**
+     * Obter estatísticas das notificações do usuário
+     */
+    public function getEstatisticasUsuario($userId)
     {
-        try {
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
-
-            if (is_array($notificacaoId)) {
-                $notificacaoId = $notificacaoId[0] ?? 0;
-            }
-
-            $sql = "SELECT * FROM tb_notificacao WHERE id = ?";
-            $params = [(int)$notificacaoId];
-
-            if ($pessoaId) {
-                $sql .= " AND pessoa_id = ?";
-                $params[] = (int)$pessoaId;
-            }
-
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-            return $stmt->fetch();
-        } catch (Exception $e) {
-            error_log("Erro ao buscar notificação por ID: " . $e->getMessage());
-            return false;
-        }
+        $sql = "SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN lida = 0 THEN 1 ELSE 0 END) as nao_lidas,
+                    SUM(CASE WHEN lida = 1 THEN 1 ELSE 0 END) as lidas
+                FROM tb_notificacao 
+                WHERE pessoa_id = ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId]);
+        return $stmt->fetch();
     }
 
-    // Limpar notificações antigas (mais de 30 dias)
-    public function limparAntigas($dias = 30)
+    /**
+     * Criar notificação automática baseada em template (MÉTODO ÚNICO)
+     */
+    public static function criarNotificacaoAutomatica($tipo, $pessoaId, $referenciaId, $dados = [])
     {
         try {
-            $sql = "DELETE FROM tb_notificacao 
-                    WHERE data_notificacao < DATE_SUB(NOW(), INTERVAL ? DAY)";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([(int)$dias]);
-        } catch (Exception $e) {
-            error_log("Erro ao limpar notificações antigas: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    // Estatísticas de notificações
-    public function getEstatisticas($pessoaId)
-    {
-        try {
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
-            }
-
-            $sql = "SELECT 
-                        COUNT(*) as total,
-                        SUM(CASE WHEN lida = 0 THEN 1 ELSE 0 END) as nao_lidas,
-                        SUM(CASE WHEN lida = 1 THEN 1 ELSE 0 END) as lidas
-                    FROM tb_notificacao 
-                    WHERE pessoa_id = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([(int)$pessoaId]);
-            return $stmt->fetch();
-        } catch (Exception $e) {
-            error_log("Erro ao obter estatísticas de notificações: " . $e->getMessage());
-            return [
-                'total' => 0,
-                'nao_lidas' => 0,
-                'lidas' => 0
+            $notificacao = new self();
+            
+            $templates = [
+                'proposta_aceita' => [
+                    'titulo' => '🎉 Proposta Aceita!',
+                    'mensagem' => 'Sua proposta para "{servico}" foi aceita pelo cliente! Entre em contato para combinar os detalhes.'
+                ],
+                'proposta_recusada' => [
+                    'titulo' => '❌ Proposta Recusada',
+                    'mensagem' => 'Sua proposta para "{servico}" foi recusada pelo cliente.'
+                ],
+                'servico_concluido' => [
+                    'titulo' => '✅ Serviço Concluído',
+                    'mensagem' => 'O prestador marcou o serviço "{servico}" como concluído. Confirme a conclusão e avalie o trabalho.'
+                ],
+                'nova_proposta' => [
+                    'titulo' => '📋 Nova Proposta Recebida',
+                    'mensagem' => 'Você recebeu uma nova proposta para "{servico}". Clique para visualizar e responder.'
+                ],
+                'revisao_solicitada' => [
+                    'titulo' => '⚠️ Revisão Solicitada',
+                    'mensagem' => 'O cliente solicitou revisão no serviço "{servico}".'
+                ],
+                'avaliacao_recebida' => [
+                    'titulo' => '⭐ Avaliação Recebida',
+                    'mensagem' => 'Você recebeu uma nova avaliação! Parabéns pelo trabalho realizado.'
+                ],
+                'status_servico' => [
+                    'titulo' => '🔄 Status Atualizado',
+                    'mensagem' => 'O status do seu serviço foi atualizado.'
+                ],
+                'ordem_servico_gerada' => [
+                    'titulo' => '📄 Ordem de Serviço Gerada',
+                    'mensagem' => 'Uma Ordem de Serviço foi gerada para o seu serviço concluído.'
+                ]
             ];
-        }
-    }
-
-    // Notificações por tipo
-    public function buscarPorTipo($pessoaId, $tipo, $limit = 5)
-    {
-        try {
-            if (is_array($pessoaId)) {
-                $pessoaId = $pessoaId[0] ?? 0;
+            
+            if (!isset($templates[$tipo])) {
+                error_log("Tipo de notificação não encontrado: $tipo");
+                return false;
             }
-
-            $sql = "SELECT * FROM tb_notificacao 
-                    WHERE pessoa_id = ? AND tipo = ? 
-                    ORDER BY data_notificacao DESC 
-                    LIMIT ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([(int)$pessoaId, $tipo, (int)$limit]);
-            return $stmt->fetchAll();
-        } catch (Exception $e) {
-            error_log("Erro ao buscar notificações por tipo: " . $e->getMessage());
-            return [];
-        }
-    }
-
-    // Criar notificação em tempo real
-    public function criarNotificacaoTempoReal($pessoaId, $titulo, $mensagem, $tipo = null, $referenciaId = null)
-    {
-        try {
-            // Criar notificação normal
-            $resultado = $this->criarNotificacao($pessoaId, $titulo, $mensagem, $tipo, $referenciaId);
-
-            if ($resultado) {
-                // Aqui você pode adicionar lógica para WebSockets ou Server-Sent Events
-                // Por enquanto, usaremos polling com AJAX
-
-                // Log para debug
-                error_log("Nova notificação criada para usuário $pessoaId: $titulo");
-
-                return true;
+            
+            $template = $templates[$tipo];
+            $titulo = $template['titulo'];
+            $mensagem = $template['mensagem'];
+            
+            // Substituir dados no template
+            foreach ($dados as $chave => $valor) {
+                $mensagem = str_replace("{{$chave}}", $valor, $mensagem);
             }
-
-            return false;
+            
+            return $notificacao->criarNotificacao($pessoaId, $titulo, $mensagem, $tipo, $referenciaId);
+            
         } catch (Exception $e) {
-            error_log("Erro ao criar notificação em tempo real: " . $e->getMessage());
+            error_log("Erro ao criar notificação automática: " . $e->getMessage());
             return false;
         }
     }
 }
+?>
+      

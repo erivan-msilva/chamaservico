@@ -11,10 +11,22 @@ require_once 'controllers/ClientePerfilController.php';
 require_once 'controllers/PrestadorPerfilController.php';
 require_once 'controllers/PrestadorController.php';
 require_once 'controllers/PropostaController.php';
-require_once 'controllers/NegociacaoController.php';
-require_once 'controllers/NotificacaoController.php';
-require_once 'controllers/OrdemServicoController.php';
 require_once 'controllers/ClienteDashboardController.php';
+require_once 'controllers/ClientePropostaController.php';
+require_once 'controllers/ClienteServicoController.php';
+
+// Incluir controllers opcionais se existirem
+if (file_exists('controllers/NegociacaoController.php')) {
+    require_once 'controllers/NegociacaoController.php';
+}
+
+if (file_exists('controllers/NotificacaoController.php')) {
+    require_once 'controllers/NotificacaoController.php';
+}
+
+if (file_exists('controllers/OrdemServicoController.php')) {
+    require_once 'controllers/OrdemServicoController.php';
+}
 
 // Verificar se AdminController existe antes de incluir
 if (file_exists('controllers/AdminController.php')) {
@@ -231,7 +243,6 @@ $router->post('/perfil/editar', 'PerfilController', 'editar');
 $router->get('/perfil/enderecos', 'PerfilController', 'enderecos');
 $router->post('/perfil/enderecos', 'PerfilController', 'enderecos');
 
-
 // ========================================
 // ROTAS DO CLIENTE
 // ========================================
@@ -286,6 +297,7 @@ $router->get('/prestador/solicitacoes/detalhes', 'PrestadorController', 'detalhe
 
 // Propostas do Prestador
 $router->get('/prestador/propostas', 'PropostaController', 'minhas');
+$router->get('/prestador/propostas/detalhes', 'PropostaController', 'detalhes');
 $router->post('/prestador/propostas/enviar', 'PrestadorController', 'enviarProposta');
 $router->post('/prestador/propostas/cancelar', 'PropostaController', 'cancelar');
 
@@ -295,19 +307,34 @@ $router->get('/prestador/servicos/detalhes', 'PrestadorController', 'servicoDeta
 $router->post('/prestador/servicos/atualizar-status', 'PrestadorController', 'atualizarStatusServico');
 
 // ========================================
-// ROTAS DE NOTIFICAÇÕES
+// ROTAS DE NOTIFICAÇÕES (Condicionais)
 // ========================================
-$router->get('/notificacoes', 'NotificacaoController', 'index');
-$router->get('/notificacoes/contador', 'NotificacaoController', 'contador');
-$router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarComoLida');
-$router->post('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas');
-$router->post('/notificacoes/deletar', 'NotificacaoController', 'deletar');
+if (class_exists('NotificacaoController')) {
+    $router->get('/notificacoes', 'NotificacaoController', 'index');
+    $router->get('/notificacoes/contador', 'NotificacaoController', 'contador');
+    $router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarComoLida');
+    $router->post('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas');
+    $router->post('/notificacoes/deletar', 'NotificacaoController', 'deletar');
+}
 
 // ========================================
-// ROTAS DE NEGOCIAÇÃO
+// ROTAS DE NEGOCIAÇÃO (Condicionais)
 // ========================================
-$router->get('/negociacao/negociar', 'NegociacaoController', 'negociar');
-$router->post('/negociacao/negociar', 'NegociacaoController', 'negociar');
+if (class_exists('NegociacaoController')) {
+    $router->get('/negociacao/negociar', 'NegociacaoController', 'negociar');
+    $router->post('/negociacao/negociar', 'NegociacaoController', 'negociar');
+}
+
+// ========================================
+// ROTAS DE ORDEM DE SERVIÇO (Condicionais)
+// ========================================
+if (class_exists('OrdemServicoController')) {
+    $router->get('/ordem-servico/visualizar', 'OrdemServicoController', 'visualizar');
+    $router->get('/ordem-servico/download', 'OrdemServicoController', 'download');
+    $router->post('/ordem-servico/enviar-email', 'OrdemServicoController', 'enviarEmail');
+    $router->post('/ordem-servico/assinar', 'OrdemServicoController', 'assinar');
+    $router->get('/ordem-servico/listar', 'OrdemServicoController', 'listar');
+}
 
 // ========================================
 // ROTAS DE COMPATIBILIDADE (LEGADO)
@@ -327,12 +354,12 @@ $router->get('/propostas/recebidas', 'PropostaController', 'redirectToUserType')
 $router->post('/propostas/aceitar', 'PropostaController', 'redirectToUserType');
 $router->post('/propostas/recusar', 'PropostaController', 'redirectToUserType');
 
-// Rotas de Ordem de Serviço
-$router->get('/ordem-servico/visualizar', 'OrdemServicoController', 'visualizar');
-$router->get('/ordem-servico/download', 'OrdemServicoController', 'download');
-$router->post('/ordem-servico/enviar-email', 'OrdemServicoController', 'enviarEmail');
-$router->post('/ordem-servico/assinar', 'OrdemServicoController', 'assinar');
-$router->get('/ordem-servico/listar', 'OrdemServicoController', 'listar');
+// Serviços Concluídos (Cliente)
+$router->get('/cliente/servicos/concluidos', 'ClienteServicoController', 'servicosConcluidos');
+$router->get('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliarServico');
+$router->post('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliarServico');
+$router->post('/cliente/servicos/confirmar-conclusao', 'ClienteServicoController', 'confirmarConclusao');
+$router->post('/cliente/servicos/solicitar-revisao', 'ClienteServicoController', 'solicitarRevisao');
 
 // Executar roteamento
 $router->run();

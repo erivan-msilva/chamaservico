@@ -65,10 +65,29 @@ class Perfil {
         ]);
     }
     
-    public function alterarSenha($id, $novaSenha) {
-        $sql = "UPDATE tb_pessoa SET senha = ? WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([password_hash($novaSenha, PASSWORD_DEFAULT), $id]);
+    /**
+     * Atualizar senha do usuário
+     * @param int $userId ID do usuário
+     * @param string $novaSenhaHash Nova senha já criptografada
+     * @return bool Sucesso da operação
+     */
+    public function atualizarSenha($userId, $novaSenhaHash) {
+        try {
+            $sql = "UPDATE tb_pessoa SET senha = ? WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $resultado = $stmt->execute([$novaSenhaHash, $userId]);
+            
+            if ($resultado && $stmt->rowCount() > 0) {
+                error_log("Senha atualizada com sucesso para usuário ID: $userId");
+                return true;
+            } else {
+                error_log("Nenhuma linha afetada ao atualizar senha para usuário ID: $userId");
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao atualizar senha: " . $e->getMessage());
+            return false;
+        }
     }
     
     public function verificarSenha($id, $senha) {
@@ -257,35 +276,45 @@ class Perfil {
         return true;
     }
     
-    // Adicionar este método à classe Perfil existente
-    public function atualizarDadosProfissionais($id, $dados) {
+    /**
+     * Atualizar dados profissionais do prestador
+     * @param int $userId ID do usuário
+     * @param array $dados Dados profissionais
+     * @return bool Sucesso da operação
+     */
+    public function atualizarDadosProfissionais($userId, $dados) {
         try {
-            // Verificar se existe um registro na tabela de perfil_profissional
-            $sql = "SELECT COUNT(*) FROM tb_perfil_profissional WHERE pessoa_id = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$id]);
-            $exists = $stmt->fetchColumn() > 0;
+            // Primeiro verificar se existe tabela tb_perfil_profissional
+            if (!$this->verificarTabelaPerfilProfissional()) {
+                $this->criarTabelaPerfilProfissional();
+            }
             
-            if ($exists) {
+            // Verificar se já existe registro para este usuário
+            $sqlVerificar = "SELECT id FROM tb_perfil_profissional WHERE pessoa_id = ?";
+            $stmtVerificar = $this->db->prepare($sqlVerificar);
+            $stmtVerificar->execute([$userId]);
+            $registro = $stmtVerificar->fetch();
+            
+            if ($registro) {
                 // Atualizar registro existente
                 $sql = "UPDATE tb_perfil_profissional 
-                        SET especialidades = ?, area_atuacao = ?, descricao = ? 
-                        WHERE pessoa_id = ?";
+                       SET especialidades = ?, area_atuacao = ?, descricao = ?
+                       WHERE pessoa_id = ?";
                 $stmt = $this->db->prepare($sql);
                 return $stmt->execute([
                     $dados['especialidades'],
                     $dados['area_atuacao'],
                     $dados['descricao_profissional'],
-                    $id
+                    $userId
                 ]);
             } else {
                 // Inserir novo registro
                 $sql = "INSERT INTO tb_perfil_profissional 
-                        (pessoa_id, especialidades, area_atuacao, descricao) 
-                        VALUES (?, ?, ?, ?)";
+                       (pessoa_id, especialidades, area_atuacao, descricao) 
+                       VALUES (?, ?, ?, ?)";
                 $stmt = $this->db->prepare($sql);
                 return $stmt->execute([
-                    $id,
+                    $userId,
                     $dados['especialidades'],
                     $dados['area_atuacao'],
                     $dados['descricao_profissional']
@@ -294,6 +323,78 @@ class Perfil {
         } catch (Exception $e) {
             error_log("Erro ao atualizar dados profissionais: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Verificar se tabela de perfil profissional existe
+     * @return bool
+     */
+    private function verificarTabelaPerfilProfissional() {
+        try {
+            $sql = "SHOW TABLES LIKE 'tb_perfil_profissional'";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (Exception $e) {
+            error_log("Erro ao verificar tabela: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Criar tabela de perfil profissional se não existir
+     * @return bool
+     */
+    private function criarTabelaPerfilProfissional() {
+        try {
+            $sql = "CREATE TABLE IF NOT EXISTS `tb_perfil_profissional` (
+              `id` int(11) NOT NULL AUTO_INCREMENT,
+              `pessoa_id` int(11) NOT NULL,
+              `especialidades` varchar(255) DEFAULT NULL COMMENT 'Lista de especialidades separadas por vírgula',
+              `area_atuacao` varchar(255) DEFAULT NULL COMMENT 'Área geográfica de atendimento',
+              `descricao` text DEFAULT NULL COMMENT 'Descrição profissional',
+              `disponibilidade` varchar(100) DEFAULT NULL COMMENT 'Dias/horários disponíveis',
+              `experiencia_anos` int(11) DEFAULT NULL COMMENT 'Anos de experiência',
+              `ultima_atualizacao` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+              PRIMARY KEY (`id`),
+              UNIQUE KEY `pessoa_id` (`pessoa_id`),
+              CONSTRAINT `fk_perfil_profissional_pessoa` FOREIGN KEY (`pessoa_id`) REFERENCES `tb_pessoa` (`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
+            
+            $stmt = $this->db->prepare($sql);
+            $resultado = $stmt->execute();
+            
+            if ($resultado) {
+                error_log("Tabela tb_perfil_profissional criada com sucesso");
+            }
+            
+            return $resultado;
+        } catch (Exception $e) {
+            error_log("Erro ao criar tabela tb_perfil_profissional: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Buscar dados profissionais do prestador
+     * @param int $userId ID do usuário
+     * @return array|null Dados profissionais ou null se não encontrado
+     */
+    public function buscarDadosProfissionais($userId) {
+        try {
+            // Verificar se tabela existe
+            if (!$this->verificarTabelaPerfilProfissional()) {
+                return null;
+            }
+            
+            $sql = "SELECT * FROM tb_perfil_profissional WHERE pessoa_id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$userId]);
+            return $stmt->fetch();
+        } catch (Exception $e) {
+            error_log("Erro ao buscar dados profissionais: " . $e->getMessage());
+            return null;
         }
     }
 }

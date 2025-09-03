@@ -8,423 +8,429 @@ if (!isset($_SESSION['admin_id'])) {
     header('Location: /chamaservico/admin/login');
     exit;
 }
+
+// Configuração do layout
+$title = 'Visualizar Usuário - Admin';
+$currentPage = 'usuarios';
+
+// Buscar dados reais do usuário
+$usuarioId = $_GET['id'] ?? 0;
+$usuario = null;
+
+if ($usuarioId) {
+    try {
+        require_once 'core/Database.php';
+        $db = Database::getInstance();
+        
+        // Buscar dados do usuário
+        $sql = "
+            SELECT 
+                p.*,
+                (SELECT COUNT(*) FROM tb_solicita_servico WHERE cliente_id = p.id) as total_solicitacoes,
+                (SELECT COUNT(*) FROM tb_proposta WHERE prestador_id = p.id) as total_propostas,
+                (SELECT AVG(nota) FROM tb_avaliacao WHERE avaliado_id = p.id) as nota_media,
+                (SELECT COUNT(*) FROM tb_endereco WHERE pessoa_id = p.id) as total_enderecos
+            FROM tb_pessoa p 
+            WHERE p.id = ?
+        ";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$usuarioId]);
+        $usuario = $stmt->fetch();
+        
+        if (!$usuario) {
+            $_SESSION['admin_flash'] = [
+                'type' => 'error',
+                'message' => 'Usuário não encontrado!'
+            ];
+            header('Location: /chamaservico/admin/usuarios');
+            exit;
+        }
+        
+        // Buscar endereços do usuário
+        $sqlEnderecos = "SELECT * FROM tb_endereco WHERE pessoa_id = ? ORDER BY principal DESC, id DESC";
+        $stmtEnderecos = $db->prepare($sqlEnderecos);
+        $stmtEnderecos->execute([$usuarioId]);
+        $enderecos = $stmtEnderecos->fetchAll();
+        
+        // Buscar últimas solicitações
+        $sqlSolicitacoes = "
+            SELECT s.*, ts.nome as tipo_servico_nome, st.nome as status_nome, st.cor as status_cor
+            FROM tb_solicita_servico s
+            JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+            JOIN tb_status_solicitacao st ON s.status_id = st.id
+            WHERE s.cliente_id = ?
+            ORDER BY s.data_solicitacao DESC
+            LIMIT 5
+        ";
+        $stmtSolicitacoes = $db->prepare($sqlSolicitacoes);
+        $stmtSolicitacoes->execute([$usuarioId]);
+        $solicitacoes = $stmtSolicitacoes->fetchAll();
+        
+    } catch (Exception $e) {
+        error_log("Erro ao buscar usuário: " . $e->getMessage());
+        $_SESSION['admin_flash'] = [
+            'type' => 'error',
+            'message' => 'Erro ao carregar dados do usuário!'
+        ];
+        header('Location: /chamaservico/admin/usuarios');
+        exit;
+    }
+} else {
+    header('Location: /chamaservico/admin/usuarios');
+    exit;
+}
+
+// Definir variáveis padrão para estatísticas
+$estatisticas = [
+    'solicitacoes' => $usuario['total_solicitacoes'] ?? 0,
+    'propostas' => $usuario['total_propostas'] ?? 0,
+    'avaliacoes' => $usuario['total_enderecos'] ?? 0,
+    'nota_media' => $usuario['nota_media'] ? number_format($usuario['nota_media'], 1) : '0.0'
+];
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizar Usuário - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        .sidebar {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .nav-link {
-            color: rgba(255,255,255,0.8) !important;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover,
-        .nav-link.active {
-            color: #fff !important;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-        }
-        
-        .main-content {
-            background: #f8f9fa;
-            min-height: 100vh;
-        }
-        
-        .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid rgba(255,255,255,0.2);
-            object-fit: cover;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-left: 4px solid;
-            transition: transform 0.2s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .activity-item {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            border-left: 3px solid #007bff;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <div class="text-center mb-4">
-                        <h4 class="text-white">
-                            <i class="bi bi-shield-check me-2"></i>
-                            Admin Panel
-                        </h4>
-                        <p class="text-white-50 small">ChamaServiço</p>
-                    </div>
-                    
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/dashboard">
-                                <i class="bi bi-speedometer2 me-2"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/chamaservico/admin/usuarios">
-                                <i class="bi bi-people me-2"></i>
-                                Usuários
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/solicitacoes">
-                                <i class="bi bi-list-task me-2"></i>
-                                Solicitações
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/propostas">
-                                <i class="bi bi-file-text me-2"></i>
-                                Propostas
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/relatorios">
-                                <i class="bi bi-graph-up me-2"></i>
-                                Relatórios
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/configuracoes">
-                                <i class="bi bi-gear me-2"></i>
-                                Configurações
-                            </a>
-                        </li>
-                    </ul>
-                    
-                    <div class="mt-auto pt-4">
-                        <div class="text-center">
-                            <div class="text-white-50 small">
-                                Logado como:
-                            </div>
-                            <div class="text-white fw-bold small">
-                                <?= htmlspecialchars($_SESSION['admin_nome']) ?>
-                            </div>
-                            <a href="/chamaservico/admin/logout" class="btn btn-outline-light btn-sm mt-2">
-                                <i class="bi bi-box-arrow-right me-1"></i>
-                                Sair
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </nav>
 
-            <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-                <!-- Header -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-                    <h1 class="h2">
-                        <i class="bi bi-person me-2"></i>
-                        Perfil do Usuário
-                    </h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="/chamaservico/admin/usuarios" class="btn btn-outline-secondary me-2">
-                            <i class="bi bi-arrow-left me-1"></i>
-                            Voltar
-                        </a>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-outline-primary" onclick="enviarEmail()">
-                                <i class="bi bi-envelope me-1"></i>
-                                Enviar Email
-                            </button>
-                            <?php if ($usuario['ativo']): ?>
-                                <button type="button" class="btn btn-outline-warning" onclick="alterarStatus(0)">
-                                    <i class="bi bi-pause me-1"></i>
-                                    Desativar
-                                </button>
-                            <?php else: ?>
-                                <button type="button" class="btn btn-outline-success" onclick="alterarStatus(1)">
-                                    <i class="bi bi-play me-1"></i>
-                                    Ativar
-                                </button>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Profile Header -->
-                <div class="profile-header">
-                    <div class="row align-items-center">
-                        <div class="col-md-3 text-center">
-                            <?php
-                            $fotoPerfil = $usuario['foto_perfil'] ?? '';
-                            $fotoExiste = $fotoPerfil && file_exists("uploads/perfil/" . basename($fotoPerfil));
-                            ?>
-                            <?php if ($fotoExiste): ?>
-                                <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars(basename($fotoPerfil)) ?>"
-                                     class="profile-avatar" alt="Foto do usuário">
-                            <?php else: ?>
-                                <div class="profile-avatar bg-secondary d-flex align-items-center justify-content-center mx-auto">
-                                    <i class="bi bi-person text-white" style="font-size: 3rem;"></i>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="col-md-9">
-                            <h2 class="mb-2"><?= htmlspecialchars($usuario['nome']) ?></h2>
-                            <p class="mb-2 opacity-75">
-                                <i class="bi bi-envelope me-2"></i><?= htmlspecialchars($usuario['email']) ?>
-                            </p>
-                            <?php if ($usuario['telefone']): ?>
-                                <p class="mb-2 opacity-75">
-                                    <i class="bi bi-telephone me-2"></i><?= htmlspecialchars($usuario['telefone']) ?>
-                                </p>
-                            <?php endif; ?>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <span class="badge bg-light text-dark px-3 py-2">
-                                    <i class="bi bi-person-badge me-1"></i><?= ucfirst($usuario['tipo']) ?>
-                                </span>
-                                <span class="badge <?= $usuario['ativo'] ? 'bg-success' : 'bg-danger' ?> px-3 py-2">
-                                    <i class="bi bi-<?= $usuario['ativo'] ? 'check-circle' : 'x-circle' ?> me-1"></i>
-                                    <?= $usuario['ativo'] ? 'Ativo' : 'Inativo' ?>
-                                </span>
-                                <span class="badge bg-info px-3 py-2">
-                                    <i class="bi bi-calendar me-1"></i>
-                                    Desde <?= date('d/m/Y', strtotime($usuario['data_cadastro'])) ?>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Estatísticas -->
-                <div class="row mb-4">
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="stat-card" style="border-left-color: #4e73df;">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Solicitações
-                                    </div>
-                                    <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                        <?= $estatisticas['solicitacoes'] ?>
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-list-task fs-2 text-primary"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="stat-card" style="border-left-color: #1cc88a;">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        Propostas
-                                    </div>
-                                    <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                        <?= $estatisticas['propostas'] ?>
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-file-earmark-text fs-2 text-success"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="stat-card" style="border-left-color: #36b9cc;">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        Endereços
-                                    </div>
-                                    <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                        <?= $estatisticas['enderecos'] ?>
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-geo-alt fs-2 text-info"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6 mb-3">
-                        <div class="stat-card" style="border-left-color: #f6c23e;">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Avaliações
-                                    </div>
-                                    <div class="h4 mb-0 font-weight-bold text-gray-800">
-                                        <?= $estatisticas['avaliacoes'] ?>
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-star fs-2 text-warning"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Detalhes e Atividades -->
-                <div class="row">
-                    <!-- Informações Detalhadas -->
-                    <div class="col-lg-6 mb-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Informações Detalhadas
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-sm-6 mb-3">
-                                        <strong>Nome Completo:</strong><br>
-                                        <?= htmlspecialchars($usuario['nome']) ?>
-                                    </div>
-                                    <div class="col-sm-6 mb-3">
-                                        <strong>Email:</strong><br>
-                                        <a href="mailto:<?= $usuario['email'] ?>"><?= htmlspecialchars($usuario['email']) ?></a>
-                                    </div>
-                                    <div class="col-sm-6 mb-3">
-                                        <strong>CPF:</strong><br>
-                                        <?= $usuario['cpf'] ? htmlspecialchars($usuario['cpf']) : 'Não informado' ?>
-                                    </div>
-                                    <div class="col-sm-6 mb-3">
-                                        <strong>Telefone:</strong><br>
-                                        <?= $usuario['telefone'] ? htmlspecialchars($usuario['telefone']) : 'Não informado' ?>
-                                    </div>
-                                    <div class="col-sm-6 mb-3">
-                                        <strong>Data de Nascimento:</strong><br>
-                                        <?= $usuario['dt_nascimento'] ? date('d/m/Y', strtotime($usuario['dt_nascimento'])) : 'Não informado' ?>
-                                    </div>
-                                    <div class="col-sm-6 mb-3">
-                                        <strong>Último Acesso:</strong><br>
-                                        <?= $usuario['ultimo_acesso'] ? date('d/m/Y H:i', strtotime($usuario['ultimo_acesso'])) : 'Nunca acessou' ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Endereços -->
-                    <div class="col-lg-6 mb-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-geo-alt me-2"></i>
-                                    Endereços Cadastrados
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <?php if (!empty($enderecos)): ?>
-                                    <?php foreach ($enderecos as $endereco): ?>
-                                        <div class="mb-3 p-2 <?= $endereco['principal'] ? 'bg-light' : '' ?> rounded">
-                                            <?php if ($endereco['principal']): ?>
-                                                <span class="badge bg-primary mb-1">Principal</span>
-                                            <?php endif; ?>
-                                            <address class="mb-0 small">
-                                                <?= htmlspecialchars($endereco['logradouro']) ?>, <?= htmlspecialchars($endereco['numero']) ?><br>
-                                                <?= $endereco['complemento'] ? htmlspecialchars($endereco['complemento']) . '<br>' : '' ?>
-                                                <?= htmlspecialchars($endereco['bairro']) ?> - <?= htmlspecialchars($endereco['cidade']) ?>/<?= htmlspecialchars($endereco['estado']) ?><br>
-                                                CEP: <?= htmlspecialchars($endereco['cep']) ?>
-                                            </address>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <p class="text-muted mb-0">Nenhum endereço cadastrado.</p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Últimas Solicitações -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-clock-history me-2"></i>
-                                    Últimas Solicitações
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <?php if (!empty($solicitacoes)): ?>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Título</th>
-                                                    <th>Tipo</th>
-                                                    <th>Status</th>
-                                                    <th>Data</th>
-                                                    <th>Valor</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($solicitacoes as $solicitacao): ?>
-                                                    <tr>
-                                                        <td><?= htmlspecialchars($solicitacao['titulo']) ?></td>
-                                                        <td><?= htmlspecialchars($solicitacao['tipo_servico_nome']) ?></td>
-                                                        <td>
-                                                            <span class="badge" style="background-color: <?= $solicitacao['status_cor'] ?>;">
-                                                                <?= htmlspecialchars($solicitacao['status_nome']) ?>
-                                                            </span>
-                                                        </td>
-                                                        <td><?= date('d/m/Y', strtotime($solicitacao['data_solicitacao'])) ?></td>
-                                                        <td>
-                                                            <?= $solicitacao['orcamento_estimado'] ? 'R$ ' . number_format($solicitacao['orcamento_estimado'], 2, ',', '.') : '-' ?>
-                                                        </td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                <?php else: ?>
-                                    <p class="text-muted mb-0">Nenhuma solicitação encontrada.</p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+<!-- Header -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4">
+    <h1 class="h2 text-dark">
+        <i class="bi bi-person-circle me-2"></i>
+        <?= htmlspecialchars($usuario['nome']) ?>
+    </h1>
+    
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="/chamaservico/admin/usuarios" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Voltar
+            </a>
         </div>
+        
+        <div class="btn-group">
+            <button type="button" class="btn btn-<?= $usuario['ativo'] ? 'danger' : 'success' ?>" 
+                    onclick="alterarStatus(<?= $usuario['ativo'] ? 0 : 1 ?>)">
+                <i class="bi bi-person-<?= $usuario['ativo'] ? 'x' : 'check' ?> me-1"></i>
+                <?= $usuario['ativo'] ? 'Desativar' : 'Ativar' ?>
+            </button>
+            <button type="button" class="btn btn-info" onclick="enviarEmail()">
+                <i class="bi bi-envelope me-1"></i>
+                Enviar E-mail
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Flash Messages -->
+<?php if (isset($_SESSION['admin_flash'])): ?>
+    <?php $flash = $_SESSION['admin_flash']; unset($_SESSION['admin_flash']); ?>
+    <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show">
+        <i class="bi bi-<?= $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle' ?> me-2"></i>
+        <?= htmlspecialchars($flash['message']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<!-- Estatísticas do Usuário -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #007bff;">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                        Solicitações
+                    </div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">
+                        <?= $estatisticas['solicitacoes'] ?>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <i class="bi bi-list-task fs-2 text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #28a745;">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                        Propostas
+                    </div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">
+                        <?= $estatisticas['propostas'] ?>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <i class="bi bi-envelope fs-2 text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #dc3545;">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                        Endereços
+                    </div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">
+                        <?= $estatisticas['avaliacoes'] ?>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <i class="bi bi-geo-alt fs-2 text-danger"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #f6c23e;">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                        Nota Média
+                    </div>
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">
+                        <?= $estatisticas['nota_media'] ?>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <i class="bi bi-star fs-2 text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detalhes e Atividades -->
+<div class="row">
+    <!-- Informações Detalhadas -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Informações Detalhadas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <strong>Nome Completo:</strong><br>
+                        <?= htmlspecialchars($usuario['nome']) ?>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Email:</strong><br>
+                        <a href="mailto:<?= $usuario['email'] ?>"><?= htmlspecialchars($usuario['email']) ?></a>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>CPF:</strong><br>
+                        <?= $usuario['cpf'] ? htmlspecialchars($usuario['cpf']) : 'Não informado' ?>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Telefone:</strong><br>
+                        <?= $usuario['telefone'] ? htmlspecialchars($usuario['telefone']) : 'Não informado' ?>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Tipo de Usuário:</strong><br>
+                        <span class="badge bg-<?= $usuario['tipo'] === 'cliente' ? 'primary' : ($usuario['tipo'] === 'prestador' ? 'success' : 'info') ?>">
+                            <?= ucfirst($usuario['tipo']) ?>
+                        </span>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Status:</strong><br>
+                        <span class="badge bg-<?= $usuario['ativo'] ? 'success' : 'danger' ?>">
+                            <i class="bi bi-<?= $usuario['ativo'] ? 'check-circle' : 'x-circle' ?> me-1"></i>
+                            <?= $usuario['ativo'] ? 'Ativo' : 'Inativo' ?>
+                        </span>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Data de Cadastro:</strong><br>
+                        <?= date('d/m/Y H:i', strtotime($usuario['data_cadastro'])) ?>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Último Acesso:</strong><br>
+                        <?= $usuario['ultimo_acesso'] ? date('d/m/Y H:i', strtotime($usuario['ultimo_acesso'])) : 'Nunca acessou' ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endereços -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    Endereços Cadastrados
+                </h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($enderecos)): ?>
+                    <?php foreach ($enderecos as $endereco): ?>
+                        <div class="mb-3 p-2 <?= $endereco['principal'] ? 'bg-light' : '' ?> rounded">
+                            <?php if ($endereco['principal']): ?>
+                                <span class="badge bg-primary mb-1">Principal</span>
+                            <?php endif; ?>
+                            <address class="mb-0 small">
+                                <?= htmlspecialchars($endereco['logradouro']) ?>, <?= htmlspecialchars($endereco['numero']) ?><br>
+                                <?= $endereco['complemento'] ? htmlspecialchars($endereco['complemento']) . '<br>' : '' ?>
+                                <?= htmlspecialchars($endereco['bairro']) ?> - <?= htmlspecialchars($endereco['cidade']) ?>/<?= htmlspecialchars($endereco['estado']) ?><br>
+                                CEP: <?= htmlspecialchars($endereco['cep']) ?>
+                            </address>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-muted mb-0">Nenhum endereço cadastrado.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimas Solicitações -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Últimas Solicitações
+                </h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($solicitacoes)): ?>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th>Data</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($solicitacoes as $solicitacao): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($solicitacao['titulo']) ?></td>
+                                        <td><?= htmlspecialchars($solicitacao['tipo_servico_nome']) ?></td>
+                                        <td>
+                                            <span class="badge" style="background-color: <?= $solicitacao['status_cor'] ?>;">
+                                                <?= htmlspecialchars($solicitacao['status_nome']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= date('d/m/Y', strtotime($solicitacao['data_solicitacao'])) ?></td>
+                                        <td>
+                                            <?= $solicitacao['orcamento_estimado'] ? 'R$ ' . number_format($solicitacao['orcamento_estimado'], 2, ',', '.') : '-' ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="text-muted mb-0">Nenhuma solicitação encontrada.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php
+$content = ob_get_clean();
+
+// Estilos específicos da página
+$styles = '
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-left: 4px solid;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border: none;
+    transition: all 0.3s ease;
+}
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #283579;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.text-xs {
+    font-size: 0.75rem;
+}
+.font-weight-bold {
+    font-weight: 700;
+}
+.text-gray-800 {
+    color: #5a5c69;
+}
+.badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+}
+.table-striped tbody tr:hover {
+    background-color: #e9ecef;
+}
+';
+
+// Scripts específicos da página
+$scripts = '
+<script>
+function alterarStatus(novoStatus) {
+    const acao = novoStatus ? "ativar" : "desativar";
+    if (confirm(`Tem certeza que deseja ${acao} este usuário?`)) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = novoStatus ? "/chamaservico/admin/usuarios/ativar" : "/chamaservico/admin/usuarios/desativar";
+        
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "id";
+        input.value = ' . $usuario['id'] . ';
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function enviarEmail() {
+    window.location.href = "mailto:' . htmlspecialchars($usuario['email']) . '";
+}
+</script>
+';
+
+include 'views/admin/layouts/app.php';
+?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -453,3 +459,4 @@ if (!isset($_SESSION['admin_id'])) {
     </script>
 </body>
 </html>
+   

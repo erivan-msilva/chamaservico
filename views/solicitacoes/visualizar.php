@@ -253,4 +253,3 @@ document.getElementById("modalImage").addEventListener("click", function() {
 $content = ob_get_clean();
 include 'views/layouts/app.php';
 ?>
-</div>

@@ -202,43 +202,77 @@ class Proposta {
     }
 
     public function buscarDetalheProposta($propostaId, $clienteId = null) {
-        $sql = "SELECT p.*, s.titulo as solicitacao_titulo, s.descricao as solicitacao_descricao,
-                       s.orcamento_estimado, s.urgencia, s.data_atendimento,
-                       ts.nome as tipo_servico_nome, c.nome as cliente_nome,
-                       pr.nome as prestador_nome, pr.email as prestador_email, 
-                       pr.telefone as prestador_telefone, pr.foto_perfil as prestador_foto,
-                       e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep
-                FROM tb_proposta p
-                JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
-                JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
-                JOIN tb_pessoa c ON s.cliente_id = c.id
-                JOIN tb_pessoa pr ON p.prestador_id = pr.id
-                JOIN tb_endereco e ON s.endereco_id = e.id
-                WHERE p.id = ?";
-
-        $params = [$propostaId];
-
-        if ($clienteId) {
-            $sql .= " AND s.cliente_id = ?";
-            $params[] = $clienteId;
-        }
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        $proposta = $stmt->fetch();
-
-        if ($proposta) {
-            // Verificar se há negociação ativa
-            $proposta['tem_negociacao_ativa'] = $this->temNegociacaoAtiva($propostaId);
-
-            // Buscar negociações se houver
-            if ($proposta['tem_negociacao_ativa']) {
-                $proposta['negociacoes'] = $this->buscarNegociacoesPorProposta($propostaId);
-            }
-        }
-
-        return $proposta;
+        $sql = "SELECT p.*, 
+                   pr.nome as prestador_nome, 
+                   pr.telefone as prestador_telefone,
+                   pr.email as prestador_email, 
+                   pr.foto_perfil as prestador_foto,
+                   s.id as solicitacao_id,
+                   s.titulo as solicitacao_titulo, 
+                   s.descricao as solicitacao_descricao,
+                   s.urgencia, 
+                   s.orcamento_estimado,
+                   ts.nome as tipo_servico_nome,
+                   e.logradouro, 
+                   e.numero, 
+                   e.complemento, 
+                   e.bairro, 
+                   e.cidade, 
+                   e.estado, 
+                   e.cep,
+                   -- Estatísticas do prestador
+                   (SELECT COUNT(*) FROM tb_proposta p2 
+                    JOIN tb_solicita_servico s2 ON p2.solicitacao_id = s2.id 
+                    WHERE p2.prestador_id = pr.id AND p2.status = 'aceita' AND s2.status_id = 5) as prestador_servicos_concluidos,
+                   (SELECT AVG(a.nota) FROM tb_avaliacao a
+                    JOIN tb_solicita_servico s3 ON a.solicitacao_id = s3.id
+                    JOIN tb_proposta p3 ON s3.id = p3.solicitacao_id
+                    WHERE p3.prestador_id = pr.id AND a.avaliado_id = pr.id) as prestador_avaliacao,
+                   (SELECT COUNT(*) FROM tb_avaliacao a
+                    JOIN tb_solicita_servico s4 ON a.solicitacao_id = s4.id
+                    JOIN tb_proposta p4 ON s4.id = p4.solicitacao_id
+                    WHERE p4.prestador_id = pr.id AND a.avaliado_id = pr.id) as prestador_total_avaliacoes,
+                   -- Anos de experiência
+                   TIMESTAMPDIFF(YEAR, pr.data_cadastro, NOW()) as prestador_anos_experiencia
+            FROM tb_proposta p
+            JOIN tb_pessoa pr ON p.prestador_id = pr.id
+            JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+            JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+            JOIN tb_endereco e ON s.endereco_id = e.id
+            WHERE p.id = ?";
+    
+    $params = [$propostaId];
+    
+    // Se clienteId for fornecido, verificar se a proposta pertence ao cliente
+    if ($clienteId) {
+        $sql .= " AND s.cliente_id = ?";
+        $params[] = $clienteId;
     }
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+    $proposta = $stmt->fetch();
+    
+    if ($proposta) {
+        // Garantir que valores nulos sejam tratados adequadamente
+        $proposta['prestador_avaliacao'] = $proposta['prestador_avaliacao'] ? round($proposta['prestador_avaliacao'], 1) : 0;
+        $proposta['prestador_servicos_concluidos'] = $proposta['prestador_servicos_concluidos'] ?? 0;
+        $proposta['prestador_total_avaliacoes'] = $proposta['prestador_total_avaliacoes'] ?? 0;
+        $proposta['prestador_anos_experiencia'] = $proposta['prestador_anos_experiencia'] ?? 0;
+        
+        // Verificar se é um telefone válido
+        if (empty($proposta['prestador_telefone']) || strlen($proposta['prestador_telefone']) < 8) {
+            $proposta['prestador_telefone'] = 'Não informado';
+        }
+        
+        // Verificar se é um email válido  
+        if (empty($proposta['prestador_email']) || !filter_var($proposta['prestador_email'], FILTER_VALIDATE_EMAIL)) {
+            $proposta['prestador_email'] = 'Não informado';
+        }
+    }
+    
+    return $proposta;
+}
 
     // Método que estava faltando
     public function temNegociacaoAtiva($propostaId) {
@@ -979,12 +1013,39 @@ class Proposta {
     }
 
     public function buscarPropostaDetalhada($propostaId, $clienteId) {
-        $sql = "SELECT p.*, pr.nome as prestador_nome, pr.telefone as prestador_telefone,
-                       pr.email as prestador_email, pr.foto_perfil as prestador_foto,
-                       s.titulo as solicitacao_titulo, s.descricao as solicitacao_descricao,
-                       s.urgencia, s.orcamento_estimado,
+        $sql = "SELECT p.*, 
+                       pr.nome as prestador_nome, 
+                       pr.telefone as prestador_telefone,
+                       pr.email as prestador_email, 
+                       pr.foto_perfil as prestador_foto,
+                       pr.whatsapp as prestador_whatsapp,
+                       s.id as solicitacao_id,
+                       s.titulo as solicitacao_titulo, 
+                       s.descricao as solicitacao_descricao,
+                       s.urgencia, 
+                       s.orcamento_estimado,
                        ts.nome as tipo_servico_nome,
-                       e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep
+                       e.logradouro, 
+                       e.numero, 
+                       e.complemento, 
+                       e.bairro, 
+                       e.cidade, 
+                       e.estado, 
+                       e.cep,
+                       -- Buscar estatísticas do prestador
+                       (SELECT COUNT(*) FROM tb_proposta p2 
+                        JOIN tb_solicita_servico s2 ON p2.solicitacao_id = s2.id 
+                        WHERE p2.prestador_id = pr.id AND p2.status = 'aceita' AND s2.status_id = 5) as prestador_servicos_concluidos,
+                       (SELECT AVG(a.nota) FROM tb_avaliacao a
+                        JOIN tb_solicita_servico s3 ON a.solicitacao_id = s3.id
+                        JOIN tb_proposta p3 ON s3.id = p3.solicitacao_id
+                        WHERE p3.prestador_id = pr.id AND a.avaliado_id = pr.id) as prestador_avaliacao,
+                       (SELECT COUNT(*) FROM tb_avaliacao a
+                        JOIN tb_solicita_servico s4 ON a.solicitacao_id = s4.id
+                        JOIN tb_proposta p4 ON s4.id = p4.solicitacao_id
+                        WHERE p4.prestador_id = pr.id AND a.avaliado_id = pr.id) as prestador_total_avaliacoes,
+                       -- Anos de experiência (baseado na data de cadastro)
+                       TIMESTAMPDIFF(YEAR, pr.data_cadastro, NOW()) as prestador_anos_experiencia
                 FROM tb_proposta p
                 JOIN tb_pessoa pr ON p.prestador_id = pr.id
                 JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
@@ -994,7 +1055,17 @@ class Proposta {
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$propostaId, $clienteId]);
-        return $stmt->fetch();
+        $proposta = $stmt->fetch();
+        
+        if ($proposta) {
+            // Garantir que valores nulos sejam tratados adequadamente
+            $proposta['prestador_avaliacao'] = $proposta['prestador_avaliacao'] ? round($proposta['prestador_avaliacao'], 1) : 0;
+            $proposta['prestador_servicos_concluidos'] = $proposta['prestador_servicos_concluidos'] ?? 0;
+            $proposta['prestador_total_avaliacoes'] = $proposta['prestador_total_avaliacoes'] ?? 0;
+            $proposta['prestador_anos_experiencia'] = $proposta['prestador_anos_experiencia'] ?? 0;
+        }
+        
+        return $proposta;
     }
 
     // Novo método: Conta propostas por id de solicitação
@@ -1031,6 +1102,92 @@ class Proposta {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$clienteId]);
         return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Recusar automaticamente outras propostas quando uma é aceita
+     * @param int $solicitacaoId ID da solicitação
+     * @param int $propostaAceitaId ID da proposta que foi aceita (não será recusada)
+     * @return bool Sucesso da operação
+     */
+    public function recusarOutrasPropostas($solicitacaoId, $propostaAceitaId) {
+        try {
+            $this->db->getConnection()->beginTransaction();
+            
+            // Buscar outras propostas pendentes da mesma solicitação
+            $sqlBuscar = "SELECT p.id, p.prestador_id, p.valor, s.titulo as servico_titulo
+                         FROM tb_proposta p
+                         JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                         WHERE p.solicitacao_id = ? AND p.id != ? AND p.status = 'pendente'";
+            
+            $stmtBuscar = $this->db->prepare($sqlBuscar);
+            $stmtBuscar->execute([$solicitacaoId, $propostaAceitaId]);
+            $outrasPropostas = $stmtBuscar->fetchAll();
+            
+            if (empty($outrasPropostas)) {
+                $this->db->getConnection()->commit();
+                return true; // Não há outras propostas para recusar
+            }
+            
+            // Recusar todas as outras propostas
+            $sqlRecusar = "UPDATE tb_proposta 
+                          SET status = 'recusada', data_recusa = NOW() 
+                          WHERE solicitacao_id = ? AND id != ? AND status = 'pendente'";
+            
+            $stmtRecusar = $this->db->prepare($sqlRecusar);
+            $resultRecusar = $stmtRecusar->execute([$solicitacaoId, $propostaAceitaId]);
+            
+            if (!$resultRecusar) {
+                $this->db->getConnection()->rollBack();
+                error_log("Erro ao recusar outras propostas da solicitação: $solicitacaoId");
+                return false;
+            }
+            
+            // Criar notificações para cada prestador que teve proposta recusada
+            foreach ($outrasPropostas as $proposta) {
+                $this->criarNotificacaoRecusaAutomatica(
+                    $proposta['prestador_id'],
+                    $proposta['servico_titulo'],
+                    $proposta['id']
+                );
+            }
+            
+            $this->db->getConnection()->commit();
+            
+            $totalRecusadas = count($outrasPropostas);
+            error_log("Recusadas automaticamente $totalRecusadas propostas da solicitação: $solicitacaoId");
+            
+            return true;
+            
+        } catch (Exception $e) {
+            if ($this->db->getConnection()->inTransaction()) {
+                $this->db->getConnection()->rollBack();
+            }
+            error_log("Erro ao recusar outras propostas: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Criar notificação de recusa automática
+     * @param int $prestadorId ID do prestador
+     * @param string $servicoTitulo Título do serviço
+     * @param int $propostaId ID da proposta recusada
+     */
+    private function criarNotificacaoRecusaAutomatica($prestadorId, $servicoTitulo, $propostaId) {
+        try {
+            // Usar a função estática que criamos
+            require_once 'models/Notificacao.php';
+            Notificacao::criarNotificacaoAutomatica(
+                'proposta_recusada',
+                $prestadorId,
+                $propostaId,
+                ['servico' => $servicoTitulo]
+            );
+            
+        } catch (Exception $e) {
+            error_log("Erro ao criar notificação de recusa automática: " . $e->getMessage());
+        }
     }
 }
 ?>

@@ -3,828 +3,553 @@ $title = 'Propostas Recebidas - ChamaServiço';
 ob_start();
 ?>
 
+<!-- CSS customizado para melhorar o design -->
 <style>
-.stats-card {
-    border-left: 4px solid;
-    transition: transform 0.2s;
+.card-proposta {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
 }
-.stats-card:hover {
+
+.card-proposta:hover {
     transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
 }
-.filter-section {
+
+.card-proposta.selecionado {
+    border-color: #0d6efd;
+    background-color: #f8f9fa;
+}
+
+.prestador-destaque {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-}
-.timeline-view .card {
-    border-left: 4px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1rem;
     margin-bottom: 1rem;
 }
-.timeline-view .card.status-pendente {
-    border-left-color: #ffc107;
+
+.prestador-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
+.prestador-avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.valor-prazo-destaque {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.valor-principal {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.prazo-principal {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.avaliacao-estrelas {
+    color: #ffc107;
+    margin-right: 0.5rem;
+}
+
+.badge-status {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+}
+
+.checkbox-comparacao {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    background: white;
+    border-radius: 6px;
+    padding: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modo-comparacao .card-proposta {
+    cursor: pointer;
+}
+
+.acoes-lote {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.timeline-view .card {
+    border-left: 4px solid #007bff;
+    margin-bottom: 1rem;
+}
+
 .timeline-view .card.status-aceita {
-    border-left-color: #198754;
+    border-left-color: #28a745;
 }
+
 .timeline-view .card.status-recusada {
     border-left-color: #dc3545;
 }
-.comparison-checkbox {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+
+.timeline-view .card.status-pendente {
+    border-left-color: #ffc107;
 }
-.card-proposta {
-    transition: all 0.3s ease;
-    position: relative;
+
+.btn-group-toggle .btn {
+    border-radius: 8px !important;
+    margin-right: 5px;
 }
-.card-proposta:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+
+.dropdown-toggle::after {
+    display: none;
 }
-.card-proposta.selected {
-    border: 2px solid #007bff;
-    background-color: #f8f9ff;
-}
-.prestador-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-.prestador-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #e9ecef;
-}
-.prestador-rating {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-.card-badge {
-    position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    z-index: 10;
-}
-.urgencia-alta {
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-}
-.valor-destaque {
-    font-size: 1.25rem;
-    font-weight: bold;
-}
-.info-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.5rem;
-    background: #f8f9fa;
-    border-radius: 1rem;
+
+.info-badge {
+    background: rgba(0,123,255,0.1);
+    color: #007bff;
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
     font-size: 0.75rem;
-    margin: 0.125rem;
-}
-.progress-bar-custom {
-    height: 4px;
-    background: #e9ecef;
-    border-radius: 2px;
-    overflow: hidden;
-}
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #28a745, #20c997);
-    transition: width 0.3s ease;
-}
-.card-proposta .card-body {
-    padding: 1rem;
-}
-.servico-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    margin-bottom: 0.75rem;
-}
-.tag {
-    background: #e7f3ff;
-    color: #0056b3;
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.75rem;
-    font-size: 0.7rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.3rem;
+    display: inline-block;
 }
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2><i class="bi bi-inbox me-2"></i>Propostas Recebidas</h2>
-        <small class="text-muted">Gerencie todas as propostas dos seus serviços</small>
+        <h2 class="mb-1">
+            <i class="bi bi-inbox me-2 text-primary"></i>Propostas Recebidas
+        </h2>
+        <p class="text-muted mb-0">Gerencie as propostas que você recebeu para suas solicitações</p>
     </div>
+    
     <div class="d-flex gap-2">
-        <button class="btn btn-outline-info" onclick="toggleComparacao()">
-            <i class="bi bi-bar-chart me-1"></i>Comparar
+        <!-- Controles de Visualização -->
+        <div class="btn-group btn-group-toggle" role="group">
+            <button type="button" class="btn btn-outline-secondary active" id="btn-cards" onclick="alterarVisualizacao('cards')">
+                <i class="bi bi-grid me-1"></i>Cards
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="btn-lista" onclick="alterarVisualizacao('lista')">
+                <i class="bi bi-list me-1"></i>Lista
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="btn-timeline" onclick="alterarVisualizacao('timeline')">
+                <i class="bi bi-clock-history me-1"></i>Timeline
+            </button>
+        </div>
+        
+        <!-- Botão Modo Comparação -->
+        <button type="button" class="btn btn-outline-info" id="btn-comparacao" onclick="toggleModoComparacao()">
+            <i class="bi bi-check2-square me-1"></i>Comparar
         </button>
-        <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-primary">
-            <i class="bi bi-arrow-left me-1"></i>Minhas Solicitações
+        
+        <!-- Nova Solicitação -->
+        <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Nova Solicitação
         </a>
     </div>
 </div>
 
-<!-- Estatísticas Resumidas -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card stats-card text-center" style="border-left-color: #ffc107;">
-            <div class="card-body py-3">
-                <h3 class="text-warning mb-1"><?= $estatisticas['pendentes'] ?? 0 ?></h3>
-                <small class="text-muted">Aguardando Resposta</small>
-            </div>
+<!-- Ações em Lote (quando modo comparação ativo) -->
+<div class="acoes-lote" id="acoes-lote">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <strong><span id="contador-selecionadas">0</span> propostas selecionadas</strong>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stats-card text-center" style="border-left-color: #198754;">
-            <div class="card-body py-3">
-                <h3 class="text-success mb-1"><?= $estatisticas['aceitas'] ?? 0 ?></h3>
-                <small class="text-muted">Aceitas</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stats-card text-center" style="border-left-color: #dc3545;">
-            <div class="card-body py-3">
-                <h3 class="text-danger mb-1"><?= $estatisticas['recusadas'] ?? 0 ?></h3>
-                <small class="text-muted">Recusadas</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stats-card text-center" style="border-left-color: #007bff;">
-            <div class="card-body py-3">
-                <h3 class="text-primary mb-1">R$ <?= number_format($estatisticas['valor_medio'] ?? 0, 0, ',', '.') ?></h3>
-                <small class="text-muted">Valor Médio</small>
-            </div>
+        <div class="btn-group">
+            <button class="btn btn-light btn-sm" onclick="compararSelecionadas()">
+                <i class="bi bi-bar-chart me-1"></i>Comparar
+            </button>
+            <button class="btn btn-success btn-sm" onclick="aceitarSelecionadas()">
+                <i class="bi bi-check me-1"></i>Aceitar
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="recusarSelecionadas()">
+                <i class="bi bi-x me-1"></i>Recusar
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="limparSelecao()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Limpar
+            </button>
         </div>
     </div>
 </div>
 
-<!-- Filtros Avançados -->
-<div class="card mb-4">
-    <div class="card-body filter-section">
-        <form method="GET" class="row g-3" id="formFiltros">
+<!-- Filtros -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3" id="form-filtros">
+            <div class="col-md-4">
+                <label for="solicitacao_id" class="form-label">Solicitação</label>
+                <select class="form-select" id="solicitacao_id" name="solicitacao_id">
+                    <option value="">Todas as solicitações</option>
+                    <?php foreach ($solicitacoes as $solicitacao): ?>
+                        <option value="<?= $solicitacao['id'] ?>" 
+                                <?= ($_GET['solicitacao_id'] ?? '') == $solicitacao['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($solicitacao['titulo']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
             <div class="col-md-3">
                 <label for="status" class="form-label">Status</label>
-                <select class="form-select" name="status" id="status">
-                    <option value="">Todos</option>
-                    <option value="pendente" <?= ($_GET['status'] ?? '') == 'pendente' ? 'selected' : '' ?>>Aguardando Propostas</option>
-                    <option value="aceita" <?= ($_GET['status'] ?? '') == 'aceita' ? 'selected' : '' ?>>Proposta Aceita</option>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos os status</option>
+                    <option value="pendente" <?= ($_GET['status'] ?? '') == 'pendente' ? 'selected' : '' ?>>Pendente</option>
+                    <option value="aceita" <?= ($_GET['status'] ?? '') == 'aceita' ? 'selected' : '' ?>>Aceita</option>
                     <option value="recusada" <?= ($_GET['status'] ?? '') == 'recusada' ? 'selected' : '' ?>>Recusada</option>
                 </select>
             </div>
             
             <div class="col-md-3">
-                <label for="tipo_servico" class="form-label">Tipo de Serviço</label>
-                <select class="form-select" name="tipo_servico" id="tipo_servico">
-                    <option value="">Todos os tipos</option>
-                    <?php foreach ($tipos_servico as $tipo): ?>
-                        <option value="<?= $tipo['id'] ?>" 
-                                <?= ($_GET['tipo_servico'] ?? '') == $tipo['id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($tipo['nome']) ?>
-                        </option>
-                    <?php endforeach; ?>
+                <label for="ordenacao" class="form-label">Ordenar por</label>
+                <select class="form-select" id="ordenacao" name="ordenacao">
+                    <option value="data_desc" <?= ($_GET['ordenacao'] ?? '') == 'data_desc' ? 'selected' : '' ?>>Mais recentes</option>
+                    <option value="data_asc" <?= ($_GET['ordenacao'] ?? '') == 'data_asc' ? 'selected' : '' ?>>Mais antigas</option>
+                    <option value="valor_asc" <?= ($_GET['ordenacao'] ?? '') == 'valor_asc' ? 'selected' : '' ?>>Menor valor</option>
+                    <option value="valor_desc" <?= ($_GET['ordenacao'] ?? '') == 'valor_desc' ? 'selected' : '' ?>>Maior valor</option>
                 </select>
             </div>
-
+            
             <div class="col-md-2">
-                <label for="data_inicio" class="form-label">Data Início</label>
-                <input type="date" class="form-control" name="data_inicio" id="data_inicio" 
-                       value="<?= $_GET['data_inicio'] ?? '' ?>">
-            </div>
-
-            <div class="col-md-2">
-                <label for="data_fim" class="form-label">Data Fim</label>
-                <input type="date" class="form-control" name="data_fim" id="data_fim" 
-                       value="<?= $_GET['data_fim'] ?? '' ?>">
-            </div>
-
-            <div class="col-md-2 d-flex align-items-end">
-                <div class="btn-group w-100" role="group">
-                    <button type="submit" class="btn btn-primary">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-outline-primary">
                         <i class="bi bi-funnel me-1"></i>Filtrar
                     </button>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <label for="busca" class="form-label">Buscar por título, descrição ou endereço</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" name="busca" id="busca" 
-                           placeholder="Buscar por título, descrição ou endereço..." 
-                           value="<?= $_GET['busca'] ?? '' ?>">
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <label for="ordenacao" class="form-label">Ordenar por</label>
-                <select class="form-select" name="ordenacao" id="ordenacao">
-                    <option value="data_desc" <?= ($_GET['ordenacao'] ?? 'data_desc') == 'data_desc' ? 'selected' : '' ?>>Mais Recentes</option>
-                    <option value="data_asc" <?= ($_GET['ordenacao'] ?? '') == 'data_asc' ? 'selected' : '' ?>>Mais Antigas</option>
-                    <option value="valor_desc" <?= ($_GET['ordenacao'] ?? '') == 'valor_desc' ? 'selected' : '' ?>>Maior Valor</option>
-                    <option value="valor_asc" <?= ($_GET['ordenacao'] ?? '') == 'valor_asc' ? 'selected' : '' ?>>Menor Valor</option>
-                    <option value="prazo_asc" <?= ($_GET['ordenacao'] ?? '') == 'prazo_asc' ? 'selected' : '' ?>>Menor Prazo</option>
-                </select>
-            </div>
-
-            <div class="col-md-3 d-flex align-items-end">
-                <div class="btn-group w-100" role="group">
                     <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle me-1"></i>Limpar
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpar
                     </a>
-                   
                 </div>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Controles de Visualização -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="d-flex align-items-center gap-3">
-        <small class="text-muted">
-            <strong><?= count($propostas) ?></strong> proposta(s) encontrada(s)
-        </small>
-        
-        <!-- Ações em lote (visível apenas quando há seleções) -->
-        <div id="acoes-lote" class="d-none">
-            <div class="btn-group btn-group-sm">
-                <button class="btn btn-outline-success" onclick="aceitarSelecionadas()">
-                    <i class="bi bi-check-all me-1"></i>Aceitar Selecionadas
-                </button>
-                <button class="btn btn-outline-danger" onclick="recusarSelecionadas()">
-                    <i class="bi bi-x-lg me-1"></i>Recusar Selecionadas
-                </button>
+<!-- Container das Propostas -->
+<div id="container-propostas">
+    <?php if (empty($propostas)): ?>
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h4 class="mt-3 text-muted">Nenhuma proposta encontrada</h4>
+                <p class="text-muted">
+                    <?php if (!empty($_GET['status']) || !empty($_GET['solicitacao_id'])): ?>
+                        Tente ajustar os filtros para ver mais resultados.
+                    <?php else: ?>
+                        Você ainda não recebeu propostas para suas solicitações.
+                    <?php endif; ?>
+                </p>
+                <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Criar Nova Solicitação
+                </a>
             </div>
         </div>
-    </div>
-
-    <div class="btn-group btn-group-sm" role="group">
-        <button type="button" class="btn btn-outline-secondary active" id="btn-cards" onclick="alterarVisualizacao('cards')">
-            <i class="bi bi-grid-3x3-gap me-1"></i>Cards
-        </button>
-        <button type="button" class="btn btn-outline-secondary" id="btn-lista" onclick="alterarVisualizacao('lista')">
-            <i class="bi bi-list me-1"></i>Lista
-        </button>
-        <button type="button" class="btn btn-outline-secondary" id="btn-timeline" onclick="alterarVisualizacao('timeline')">
-            <i class="bi bi-clock-history me-1"></i>Timeline
-        </button>
-    </div>
-</div>
-
-<?php if (empty($propostas)): ?>
-    <div class="text-center py-5">
-        <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-        <h4 class="text-muted mt-3">Nenhuma proposta encontrada</h4>
-        <p class="text-muted">
-            <?= !empty($_GET['solicitacao_id']) || !empty($_GET['status']) 
-                ? 'Tente ajustar os filtros ou ' : '' ?>
-            Crie solicitações para receber propostas de prestadores!
-        </p>
-        <div class="d-flex gap-2 justify-content-center">
-            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-1"></i>Nova Solicitação
-            </a>
-            <?php if (!empty($_GET['solicitacao_id']) || !empty($_GET['status'])): ?>
-                <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle me-1"></i>Limpar Filtros
-                </a>
-            <?php endif; ?>
-        </div>
-    </div>
-<?php else: ?>
-    <!-- Visualização em Cards (padrão) -->
-    <div id="view-cards" class="row">
-        <?php foreach ($propostas as $proposta): ?>
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm card-proposta position-relative" data-proposta-id="<?= $proposta['id'] ?>">
-                    <!-- Badge de urgência -->
-                    <?php if (!empty($proposta['urgencia']) && $proposta['urgencia'] === 'alta'): ?>
-                    <div class="card-badge">
-                        <span class="badge bg-danger urgencia-alta">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Urgente
-                        </span>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <!-- Checkbox para comparação -->
-                    <div class="comparison-checkbox d-none">
-                        <input type="checkbox" class="form-check-input" value="<?= $proposta['id'] ?>" 
-                               onchange="toggleComparacaoItem(this)">
-                    </div>
-                    
-                    <div class="card-header d-flex justify-content-between align-items-center py-2">
-                        <small class="text-muted">
-                            <i class="bi bi-calendar me-1"></i>
-                            <?= date('d/m/Y H:i', strtotime($proposta['data_proposta'])) ?>
-                            
-                            <!-- Tempo decorrido -->
-                            <span class="ms-2 badge bg-light text-dark">
-                                <?php
-                                $agora = new DateTime();
-                                $dataProposta = new DateTime($proposta['data_proposta']);
-                                $intervalo = $agora->diff($dataProposta);
-                                if ($intervalo->days > 0) {
-                                    echo $intervalo->days . ' dia(s) atrás';
-                                } elseif ($intervalo->h > 0) {
-                                    echo $intervalo->h . 'h atrás';
-                                } else {
-                                    echo $intervalo->i . 'min atrás';
-                                }
-                                ?>
-                            </span>
-                        </small>
-                        <span class="badge bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'recusada' ? 'danger' : 'warning') ?>">
-                            <?= $proposta['status'] === 'pendente' ? 'Aguardando' : 
-                                ($proposta['status'] === 'aceita' ? 'Aceita' : 'Recusada') ?>
-                        </span>
-                    </div>
-                    
-                    <div class="card-body">
-                        <!-- Título da solicitação -->
-                        <h6 class="card-title d-flex align-items-center mb-2">
-                            <i class="bi bi-tools me-2 text-primary"></i>
-                            <?= htmlspecialchars($proposta['solicitacao_titulo']) ?>
-                        </h6>
+    <?php else: ?>
+        <!-- Visualização em Cards (Redesenhada) -->
+        <div id="view-cards" class="row">
+            <?php foreach ($propostas as $proposta): ?>
+                <div class="col-md-6 col-xl-4 mb-4">
+                    <div class="card card-proposta shadow-sm h-100 position-relative" data-proposta-id="<?= $proposta['id'] ?>">
+                        <!-- Checkbox para Comparação -->
+                        <div class="checkbox-comparacao d-none">
+                            <input type="checkbox" class="form-check-input" value="<?= $proposta['id'] ?>" onchange="toggleSelecao(this)">
+                        </div>
                         
-                        <!-- Tags de serviço e urgência -->
-                        <div class="servico-tags">
-                            <span class="tag">
+                        <!-- Status Badge -->
+                        <div class="position-absolute top-0 end-0 p-2">
+                            <span class="badge badge-status bg-<?= $proposta['status'] == 'pendente' ? 'warning' : 
+                                                               ($proposta['status'] == 'aceita' ? 'success' : 'secondary') ?>">
+                                <?= $proposta['status'] == 'pendente' ? 'Aguardando' : ucfirst($proposta['status']) ?>
+                            </span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Prestador em Destaque -->
+                            <div class="prestador-destaque">
+                                <div class="d-flex align-items-center">
+                                    <?php if (!empty($proposta['prestador_foto'])): ?>
+                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($proposta['prestador_foto']) ?>" 
+                                             class="prestador-avatar me-3" alt="Foto do prestador">
+                                    <?php else: ?>
+                                        <div class="prestador-avatar-placeholder bg-primary text-white me-3">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-1 fw-bold"><?= htmlspecialchars($proposta['prestador_nome']) ?></h5>
+                                        
+                                        <!-- Avaliação -->
+                                        <?php if (!empty($proposta['prestador_avaliacao'])): ?>
+                                            <div class="avaliacao-estrelas">
+                                                <?php 
+                                                $rating = floatval($proposta['prestador_avaliacao']);
+                                                for($i = 1; $i <= 5; $i++): 
+                                                ?>
+                                                    <i class="bi bi-star<?= $i <= $rating ? '-fill' : '' ?>"></i>
+                                                <?php endfor; ?>
+                                                <small class="text-muted ms-1">
+                                                    (<?= number_format($rating, 1) ?> • <?= $proposta['prestador_total_avaliacoes'] ?? 0 ?> avaliações)
+                                                </small>
+                                            </div>
+                                        <?php else: ?>
+                                            <small class="text-muted">Prestador ainda sem avaliações</small>
+                                        <?php endif; ?>
+                                        
+                                        <!-- Info badges -->
+                                        <div class="mt-2">
+                                            <?php if (!empty($proposta['prestador_servicos_concluidos'])): ?>
+                                                <span class="info-badge">
+                                                    <i class="bi bi-check-circle me-1"></i><?= $proposta['prestador_servicos_concluidos'] ?> serviços
+                                                </span>
+                                            <?php endif; ?>
+                                            
+                                            <?php if (!empty($proposta['prestador_anos_experiencia'])): ?>
+                                                <span class="info-badge">
+                                                    <i class="bi bi-calendar me-1"></i><?= $proposta['prestador_anos_experiencia'] ?>+ anos
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Valor e Prazo em Destaque -->
+                            <div class="valor-prazo-destaque">
+                                <div class="valor-principal">R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></div>
+                                <div class="prazo-principal">
+                                    <i class="bi bi-clock me-1"></i>
+                                    <?= $proposta['prazo_execucao'] ?? 'A combinar' ?> dia<?= ($proposta['prazo_execucao'] ?? 0) != 1 ? 's' : '' ?>
+                                </div>
+                            </div>
+                            
+                            <!-- Título da Solicitação -->
+                            <h6 class="fw-bold mb-2">
+                                <i class="bi bi-tools me-2 text-primary"></i>
+                                <?= htmlspecialchars($proposta['solicitacao_titulo']) ?>
+                            </h6>
+                            
+                            <!-- Tipo de Serviço -->
+                            <p class="text-muted mb-2">
                                 <i class="bi bi-tag me-1"></i>
                                 <?= htmlspecialchars($proposta['tipo_servico_nome']) ?>
-                            </span>
+                            </p>
                             
-                            <?php if (!empty($proposta['urgencia'])): ?>
-                                <span class="tag bg-<?= $proposta['urgencia'] === 'alta' ? 'danger' : ($proposta['urgencia'] === 'media' ? 'warning' : 'info') ?> text-white">
-                                    <i class="bi bi-clock me-1"></i>
-                                    <?= ucfirst($proposta['urgencia']) ?>
-                                </span>
-                            <?php endif; ?>
-                            
-                            <?php if (!empty($proposta['categoria_especialidade'])): ?>
-                                <span class="tag bg-secondary text-white">
-                                    <?= htmlspecialchars($proposta['categoria_especialidade']) ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <!-- Informações do prestador -->
-                        <div class="prestador-info mb-3 p-2 bg-light rounded">
-                            <div class="d-flex align-items-center">
-                                <?php if (!empty($proposta['prestador_foto'])): ?>
-                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($proposta['prestador_foto']) ?>" 
-                                         class="prestador-avatar" alt="Foto do prestador">
-                                <?php else: ?>
-                                    <div class="prestador-avatar bg-primary d-flex align-items-center justify-content-center text-white">
-                                        <i class="bi bi-person"></i>
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <div class="flex-grow-1">
-                                    <div class="fw-bold"><?= htmlspecialchars($proposta['prestador_nome']) ?></div>
-                                    
-                                    <!-- Avaliação do prestador -->
-                                    <?php if (!empty($proposta['prestador_avaliacao'])): ?>
-                                    <div class="prestador-rating">
-                                        <?php 
-                                        $rating = floatval($proposta['prestador_avaliacao']);
-                                        for($i = 1; $i <= 5; $i++): 
-                                        ?>
-                                            <i class="bi bi-star<?= $i <= $rating ? '-fill text-warning' : ' text-muted' ?>"></i>
-                                        <?php endfor; ?>
-                                        <small class="text-muted">
-                                            (<?= number_format($rating, 1) ?> - <?= $proposta['prestador_total_avaliacoes'] ?? 0 ?> avaliações)
-                                        </small>
-                                    </div>
-                                    <?php endif; ?>
-                                    
-                                    <!-- Estatísticas do prestador -->
-                                    <div class="d-flex gap-2 mt-1">
-                                        <?php if (!empty($proposta['prestador_servicos_concluidos'])): ?>
-                                            <span class="info-pill">
-                                                <i class="bi bi-check-circle text-success me-1"></i>
-                                                <?= $proposta['prestador_servicos_concluidos'] ?> serviços
-                                            </span>
-                                        <?php endif; ?>
-                                        
-                                        <?php if (!empty($proposta['prestador_anos_experiencia'])): ?>
-                                            <span class="info-pill">
-                                                <i class="bi bi-clock-history text-primary me-1"></i>
-                                                <?= $proposta['prestador_anos_experiencia'] ?>+ anos
-                                            </span>
-                                        <?php endif; ?>
-                                        
-                                        <?php if (!empty($proposta['prestador_verificado'])): ?>
-                                            <span class="info-pill bg-success text-white">
-                                                <i class="bi bi-patch-check me-1"></i>
-                                                Verificado
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Valor e prazo destacados -->
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <div class="text-center p-3 bg-success bg-opacity-10 rounded">
-                                    <div class="valor-destaque text-success">
-                                        R$ <?= number_format($proposta['valor'], 2, ',', '.') ?>
-                                    </div>
-                                    <small class="text-muted">Valor da proposta</small>
-                                    
-                                    <!-- Comparação com orçamento estimado -->
-                                    <?php if (!empty($proposta['orcamento_estimado'])): ?>
-                                        <?php 
-                                        $diferenca = (($proposta['valor'] / $proposta['orcamento_estimado']) - 1) * 100;
-                                        $corDiferenca = $diferenca <= 0 ? 'success' : ($diferenca <= 20 ? 'warning' : 'danger');
-                                        ?>
-                                        <div class="mt-1">
-                                            <small class="text-<?= $corDiferenca ?>">
-                                                <?= $diferenca > 0 ? '+' : '' ?><?= number_format($diferenca, 1) ?>% do estimado
-                                            </small>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-3 bg-primary bg-opacity-10 rounded">
-                                    <div class="valor-destaque text-primary">
-                                        <?= $proposta['prazo_execucao'] ?> dia<?= $proposta['prazo_execucao'] != 1 ? 's' : '' ?>
-                                    </div>
-                                    <small class="text-muted">Prazo de execução</small>
-                                    
-                                    <!-- Indicador de prazo -->
-                                    <?php if ($proposta['prazo_execucao'] <= 3): ?>
-                                        <div class="mt-1">
-                                            <small class="text-success">
-                                                <i class="bi bi-lightning-fill me-1"></i>Rápido
-                                            </small>
-                                        </div>
-                                    <?php elseif ($proposta['prazo_execucao'] <= 7): ?>
-                                        <div class="mt-1">
-                                            <small class="text-warning">
-                                                <i class="bi bi-clock me-1"></i>Moderado
-                                            </small>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Descrição da proposta -->
-                        <?php if (!empty($proposta['descricao'])): ?>
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-2">
-                                    <i class="bi bi-chat-left-text me-1"></i>Proposta:
-                                </h6>
-                                <div class="bg-light p-2 rounded">
+                            <!-- Descrição da Proposta -->
+                            <?php if (!empty($proposta['descricao'])): ?>
+                                <div class="bg-light p-2 rounded mb-3">
                                     <small class="text-dark">
-                                        <?= htmlspecialchars(substr($proposta['descricao'], 0, 150)) ?>
-                                        <?php if (strlen($proposta['descricao']) > 150): ?>
-                                            <span id="desc-<?= $proposta['id'] ?>" class="d-none">
-                                                <?= htmlspecialchars(substr($proposta['descricao'], 150)) ?>
-                                            </span>
-                                            <a href="#" class="text-primary" onclick="toggleDescricao(<?= $proposta['id'] ?>); return false;">
-                                                <span id="btn-<?= $proposta['id'] ?>">... ver mais</span>
-                                            </a>
-                                        <?php endif; ?>
+                                        <?= htmlspecialchars(substr($proposta['descricao'], 0, 100)) ?>
+                                        <?= strlen($proposta['descricao']) > 100 ? '...' : '' ?>
                                     </small>
                                 </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Localização e distância -->
-                        <?php if (!empty($proposta['endereco'])): ?>
-                            <div class="mb-2">
-                                <small class="text-muted d-flex align-items-center">
-                                    <i class="bi bi-geo-alt me-1"></i>
-                                    <?= htmlspecialchars($proposta['endereco']) ?>
-                                    
-                                    <?php if (!empty($proposta['distancia_km'])): ?>
-                                        <span class="ms-2 badge bg-info">
-                                            <?= number_format($proposta['distancia_km'], 1) ?>km
-                                        </span>
-                                    <?php endif; ?>
-                                </small>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <!-- Informações adicionais -->
-                        <div class="row text-center mt-3">
-                            <?php if (!empty($proposta['materiais_inclusos'])): ?>
-                            <div class="col-4">
-                                <div class="info-pill bg-info text-white w-100">
-                                    <i class="bi bi-tools me-1"></i>
-                                    Materiais inclusos
-                                </div>
-                            </div>
                             <?php endif; ?>
                             
-                            <?php if (!empty($proposta['garantia_meses'])): ?>
-                            <div class="col-4">
-                                <div class="info-pill bg-success text-white w-100">
-                                    <i class="bi bi-shield-check me-1"></i>
-                                    <?= $proposta['garantia_meses'] ?> meses garantia
-                                </div>
-                            </div>
-                            <?php endif; ?>
-                            
-                            <?php if (!empty($proposta['disponibilidade_imediata'])): ?>
-                            <div class="col-4">
-                                <div class="info-pill bg-warning text-dark w-100">
-                                    <i class="bi bi-clock me-1"></i>
-                                    Disponível agora
-                                </div>
-                            </div>
-                            <?php endif; ?>
+                            <!-- Data da Proposta -->
+                            <small class="text-muted d-block mb-3">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                Recebida em <?= date('d/m/Y \à\s H:i', strtotime($proposta['data_proposta'])) ?>
+                            </small>
                         </div>
                         
-                        <!-- Barra de progresso para propostas aceitas -->
-                        <?php if ($proposta['status'] === 'aceita'): ?>
-                        <div class="mt-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted">Progresso do serviço</small>
-                                <small class="text-muted"><?= $proposta['progresso_servico'] ?? 0 ?>%</small>
+                        <div class="card-footer bg-transparent">
+                            <!-- Botão Principal: Ver Detalhes -->
+                            <div class="d-grid gap-2 mb-2">
+                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                   class="btn btn-primary">
+                                    <i class="bi bi-eye me-1"></i>Ver Detalhes Completos
+                                </a>
                             </div>
-                            <div class="progress-bar-custom">
-                                <div class="progress-fill" style="width: <?= $proposta['progresso_servico'] ?? 0 ?>%"></div>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="card-footer bg-transparent">
-                        <div class="d-flex gap-1">
-                            <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
-                               class="btn btn-outline-primary btn-sm flex-fill">
-                                <i class="bi bi-eye me-1"></i>Detalhes
-                            </a>
                             
-                            <?php if ($proposta['status'] === 'pendente'): ?>
-                                <button type="button" 
-                                        class="btn btn-success btn-sm flex-fill"
-                                        onclick="aceitarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
-                                    <i class="bi bi-check me-1"></i>Aceitar
-                                </button>
-                                
-                                <button type="button" 
-                                        class="btn btn-outline-danger btn-sm"
-                                        onclick="recusarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            <?php elseif ($proposta['status'] === 'aceita'): ?>
-                                <div class="btn-group flex-fill">
+                            <!-- Ações Secundárias (Dropdown) -->
+                            <?php if ($proposta['status'] == 'pendente'): ?>
+                                <div class="d-flex gap-2">
+                                    <div class="dropdown flex-grow-1">
+                                        <button class="btn btn-outline-success dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-gear me-1"></i>Ações Rápidas
+                                        </button>
+                                        <ul class="dropdown-menu w-100">
+                                            <li>
+                                                <button class="dropdown-item text-success" 
+                                                        onclick="abrirModalAceitar(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>', '<?= number_format($proposta['valor'], 2, ',', '.') ?>', '<?= $proposta['prazo_execucao'] ?>')">
+                                                    <i class="bi bi-check-circle me-1"></i>Aceitar Proposta
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item text-danger" 
+                                                        onclick="abrirModalRecusar(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>', '<?= htmlspecialchars($proposta['solicitacao_titulo']) ?>')">
+                                                    <i class="bi bi-x-circle me-1"></i>Recusar Proposta
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-info" 
+                                                   href="/chamaservico/cliente/propostas/comparar?solicitacao_id=<?= $proposta['solicitacao_id'] ?>">
+                                                    <i class="bi bi-bar-chart me-1"></i>Comparar com Outras
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            <?php elseif ($proposta['status'] == 'aceita'): ?>
+                                <div class="d-flex gap-2">
                                     <a href="tel:<?= htmlspecialchars($proposta['prestador_telefone'] ?? '') ?>" 
-                                       class="btn btn-success btn-sm">
-                                        <i class="bi bi-telephone me-1"></i>Ligar
+                                       class="btn btn-success flex-fill">
+                                        <i class="bi bi-telephone me-1"></i>Contatar
                                     </a>
-                                    
-                                    <?php if (!empty($proposta['prestador_whatsapp'])): ?>
-                                    <a href="https://wa.me/55<?= preg_replace('/\D/', '', $proposta['prestador_whatsapp']) ?>?text=Olá! Sobre o serviço de <?= urlencode($proposta['solicitacao_titulo']) ?>..." 
-                                       class="btn btn-success btn-sm" target="_blank">
-                                        <i class="bi bi-whatsapp"></i>
-                                    </a>
-                                    <?php endif; ?>
                                 </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <!-- Ações secundárias -->
-                        <div class="d-flex justify-content-center mt-2 gap-2">
-                            <?php if ($proposta['status'] === 'pendente'): ?>
-                                <button class="btn btn-outline-secondary btn-sm" 
-                                        onclick="enviarMensagem(<?= $proposta['id'] ?>)">
-                                    <i class="bi bi-chat-dots me-1"></i>Conversar
-                                </button>
-                                
-                                <button class="btn btn-outline-info btn-sm"
-                                        onclick="verPerfilPrestador(<?= $proposta['prestador_id'] ?>)">
-                                    <i class="bi bi-person me-1"></i>Ver Perfil
-                                </button>
+                            <?php else: ?>
+                                <div class="text-center">
+                                    <span class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>Proposta <?= $proposta['status'] ?>
+                                    </span>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
+            <?php endforeach; ?>
+        </div>
 
-    <!-- Visualização em Lista -->
-    <div id="view-lista" class="d-none">
-        <div class="card">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Solicitação</th>
-                            <th>Prestador</th>
-                            <th>Valor</th>
-                            <th>Prazo</th>
-                            <th>Status</th>
-                            <th>Data</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($propostas as $proposta): ?>
-                        <tr>
-                            <td>
-                                <div>
-                                    <strong><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></strong>
-                                    <br><small class="text-muted"><?= htmlspecialchars($proposta['tipo_servico_nome']) ?></small>
-                                </div>
-                            </td>
-                            <td><?= htmlspecialchars($proposta['prestador_nome']) ?></td>
-                            <td><strong class="text-success">R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></strong></td>
-                            <td><?= $proposta['prazo_execucao'] ?> dia(s)</td>
-                            <td>
-                                <span class="badge bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'recusada' ? 'danger' : 'warning') ?>">
-                                    <?= $proposta['status'] === 'pendente' ? 'Aguardando' : ucfirst($proposta['status']) ?>
-                                </span>
-                            </td>
-                            <td><?= date('d/m/Y', strtotime($proposta['data_proposta'])) ?></td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
-                                       class="btn btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <?php if ($proposta['status'] === 'pendente'): ?>
-                                        <button class="btn btn-success" 
-                                                onclick="aceitarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
-                                            <i class="bi bi-check"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" 
-                                                onclick="recusarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
-                                            <i class="bi bi-x"></i>
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <!-- Visualização em Lista -->
+        <div id="view-lista" class="d-none">
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Solicitação</th>
+                                <th>Prestador</th>
+                                <th>Valor</th>
+                                <th>Prazo</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($propostas as $proposta): ?>
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></strong>
+                                        <br><small class="text-muted"><?= htmlspecialchars($proposta['tipo_servico_nome']) ?></small>
+                                    </div>
+                                </td>
+                                <td><?= htmlspecialchars($proposta['prestador_nome']) ?></td>
+                                <td><strong class="text-success">R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></strong></td>
+                                <td><?= $proposta['prazo_execucao'] ?> dia(s)</td>
+                                <td>
+                                    <span class="badge bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'recusada' ? 'danger' : 'warning') ?>">
+                                        <?= $proposta['status'] === 'pendente' ? 'Aguardando' : ucfirst($proposta['status']) ?>
+                                    </span>
+                                </td>
+                                <td><?= date('d/m/Y', strtotime($proposta['data_proposta'])) ?></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                           class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <?php if ($proposta['status'] === 'pendente'): ?>
+                                            <button class="btn btn-success" 
+                                                    onclick="aceitarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
+                                                <i class="bi bi-check"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" 
+                                                    onclick="recusarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Visualização em Timeline -->
-    <div id="view-timeline" class="d-none timeline-view">
-        <?php foreach ($propostas as $proposta): ?>
-        <div class="card status-<?= $proposta['status'] ?>">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="mb-0"><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></h6>
-                    <small class="text-muted"><?= date('d/m/Y H:i', strtotime($proposta['data_proposta'])) ?></small>
-                </div>
-                <div class="row">
-                    <div class="col-md-8">
-                        <p class="mb-1"><strong>Prestador:</strong> <?= htmlspecialchars($proposta['prestador_nome']) ?></p>
-                        <p class="mb-1"><strong>Valor:</strong> R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></p>
-                        <p class="mb-0"><strong>Prazo:</strong> <?= $proposta['prazo_execucao'] ?> dia(s)</p>
+        <!-- Visualização em Timeline -->
+        <div id="view-timeline" class="d-none timeline-view">
+            <?php foreach ($propostas as $proposta): ?>
+            <div class="card status-<?= $proposta['status'] ?>">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0"><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></h6>
+                        <small class="text-muted"><?= date('d/m/Y H:i', strtotime($proposta['data_proposta'])) ?></small>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <span class="badge bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'recusada' ? 'danger' : 'warning') ?> mb-2">
-                            <?= $proposta['status'] === 'pendente' ? 'Aguardando' : ucfirst($proposta['status']) ?>
-                        </span>
-                        <div class="btn-group btn-group-sm">
-                            <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
-                               class="btn btn-outline-primary btn-sm">Ver</a>
-                            <?php if ($proposta['status'] === 'pendente'): ?>
-                                <button class="btn btn-success btn-sm" 
-                                        onclick="aceitarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
-                                    Aceitar
-                                </button>
-                            <?php endif; ?>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="mb-1"><strong>Prestador:</strong> <?= htmlspecialchars($proposta['prestador_nome']) ?></p>
+                            <p class="mb-1"><strong>Valor:</strong> R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></p>
+                            <p class="mb-0"><strong>Prazo:</strong> <?= $proposta['prazo_execucao'] ?> dia(s)</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'recusada' ? 'danger' : 'warning') ?> mb-2">
+                                <?= $proposta['status'] === 'pendente' ? 'Aguardando' : ucfirst($proposta['status']) ?>
+                            </span>
+                            <div class="btn-group btn-group-sm">
+                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                   class="btn btn-outline-primary btn-sm">Ver</a>
+                                <?php if ($proposta['status'] === 'pendente'): ?>
+                                    <button class="btn btn-success btn-sm" 
+                                            onclick="aceitarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
+                                        Aceitar
+                                    </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
-    </div>
-<?php endif; ?>
-
-<!-- Modal Comparar Propostas -->
-<div class="modal fade" id="modalComparar" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Comparar Propostas Selecionadas</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="tabelaComparacao"></div>
-            </div>
-        </div>
-    </div>
+    <?php endif; ?>
 </div>
 
-<!-- Modal Aceitar Proposta -->
-<div class="modal fade" id="modalAceitar" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Aceitar Proposta</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/aceitar">
-                <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="proposta_id" id="propostaIdAceitar">
-                    
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle me-2"></i>
-                        <strong>Confirmar aceitação da proposta?</strong>
-                    </div>
-                    
-                    <p>Ao aceitar esta proposta:</p>
-                    <ul>
-                        <li>O prestador será notificado</li>
-                        <li>Outras propostas serão automaticamente recusadas</li>
-                        <li>O status da solicitação mudará para "Proposta Aceita"</li>
-                        <li>Combine os detalhes finais diretamente com o prestador</li>
-                    </ul>
-                    
-                    <div class="mb-3">
-                        <label for="observacoes" class="form-label">Observações (opcional)</label>
-                        <textarea class="form-control" name="observacoes" id="observacoes" rows="3" 
-                                  placeholder="Deixe uma mensagem para o prestador..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check me-1"></i>Confirmar Aceite
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- Incluir Modais Centralizados -->
+<?php include __DIR__ . '/_modals_propostas.php'; ?>
 
-<!-- Modal Recusar Proposta -->
-<div class="modal fade" id="modalRecusar" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-x-circle me-2"></i>Recusar Proposta
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/recusar">
-                <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="proposta_id" id="propostaIdRecusar">
-                    
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Confirmar recusa da proposta?</strong>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="motivo_recusa" class="form-label">Motivo da recusa (opcional)</label>
-                        <textarea class="form-control" name="motivo_recusa" id="motivo_recusa" rows="3" 
-                                  placeholder="Explique o motivo da recusa (ajuda o prestador a melhorar)..."></textarea>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="bi bi-lightbulb me-2"></i>
-                        <strong>Dica:</strong> Dar feedback ajuda os prestadores a melhorarem suas propostas futuras.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x me-1"></i>Confirmar Recusa
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<?php
+$content = ob_get_clean();
+include 'views/layouts/app.php';
+?>
 
 <?php
 $scripts = '
 <script>
+// Estado da aplicação
 let modoComparacao = false;
 let propostasSelecionadas = [];
+let visualizacaoAtual = "cards";
 
+// Função para alternar visualizações
 function alterarVisualizacao(tipo) {
     // Ocultar todas as visualizações
     document.querySelectorAll("#view-cards, #view-lista, #view-timeline").forEach(el => {
@@ -840,65 +565,96 @@ function alterarVisualizacao(tipo) {
     document.getElementById("view-" + tipo).classList.remove("d-none");
     document.getElementById("btn-" + tipo).classList.add("active");
     
-    // Salvar preferência
+    visualizacaoAtual = tipo;
     localStorage.setItem("visualizacao-propostas", tipo);
 }
 
-function toggleComparacao() {
+// Função para ativar/desativar modo comparação
+function toggleModoComparacao() {
     modoComparacao = !modoComparacao;
-    const checkboxes = document.querySelectorAll(".comparison-checkbox");
+    const checkboxes = document.querySelectorAll(".checkbox-comparacao");
+    const btnComparacao = document.getElementById("btn-comparacao");
+    const containerPropostas = document.getElementById("container-propostas");
     
     checkboxes.forEach(cb => {
         cb.classList.toggle("d-none", !modoComparacao);
     });
     
-    if (!modoComparacao) {
-        // Limpar seleções
-        propostasSelecionadas = [];
-        document.querySelectorAll(".comparison-checkbox input").forEach(input => {
-            input.checked = false;
-        });
-        document.querySelectorAll(".card-proposta").forEach(card => {
-            card.classList.remove("selected");
-        });
-        document.getElementById("acoes-lote").classList.add("d-none");
+    if (modoComparacao) {
+        btnComparacao.innerHTML = `<i class="bi bi-x-square me-1"></i>Sair da Comparação`;
+        btnComparacao.classList.remove("btn-outline-info");
+        btnComparacao.classList.add("btn-warning");
+        containerPropostas.classList.add("modo-comparacao");
+    } else {
+        btnComparacao.innerHTML = `<i class="bi bi-check2-square me-1"></i>Comparar`;
+        btnComparacao.classList.remove("btn-warning");
+        btnComparacao.classList.add("btn-outline-info");
+        containerPropostas.classList.remove("modo-comparacao");
+        limparSelecao();
     }
 }
 
-function toggleComparacaoItem(checkbox) {
+// Função para selecionar/deselecionar proposta
+function toggleSelecao(checkbox) {
     const propostaId = parseInt(checkbox.value);
     const card = checkbox.closest(".card-proposta");
     
     if (checkbox.checked) {
         propostasSelecionadas.push(propostaId);
-        card.classList.add("selected");
+        card.classList.add("selecionado");
     } else {
         propostasSelecionadas = propostasSelecionadas.filter(id => id !== propostaId);
-        card.classList.remove("selected");
+        card.classList.remove("selecionado");
     }
     
-    // Mostrar/ocultar ações em lote
-    document.getElementById("acoes-lote").classList.toggle("d-none", propostasSelecionadas.length === 0);
+    atualizarAcoesLote();
+}
+
+// Atualizar interface de ações em lote
+function atualizarAcoesLote() {
+    const acoesLote = document.getElementById("acoes-lote");
+    const contador = document.getElementById("contador-selecionadas");
     
-    // Se tiver 2 ou mais, habilitar comparação
-    if (propostasSelecionadas.length >= 2) {
-        // Adicionar botão de comparar se não existir
-        if (!document.getElementById("btn-comparar")) {
-            const btnComparar = document.createElement("button");
-            btnComparar.id = "btn-comparar";
-            btnComparar.className = "btn btn-outline-info btn-sm";
-            btnComparar.innerHTML = `<i class="bi bi-bar-chart me-1"></i>Comparar (${propostasSelecionadas.length})`;
-            btnComparar.onclick = () => compararSelecionadas();
-            document.getElementById("acoes-lote").appendChild(btnComparar);
-        } else {
-            document.getElementById("btn-comparar").innerHTML = `<i class="bi bi-bar-chart me-1"></i>Comparar (${propostasSelecionadas.length})`;
-        }
+    if (propostasSelecionadas.length > 0) {
+        acoesLote.style.display = "block";
+        contador.textContent = propostasSelecionadas.length;
     } else {
-        const btnComparar = document.getElementById("btn-comparar");
-        if (btnComparar) btnComparar.remove();
+        acoesLote.style.display = "none";
     }
 }
 
+// Limpar seleção
+function limparSelecao() {
+    propostasSelecionadas = [];
+    document.querySelectorAll(".checkbox-comparacao input").forEach(input => {
+        input.checked = false;
+    });
+    document.querySelectorAll(".card-proposta").forEach(card => {
+        card.classList.remove("selecionado");
+    });
+    atualizarAcoesLote();
+}
+
+// Abrir modal aceitar com dados
+function abrirModalAceitar(propostaId, prestadorNome, valor, prazo) {
+    document.getElementById("propostaIdAceitar").value = propostaId;
+    document.getElementById("prestadorNomeAceitar").textContent = prestadorNome;
+    document.getElementById("valorPropostaAceitar").textContent = valor;
+    document.getElementById("prazoPropostaAceitar").textContent = prazo;
+    
+    new bootstrap.Modal(document.getElementById("modalAceitar")).show();
+}
+
+// Abrir modal recusar com dados
+function abrirModalRecusar(propostaId, prestadorNome, solicitacaoTitulo) {
+    document.getElementById("propostaIdRecusar").value = propostaId;
+    document.getElementById("prestadorNomeRecusar").textContent = prestadorNome;
+    document.getElementById("solicitacaoTituloRecusar").textContent = solicitacaoTitulo;
+    
+    new bootstrap.Modal(document.getElementById("modalRecusar")).show();
+}
+
+// Comparar propostas selecionadas
 function compararSelecionadas() {
     if (propostasSelecionadas.length < 2) {
         alert("Selecione pelo menos 2 propostas para comparar");
@@ -912,8 +668,12 @@ function compararSelecionadas() {
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById("tabelaComparacao").innerHTML = data.html;
-        new bootstrap.Modal(document.getElementById("modalComparar")).show();
+        if (data.success) {
+            document.getElementById("tabelaComparacao").innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById("modalComparar")).show();
+        } else {
+            alert("Erro ao carregar comparação: " + (data.message || "Erro desconhecido"));
+        }
     })
     .catch(error => {
         console.error("Erro ao comparar propostas:", error);
@@ -921,17 +681,12 @@ function compararSelecionadas() {
     });
 }
 
-function exportarDados() {
-    const params = new URLSearchParams(window.location.search);
-    params.set("export", "excel");
-    window.open(`/chamaservico/cliente/propostas/recebidas?${params.toString()}`, "_blank");
-}
-
+// Aceitar propostas selecionadas
 function aceitarSelecionadas() {
     if (propostasSelecionadas.length === 0) return;
     
     if (confirm(`Aceitar ${propostasSelecionadas.length} proposta(s) selecionada(s)?`)) {
-        fetch("/chamaservico/cliente/propostas/aceitar-lote", {
+        fetch("/chamaservico/api/propostas/aceitar-lote", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({propostas: propostasSelecionadas})
@@ -951,12 +706,13 @@ function aceitarSelecionadas() {
     }
 }
 
+// Recusar propostas selecionadas
 function recusarSelecionadas() {
     if (propostasSelecionadas.length === 0) return;
     
     const motivo = prompt("Motivo da recusa (opcional):");
     
-    fetch("/chamaservico/cliente/propostas/recusar-lote", {
+    fetch("/chamaservico/api/propostas/recusar-lote", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -978,70 +734,99 @@ function recusarSelecionadas() {
     });
 }
 
-// Funções para aceitar e recusar propostas individuais
-function aceitarProposta(propostaId, prestadorNome) {
-    document.getElementById("propostaIdAceitar").value = propostaId;
-    new bootstrap.Modal(document.getElementById("modalAceitar")).show();
+// NOVA FUNCIONALIDADE: Atualização automática via AJAX
+function atualizarPropostasAjax() {
+    const formData = new FormData(document.getElementById("form-filtros"));
+    const params = new URLSearchParams();
+    
+    for (let [key, value] of formData.entries()) {
+        if (value) params.append(key, value);
+    }
+    
+    params.append("ajax", "1"); // Indicar que é requisição AJAX
+    
+    fetch(`/chamaservico/cliente/propostas/recebidas?${params.toString()}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.html) {
+            // Atualizar apenas o container das propostas
+            const container = document.getElementById("container-propostas");
+            container.innerHTML = data.html;
+            
+            // Manter estado do modo comparação se estava ativo
+            if (modoComparacao) {
+                const checkboxes = container.querySelectorAll(".checkbox-comparacao");
+                checkboxes.forEach(cb => cb.classList.remove("d-none"));
+                container.classList.add("modo-comparacao");
+            }
+            
+            // Exibir notificação se houver novas propostas
+            if (data.novas_propostas > 0) {
+                mostrarNotificacao(`${data.novas_propostas} nova(s) proposta(s) recebida(s)!`, "success");
+            }
+        }
+    })
+    .catch(error => {
+        console.error("Erro ao atualizar propostas:", error);
+    });
 }
 
-function recusarProposta(propostaId, prestadorNome) {
-    document.getElementById("propostaIdRecusar").value = propostaId;
-    new bootstrap.Modal(document.getElementById("modalRecusar")).show();
+// Mostrar notificação toast
+function mostrarNotificacao(mensagem, tipo = "info") {
+    // Criar elemento de notificação
+    const toast = document.createElement("div");
+    toast.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = "top: 20px; right: 20px; z-index: 9999; min-width: 300px;";
+    toast.innerHTML = `
+        ${mensagem}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Remover após 5 segundos
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 5000);
 }
 
-// Restaurar visualização salva
+// Exportar comparação para PDF
+function exportarComparacao() {
+    if (propostasSelecionadas.length < 2) {
+        alert("Selecione pelo menos 2 propostas para exportar");
+        return;
+    }
+    
+    const params = new URLSearchParams();
+    params.append("propostas", propostasSelecionadas.join(","));
+    params.append("formato", "pdf");
+    
+    window.open(`/chamaservico/api/comparar-propostas/export?${params.toString()}`, "_blank");
+}
+
+// Inicialização quando a página carrega
 document.addEventListener("DOMContentLoaded", function() {
+    // Restaurar visualização salva
     const visualizacaoSalva = localStorage.getItem("visualizacao-propostas");
     if (visualizacaoSalva && ["cards", "lista", "timeline"].includes(visualizacaoSalva)) {
         alterarVisualizacao(visualizacaoSalva);
     }
     
-    // Verificar se Bootstrap está carregado
-    if (typeof bootstrap === "undefined") {
-        console.error("Bootstrap não está carregado");
-    }
-});
-
-// Auto-submit dos filtros
-document.querySelectorAll("#status, #tipo_servico, #ordenacao").forEach(select => {
-    select.addEventListener("change", function() {
-        this.form.submit();
+    // Auto-submit dos filtros quando mudarem
+    document.querySelectorAll("#status, #solicitacao_id, #ordenacao").forEach(select => {
+        select.addEventListener("change", function() {
+            this.form.submit();
+        });
     });
-});
-
-// Adicionar busca em tempo real
-document.getElementById("busca").addEventListener("input", function() {
-    // Debounce para evitar muitas requisições
-    clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => {
-        this.form.submit();
-    }, 1000);
-});
-
-function toggleDescricao(propostaId) {
-    const descricao = document.getElementById("desc-" + propostaId);
-    const botao = document.getElementById("btn-" + propostaId);
     
-    if (descricao.classList.contains("d-none")) {
-        descricao.classList.remove("d-none");
-        botao.textContent = " ver menos";
-    } else {
-        descricao.classList.add("d-none");
-        botao.textContent = "... ver mais";
-    }
-}
-
-function enviarMensagem(propostaId) {
-    // Implementar sistema de mensagens
-    alert("Funcionalidade de mensagens em desenvolvimento");
-}
-
-function verPerfilPrestador(prestadorId) {
-    window.open("/chamaservico/prestador/perfil?id=" + prestadorId, "_blank");
-}
+    // Configurar atualização automática via AJAX (a cada 30 segundos)
+    setInterval(atualizarPropostasAjax, 30000);
+    
+    console.log("Sistema de propostas inicializado com sucesso!");
+});
 </script>
 ';
-
-$content = ob_get_clean();
-include 'views/layouts/app.php';
 ?>
+   

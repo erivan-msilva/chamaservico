@@ -1,73 +1,110 @@
 <?php
 $title = 'Detalhes da Solicitação - ChamaServiço';
 ob_start();
+
+// Definir $jaEnviouProposta ANTES do HTML
+require_once 'models/Proposta.php';
+$propostaModel = new Proposta();
+$jaEnviouProposta = false;
+if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
+    $prestadorId = $_SESSION['user_id'];
+    $jaEnviouProposta = $propostaModel->verificarPropostaExistente($solicitacao['id'], $prestadorId);
+}
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-eye me-2"></i>Detalhes da Solicitação</h2>
-            <a href="/chamaservico/prestador/solicitacoes" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Voltar à Busca
-            </a>
-        </div>
-
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="mb-0"><?= htmlspecialchars($solicitacao['titulo']) ?></h4>
-                    <small class="text-muted">
-                        Solicitado em <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?>
-                    </small>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Card Principal da Solicitação -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-text me-2"></i>
+                            <?= htmlspecialchars($solicitacao['titulo']) ?>
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <?php 
+                            $urgenciaColors = ['baixa' => 'success', 'media' => 'warning', 'alta' => 'danger'];
+                            $urgenciaIcons = ['baixa' => '🟢', 'media' => '🟡', 'alta' => '🔴'];
+                            ?>
+                            <span class="badge bg-<?= $urgenciaColors[$solicitacao['urgencia']] ?>">
+                                <?= $urgenciaIcons[$solicitacao['urgencia']] ?> 
+                                <?= ucfirst($solicitacao['urgencia']) ?>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <span class="badge fs-6 bg-<?= $solicitacao['urgencia'] === 'alta' ? 'danger' : ($solicitacao['urgencia'] === 'media' ? 'warning' : 'info') ?>">
-                    <?= ucfirst($solicitacao['urgencia']) ?>
-                </span>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <h6>Descrição do Serviço</h6>
-                        <p class="mb-4"><?= nl2br(htmlspecialchars($solicitacao['descricao'])) ?></p>
-                        
-                        <!-- Galeria de Imagens -->
-                        <?php if (!empty($solicitacao['imagens'])): ?>
-                            <h6>
-                                <i class="bi bi-camera me-2"></i>Fotos do Local 
-                                <span class="badge bg-primary"><?= count($solicitacao['imagens']) ?></span>
+                <div class="card-body p-4">
+                    <!-- Descrição -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary">
+                            <i class="bi bi-chat-text me-1"></i>Descrição do Serviço
+                        </h6>
+                        <p class="text-muted mb-0"><?= nl2br(htmlspecialchars($solicitacao['descricao'])) ?></p>
+                    </div>
+
+                    <!-- Informações do Cliente -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">
+                                <i class="bi bi-person me-1"></i>Cliente
                             </h6>
-                            <div class="row g-3 mb-4">
-                                <?php foreach ($solicitacao['imagens'] as $index => $imagem): ?>
-                                    <div class="col-md-4 col-sm-6">
-                                        <div class="card h-100 shadow-sm">
-                                            <div class="position-relative">
-                                                <?php 
-                                                // CORREÇÃO: garantir subpasta solicitacoes/
-                                                $imgFile = ltrim($imagem['caminho_imagem'], '/');
-                                                if (strpos($imgFile, 'solicitacoes/') !== 0) {
-                                                    $imgFile = 'solicitacoes/' . $imgFile;
-                                                }
-                                                $imagemPath = "/chamaservico/uploads/" . $imgFile;
-                                                ?>
-                                                <img src="<?= $imagemPath ?>" 
-                                                     class="card-img-top" 
-                                                     style="height: 200px; object-fit: cover; cursor: pointer;"
-                                                     onclick="openImageModal('<?= $imagemPath ?>', '<?= $index + 1 ?>')"
-                                                     alt="Foto <?= $index + 1 ?> da solicitação"
-                                                     loading="lazy">
-                                                <div class="position-absolute top-0 end-0 m-2">
-                                                    <span class="badge bg-dark bg-opacity-75">
-                                                        <i class="bi bi-zoom-in"></i>
-                                                    </span>
-                                                </div>
-                                            </div>
+                            <p class="mb-1"><?= htmlspecialchars($solicitacao['cliente_nome']) ?></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">
+                                <i class="bi bi-calendar3 me-1"></i>Solicitado em
+                            </h6>
+                            <p class="mb-1"><?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?></p>
+                        </div>
+                    </div>
+
+                    <!-- Endereço -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary">
+                            <i class="bi bi-geo-alt me-1"></i>Local do Serviço
+                        </h6>
+                        <p class="mb-0">
+                            <?= htmlspecialchars($solicitacao['logradouro']) ?>, 
+                            <?= htmlspecialchars($solicitacao['numero']) ?>
+                            <?php if ($solicitacao['complemento']): ?>
+                                , <?= htmlspecialchars($solicitacao['complemento']) ?>
+                            <?php endif; ?>
+                        </p>
+                        <p class="mb-0">
+                            <?= htmlspecialchars($solicitacao['bairro']) ?> - 
+                            <?= htmlspecialchars($solicitacao['cidade']) ?>, 
+                            <?= htmlspecialchars($solicitacao['estado']) ?> - 
+                            <small class="text-muted">CEP: <?= htmlspecialchars($solicitacao['cep']) ?></small>
+                        </p>
+                    </div>
+
+                    <!-- Imagens da Solicitação -->
+                    <?php if (!empty($solicitacao['imagens'])): ?>
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary">
+                                <i class="bi bi-images me-1"></i>Imagens da Solicitação
+                            </h6>
+                            <div class="row g-2">
+                                <?php foreach ($solicitacao['imagens'] as $imagem): ?>
+                                    <div class="col-md-3">
+                                        <div class="position-relative">
+                                            <img src="/chamaservico/uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>"
+                                                 class="img-fluid rounded" alt="Imagem da solicitação"
+                                                 style="height: 120px; object-fit: cover; width: 100%;">
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-                        <?php endif; ?>
-                        
-                        <h6>Informações do Serviço</h6>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Informações Adicionais -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary">
+                            <i class="bi bi-info-circle me-1"></i>Informações Adicionais
+                        </h6>
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <p><strong>Tipo:</strong> <?= htmlspecialchars($solicitacao['tipo_servico_nome']) ?></p>
@@ -101,21 +138,6 @@ ob_start();
                     </div>
                     
                     <div class="col-md-4">
-                        <h6>Endereço do Serviço</h6>
-                        <div class="card bg-light mb-4">
-                            <div class="card-body">
-                                <address class="mb-0">
-                                    <strong><?= htmlspecialchars($solicitacao['logradouro']) ?>, <?= htmlspecialchars($solicitacao['numero']) ?></strong><br>
-                                    <?php if ($solicitacao['complemento']): ?>
-                                        <?= htmlspecialchars($solicitacao['complemento']) ?><br>
-                                    <?php endif; ?>
-                                    <?= htmlspecialchars($solicitacao['bairro']) ?><br>
-                                    <?= htmlspecialchars($solicitacao['cidade']) ?> - <?= htmlspecialchars($solicitacao['estado']) ?><br>
-                                    <small class="text-muted">CEP: <?= htmlspecialchars($solicitacao['cep']) ?></small>
-                                </address>
-                            </div>
-                        </div>
-
                         <!-- Formulário de Proposta -->
                         <?php if (!$jaEnviouProposta): ?>
                             <div class="card border-success">

@@ -1,304 +1,432 @@
 <?php
+// Proteção contra múltiplas inclusões
+if (defined('PRESTADOR_CONTROLLER_LOADED')) {
+    return;
+}
+define('PRESTADOR_CONTROLLER_LOADED', true);
+
 require_once 'models/SolicitacaoServico.php';
 require_once 'models/Proposta.php';
 require_once 'config/session.php';
 
-class PrestadorController {
+class PrestadorController
+{
     private $solicitacaoModel;
     private $propostaModel;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
+        // CORRIGIDO: Usar o método correto
+        Session::requirePrestadorLogin();
+        
+        // Inicializar models
         $this->solicitacaoModel = new SolicitacaoServico();
         $this->propostaModel = new Proposta();
-        // CORRIGIDO: Usar método correto para verificar acesso do prestador
-        Session::requirePrestadorLogin();
     }
-    
-    public function dashboard() {
-        $prestadorId = Session::getUserId();
-        
-        // Buscar estatísticas
-        $stats = $this->getDashboardStats($prestadorId);
-        $graficos = $this->getDashboardCharts($prestadorId);
-        
-        include 'views/prestador/dashboard.php';
-    }
-    
-    private function getDashboardStats($prestadorId) {
-        $stats = [];
-        
-        // Propostas enviadas
-        $sql = "SELECT COUNT(*) FROM tb_proposta WHERE prestador_id = ?";
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$prestadorId]);
-        $stats['propostas_enviadas'] = $stmt->fetchColumn();
-        
-        // Propostas aceitas
-        $sql = "SELECT COUNT(*) FROM tb_proposta WHERE prestador_id = ? AND status = 'aceita'";
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$prestadorId]);
-        $stats['propostas_aceitas'] = $stmt->fetchColumn();
-        
-        // Valor total das propostas aceitas
-        $sql = "SELECT COALESCE(SUM(valor), 0) FROM tb_proposta WHERE prestador_id = ? AND status = 'aceita'";
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$prestadorId]);
-        $stats['valor_total_aceitas'] = $stmt->fetchColumn();
-        
-        // Avaliação média
-        $sql = "SELECT COALESCE(AVG(nota), 0) FROM tb_avaliacao WHERE avaliado_id = ?";
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$prestadorId]);
-        $stats['avaliacao_media'] = round($stmt->fetchColumn(), 1);
-        
-        return $stats;
-    }
-    
-    private function getDashboardCharts($prestadorId) {
-        $graficos = [];
-        
-        // Propostas por mês (últimos 6 meses)
-        $sql = "SELECT 
-                    DATE_FORMAT(data_proposta, '%Y-%m') as mes,
-                    COUNT(*) as total
-                FROM tb_proposta 
-                WHERE prestador_id = ? 
-                    AND data_proposta >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-                GROUP BY DATE_FORMAT(data_proposta, '%Y-%m')
-                ORDER BY mes";
-        
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$prestadorId]);
-        $graficos['propostas_mes'] = $stmt->fetchAll();
-        
-        // Status das propostas
-        $sql = "SELECT status, COUNT(*) as total 
-                FROM tb_proposta 
-                WHERE prestador_id = ? 
-                GROUP BY status";
-        
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$prestadorId]);
-        $graficos['status_propostas'] = $stmt->fetchAll();
-        
-        return $graficos;
-    }
-    
-    public function solicitacoes() {
-        $filtros = [
-            'tipo_servico' => $_GET['tipo_servico'] ?? '',
-            'urgencia' => $_GET['urgencia'] ?? '',
-            'cidade' => $_GET['cidade'] ?? '',
-            'orcamento_min' => $_GET['orcamento_min'] ?? '',
-            'orcamento_max' => $_GET['orcamento_max'] ?? '',
-            'page' => $_GET['page'] ?? 1
-        ];
-        
-        $solicitacoes = $this->solicitacaoModel->buscarSolicitacoesDisponiveis(20, $filtros);
-        $tiposServico = $this->solicitacaoModel->getTiposServico();
-        $cidades = $this->solicitacaoModel->getCidadesComSolicitacoes();
-        
-        include 'views/prestador/solicitacoes/listar.php';
-    }
-    
-    public function detalheSolicitacao() {
-        $id = $_GET['id'] ?? 0;
-        $prestadorId = Session::getUserId();
-        
-        $solicitacao = $this->solicitacaoModel->buscarPorId($id);
-        if (!$solicitacao || $solicitacao['status_id'] != 1) {
-            Session::setFlash('error', 'Solicitação não encontrada ou não disponível!', 'danger');
-            header('Location: /chamaservico/prestador/solicitacoes');
-            exit;
-        }
-        
-        // Verificar se já enviou proposta
-        $jaEnviouProposta = $this->propostaModel->verificarPropostaExistente($id, $prestadorId);
-        
-        // Contar outras propostas
-        $outrasPropostas = $this->propostaModel->contarPropostasPorSolicitacao($id);
-        
-        include 'views/prestador/solicitacoes/detalhes.php';
-    }
-    
-    public function enviarProposta() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/prestador/solicitacoes');
-                exit;
-            }
-            
-            $dados = [
-                'solicitacao_id' => $_POST['solicitacao_id'],
-                'prestador_id' => Session::getUserId(),
-                'valor' => $_POST['valor'],
-                'descricao' => $_POST['descricao'],
-                'prazo_execucao' => $_POST['prazo_execucao']
-            ];
-            
-            if ($this->propostaModel->enviarProposta($dados)) {
-                Session::setFlash('success', 'Proposta enviada com sucesso!', 'success');
-                header('Location: /chamaservico/prestador/propostas');
-            } else {
-                Session::setFlash('error', 'Erro ao enviar proposta!', 'danger');
-                header('Location: /chamaservico/prestador/solicitacoes');
-            }
-            exit;
-        }
-    }
-    
-    // NOVO: Método para API do dashboard
-    public function getDashboardData() {
+
+    /**
+     * Dashboard do prestador
+     */
+    public function dashboard()
+    {
         $prestadorId = Session::getUserId();
         
         try {
-            $stats = $this->getDashboardStats($prestadorId);
-            $graficos = $this->getDashboardCharts($prestadorId);
+            // Estatísticas gerais
+            $estatisticas = [
+                'total_propostas' => $this->propostaModel->contarPropostasPorPrestador($prestadorId),
+                'propostas_aceitas' => $this->propostaModel->contarPropostasAceitas($prestadorId),
+                'servicos_concluidos' => $this->propostaModel->contarServicosConcluidos($prestadorId),
+                'avaliacao_media' => $this->propostaModel->obterAvaliacaoMedia($prestadorId)
+            ];
             
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => true,
-                'stats' => $stats,
-                'graficos' => $graficos
-            ]);
-            exit;
+            // Últimas propostas
+            $ultimasPropostas = $this->propostaModel->buscarUltimasPropostas($prestadorId, 5);
+            
+            // Serviços em andamento
+            $servicosAndamento = $this->propostaModel->buscarServicosEmAndamento($prestadorId, 3);
+            
         } catch (Exception $e) {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
+            error_log("Erro no dashboard do prestador: " . $e->getMessage());
+            $estatisticas = ['total_propostas' => 0, 'propostas_aceitas' => 0, 'servicos_concluidos' => 0, 'avaliacao_media' => '0.0'];
+            $ultimasPropostas = [];
+            $servicosAndamento = [];
+            Session::setFlash('error', 'Erro ao carregar dados do dashboard!', 'danger');
+        }
+
+        $title = 'Dashboard - Prestador';
+        include 'views/prestador/dashboard.php';
+    }
+
+    /**
+     * API: Obter dados do dashboard via AJAX
+     */
+    public function getDashboardData()
+    {
+        header('Content-Type: application/json');
+        
+        $prestadorId = Session::getUserId();
+        
+        try {
+            $data = [
+                'success' => true,
+                'estatisticas' => [
+                    'total_propostas' => $this->propostaModel->contarPropostasPorPrestador($prestadorId),
+                    'propostas_aceitas' => $this->propostaModel->contarPropostasAceitas($prestadorId),
+                    'servicos_concluidos' => $this->propostaModel->contarServicosConcluidos($prestadorId),
+                    'avaliacao_media' => $this->propostaModel->obterAvaliacaoMedia($prestadorId)
+                ],
+                'ultimas_propostas' => $this->propostaModel->buscarUltimasPropostas($prestadorId, 5),
+                'servicos_andamento' => $this->propostaModel->buscarServicosEmAndamento($prestadorId, 3)
+            ];
+            
+            echo json_encode($data);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Erro ao carregar dados']);
+        }
+        
+        exit;
+    }
+
+    /**
+     * Listar solicitações disponíveis
+     */
+    public function solicitacoes()
+    {
+        $prestadorId = Session::getUserId();
+        
+        // Capturar filtros da URL
+        $filtros = [
+            'tipo_servico' => $_GET['tipo_servico'] ?? '',
+            'urgencia' => $_GET['urgencia'] ?? '',
+            'orcamento_min' => $_GET['orcamento_min'] ?? '',
+            'orcamento_max' => $_GET['orcamento_max'] ?? '',
+            'cidade' => $_GET['cidade'] ?? '',
+            'page' => $_GET['page'] ?? 1
+        ];
+
+        try {
+            // Buscar solicitações disponíveis
+            $solicitacoes = $this->solicitacaoModel->buscarSolicitacoesDisponiveis(20, $filtros);
+            
+            // Para cada solicitação, verificar se já enviou proposta
+            foreach ($solicitacoes as &$solicitacao) {
+                $solicitacao['ja_enviou_proposta'] = $this->propostaModel->verificarPropostaExistente(
+                    $solicitacao['id'], 
+                    $prestadorId
+                );
+                $solicitacao['outras_propostas'] = $this->propostaModel->contarOutrasPropostas(
+                    $solicitacao['id'], 
+                    $prestadorId
+                );
+            }
+            
+            // Dados para filtros
+            $tiposServico = $this->solicitacaoModel->getTiposServico();
+            $cidades = $this->solicitacaoModel->getCidadesComSolicitacoes();
+            
+        } catch (Exception $e) {
+            error_log("Erro ao buscar solicitações: " . $e->getMessage());
+            $solicitacoes = [];
+            $tiposServico = [];
+            $cidades = [];
+            Session::setFlash('error', 'Erro ao carregar solicitações!', 'danger');
+        }
+
+        $title = 'Buscar Serviços - Prestador';
+        include 'views/prestador/solicitacoes/listar.php';
+    }
+
+    /**
+     * Visualizar detalhes de uma solicitação
+     */
+    public function detalheSolicitacao()
+    {
+        $solicitacaoId = $_GET['id'] ?? 0;
+        $prestadorId = Session::getUserId();
+
+        if (!$solicitacaoId) {
+            Session::setFlash('error', 'Solicitação não informada!', 'danger');
+            header('Location: /chamaservico/prestador/solicitacoes');
             exit;
         }
+
+        try {
+            $solicitacao = $this->solicitacaoModel->buscarPorId($solicitacaoId);
+
+            if (!$solicitacao || $solicitacao['status_id'] != 1) {
+                Session::setFlash('error', 'Solicitação não encontrada ou não está mais disponível!', 'danger');
+                header('Location: /chamaservico/prestador/solicitacoes');
+                exit;
+            }
+
+            // Verificar se já enviou proposta
+            $jaEnviouProposta = $this->propostaModel->verificarPropostaExistente($solicitacaoId, $prestadorId);
+            $outrasPropostas = $this->propostaModel->contarOutrasPropostas($solicitacaoId, $prestadorId);
+
+        } catch (Exception $e) {
+            error_log("Erro ao buscar detalhes da solicitação: " . $e->getMessage());
+            Session::setFlash('error', 'Erro ao carregar detalhes!', 'danger');
+            header('Location: /chamaservico/prestador/solicitacoes');
+            exit;
+        }
+
+        $title = 'Detalhes da Solicitação - Prestador';
+        include 'views/prestador/solicitacoes/detalhes.php';
     }
-    
-    // NOVO: Serviços em andamento
-    public function servicosAndamento() {
+
+    /**
+     * Enviar proposta para uma solicitação
+     */
+    public function enviarProposta()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /chamaservico/prestador/solicitacoes');
+            exit;
+        }
+
+        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+            header('Location: /chamaservico/prestador/solicitacoes');
+            exit;
+        }
+
         $prestadorId = Session::getUserId();
-        
-        // Buscar propostas aceitas (serviços em andamento)
-        $sql = "SELECT p.*, s.titulo, s.descricao, s.data_atendimento,
-                       c.nome as cliente_nome, c.telefone as cliente_telefone,
-                       e.logradouro, e.numero, e.bairro, e.cidade, e.estado,
-                       st.nome as status_nome, st.cor as status_cor
-                FROM tb_proposta p
-                JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
-                JOIN tb_pessoa c ON s.cliente_id = c.id
-                JOIN tb_endereco e ON s.endereco_id = e.id
-                JOIN tb_status_solicitacao st ON s.status_id = st.id
-                WHERE p.prestador_id = ? AND p.status = 'aceita'
-                ORDER BY s.data_atendimento ASC";
-        
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$prestadorId]);
-        $servicosAndamento = $stmt->fetchAll();
-        
+        $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
+        $valor = $_POST['valor'] ?? 0;
+        $descricao = trim($_POST['descricao'] ?? '');
+        $prazoExecucao = $_POST['prazo_execucao'] ?? null;
+
+        // Validações
+        if (!$solicitacaoId || !$valor || !$descricao) {
+            Session::setFlash('error', 'Preencha todos os campos obrigatórios!', 'danger');
+            header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
+            exit;
+        }
+
+        if ($valor <= 0) {
+            Session::setFlash('error', 'O valor deve ser maior que zero!', 'danger');
+            header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
+            exit;
+        }
+
+        try {
+            // Verificar se já enviou proposta
+            if ($this->propostaModel->verificarPropostaExistente($solicitacaoId, $prestadorId)) {
+                Session::setFlash('error', 'Você já enviou uma proposta para esta solicitação!', 'warning');
+                header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
+                exit;
+            }
+
+            $dados = [
+                'solicitacao_id' => $solicitacaoId,
+                'prestador_id' => $prestadorId,
+                'valor' => $valor,
+                'descricao' => $descricao,
+                'prazo_execucao' => $prazoExecucao
+            ];
+
+            if ($this->propostaModel->criar($dados)) {
+                // Criar notificação para o cliente
+                $this->criarNotificacaoNovaProposta($solicitacaoId, $prestadorId);
+                
+                Session::setFlash('success', 'Proposta enviada com sucesso!', 'success');
+                header('Location: /chamaservico/prestador/propostas');
+                exit;
+            } else {
+                Session::setFlash('error', 'Erro ao enviar proposta!', 'danger');
+            }
+
+        } catch (Exception $e) {
+            error_log("Erro ao enviar proposta: " . $e->getMessage());
+            Session::setFlash('error', 'Erro interno ao enviar proposta!', 'danger');
+        }
+
+        header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
+        exit;
+    }
+
+    /**
+     * Listar serviços em andamento
+     */
+    public function servicosAndamento()
+    {
+        $prestadorId = Session::getUserId();
+
+        try {
+            $servicos = $this->propostaModel->buscarServicosEmAndamento($prestadorId);
+        } catch (Exception $e) {
+            error_log("Erro ao buscar serviços em andamento: " . $e->getMessage());
+            $servicos = [];
+            Session::setFlash('error', 'Erro ao carregar serviços!', 'danger');
+        }
+
+        $title = 'Serviços em Andamento - Prestador';
         include 'views/prestador/servicos/andamento.php';
     }
-    
-    // NOVO: Detalhes do serviço
-    public function servicoDetalhes() {
+
+    /**
+     * Visualizar detalhes de um serviço em andamento
+     */
+    public function servicoDetalhes()
+    {
         $propostaId = $_GET['id'] ?? 0;
         $prestadorId = Session::getUserId();
-        
-        // Buscar detalhes do serviço
-        $sql = "SELECT p.*, s.titulo, s.descricao, s.data_atendimento, s.orcamento_estimado,
-                       c.nome as cliente_nome, c.email as cliente_email, c.telefone as cliente_telefone,
-                       e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep,
-                       st.nome as status_nome, st.cor as status_cor,
-                       ts.nome as tipo_servico_nome
-                FROM tb_proposta p
-                JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
-                JOIN tb_pessoa c ON s.cliente_id = c.id
-                JOIN tb_endereco e ON s.endereco_id = e.id
-                JOIN tb_status_solicitacao st ON s.status_id = st.id
-                JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
-                WHERE p.id = ? AND p.prestador_id = ?";
-        
-        $stmt = $this->propostaModel->db->prepare($sql);
-        $stmt->execute([$propostaId, $prestadorId]);
-        $servico = $stmt->fetch();
-        
-        if (!$servico) {
-            Session::setFlash('error', 'Serviço não encontrado!', 'danger');
+
+        if (!$propostaId) {
+            Session::setFlash('error', 'Serviço não informado!', 'danger');
             header('Location: /chamaservico/prestador/servicos/andamento');
             exit;
         }
-        
-        // Buscar imagens da solicitação
-        $servico['imagens'] = $this->solicitacaoModel->buscarImagensPorSolicitacao($servico['solicitacao_id']);
-        
-        include 'views/prestador/servicos/detalhes.php';
-    }
-    
-    // NOVO: Atualizar status do serviço
-    public function atualizarStatusServico() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $propostaId = $_POST['proposta_id'] ?? 0;
-            $novoStatus = $_POST['novo_status'] ?? '';
-            $observacoes = $_POST['observacoes'] ?? '';
-            $prestadorId = Session::getUserId();
-            
-            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+
+        try {
+            $servico = $this->propostaModel->buscarDetalhesServicoAndamento($propostaId, $prestadorId);
+
+            if (!$servico) {
+                Session::setFlash('error', 'Serviço não encontrado ou você não tem permissão!', 'danger');
                 header('Location: /chamaservico/prestador/servicos/andamento');
                 exit;
             }
-            
-            try {
-                // Atualizar status da solicitação
-                $sql = "UPDATE tb_solicita_servico s
-                        JOIN tb_proposta p ON s.id = p.solicitacao_id
-                        SET s.status_id = ?
-                        WHERE p.id = ? AND p.prestador_id = ?";
-                
-                $stmt = $this->propostaModel->db->prepare($sql);
-                $resultado = $stmt->execute([$novoStatus, $propostaId, $prestadorId]);
-                
-                if ($resultado) {
-                    // Criar notificação para o cliente
-                    require_once 'models/Notificacao.php';
-                    $notificacaoModel = new Notificacao();
-                    
-                    // Buscar dados do cliente
-                    $sqlCliente = "SELECT s.cliente_id, s.titulo, st.nome as status_nome
-                                   FROM tb_solicita_servico s
-                                   JOIN tb_proposta p ON s.id = p.solicitacao_id
-                                   JOIN tb_status_solicitacao st ON s.status_id = st.id
-                                   WHERE p.id = ?";
-                    
-                    $stmtCliente = $this->propostaModel->db->prepare($sqlCliente);
-                    $stmtCliente->execute([$propostaId]);
-                    $dadosCliente = $stmtCliente->fetch();
-                    
-                    if ($dadosCliente) {
-                        $titulo = "Status do serviço atualizado";
-                        $mensagem = "O prestador atualizou o status do serviço '{$dadosCliente['titulo']}' para: {$dadosCliente['status_nome']}";
-                        
-                        if (!empty($observacoes)) {
-                            $mensagem .= "\n\nObservações: " . $observacoes;
-                        }
-                        
-                        $notificacaoModel->criarNotificacao(
-                            $dadosCliente['cliente_id'],
-                            $titulo,
-                            $mensagem,
-                            'status_atualizado',
-                            $propostaId
-                        );
-                    }
-                    
-                    Session::setFlash('success', 'Status do serviço atualizado com sucesso!', 'success');
-                } else {
-                    Session::setFlash('error', 'Erro ao atualizar status do serviço!', 'danger');
-                }
-            } catch (Exception $e) {
-                Session::setFlash('error', 'Erro interno: ' . $e->getMessage(), 'danger');
-            }
-            
+
+        } catch (Exception $e) {
+            error_log("Erro ao buscar detalhes do serviço: " . $e->getMessage());
+            Session::setFlash('error', 'Erro ao carregar detalhes!', 'danger');
             header('Location: /chamaservico/prestador/servicos/andamento');
             exit;
+        }
+
+        $title = 'Detalhes do Serviço - Prestador';
+        include 'views/prestador/servicos/detalhes.php';
+    }
+
+    /**
+     * Atualizar status de um serviço
+     */
+    public function atualizarStatusServico()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /chamaservico/prestador/servicos/andamento');
+            exit;
+        }
+
+        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+            header('Location: /chamaservico/prestador/servicos/andamento');
+            exit;
+        }
+
+        $propostaId = $_POST['proposta_id'] ?? 0;
+        $novoStatus = $_POST['novo_status'] ?? '';
+        $observacoes = trim($_POST['observacoes'] ?? '');
+        $prestadorId = Session::getUserId();
+
+        try {
+            // USAR O MÉTODO DO MODELO PROPOSTA
+            if ($this->propostaModel->atualizarStatusServico($propostaId, $prestadorId, $novoStatus, $observacoes)) {
+                $statusMessages = [
+                    'em_andamento' => 'Status atualizado para "Em Andamento"',
+                    'concluido' => 'Serviço marcado como concluído! O cliente será notificado.',
+                    'aguardando_materiais' => 'Status atualizado para "Aguardando Materiais"',
+                    'suspenso' => 'Serviço suspenso temporariamente'
+                ];
+
+                $message = $statusMessages[$novoStatus] ?? 'Status atualizado com sucesso!';
+                Session::setFlash('success', $message, 'success');
+                
+                // Se marcou como concluído, criar notificação para o cliente
+                if ($novoStatus === 'concluido') {
+                    $this->notificarConclusaoServico($propostaId, $observacoes);
+                }
+            } else {
+                Session::setFlash('error', 'Erro ao atualizar status!', 'danger');
+            }
+
+        } catch (Exception $e) {
+            error_log("Erro ao atualizar status do serviço: " . $e->getMessage());
+            Session::setFlash('error', 'Erro interno!', 'danger');
+        }
+
+        header('Location: /chamaservico/prestador/servicos/detalhes?id=' . $propostaId);
+        exit;
+    }
+
+    /**
+     * Notificar cliente sobre conclusão do serviço
+     */
+    private function notificarConclusaoServico($propostaId, $observacoes = '')
+    {
+        try {
+            // Buscar dados da proposta
+            $sql = "SELECT s.cliente_id, s.titulo, s.id as solicitacao_id
+                    FROM tb_proposta p
+                    JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                    WHERE p.id = ?";
+            
+            $stmt = $this->propostaModel->db->prepare($sql);
+            $stmt->execute([$propostaId]);
+            $dados = $stmt->fetch();
+            
+            if ($dados) {
+                require_once 'models/Notificacao.php';
+                $notificacaoModel = new Notificacao();
+                
+                $titulo = "✅ Serviço Concluído";
+                $mensagem = "O prestador concluiu o serviço '{$dados['titulo']}'. Confirme a conclusão e avalie o trabalho realizado.";
+                
+                if ($observacoes) {
+                    $mensagem .= "\n\nObservações: " . $observacoes;
+                }
+                
+                $notificacaoModel->criarNotificacao(
+                    $dados['cliente_id'],
+                    $titulo,
+                    $mensagem,
+                    'servico_concluido',
+                    $dados['solicitacao_id']
+                );
+                
+                error_log("Notificação de conclusão criada para cliente: {$dados['cliente_id']}");
+            }
+            
+        } catch (Exception $e) {
+            error_log("Erro ao notificar conclusão: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Criar notificação de nova proposta para o cliente
+     */
+    private function criarNotificacaoNovaProposta($solicitacaoId, $prestadorId)
+    {
+        try {
+            // Buscar dados da solicitação e prestador
+            $sql = "SELECT s.cliente_id, s.titulo, p.nome as prestador_nome
+                    FROM tb_solicita_servico s
+                    JOIN tb_pessoa p ON p.id = ?
+                    WHERE s.id = ?";
+
+            $stmt = $this->propostaModel->db->prepare($sql);
+            $stmt->execute([$prestadorId, $solicitacaoId]);
+            $dados = $stmt->fetch();
+
+            if ($dados && class_exists('Notificacao')) {
+                require_once 'models/Notificacao.php';
+                $notificacaoModel = new Notificacao();
+
+                $titulo = "Nova proposta recebida!";
+                $mensagem = "O prestador {$dados['prestador_nome']} enviou uma proposta para '{$dados['titulo']}'";
+
+                $notificacaoModel->criarNotificacao(
+                    $dados['cliente_id'],
+                    $titulo,
+                    $mensagem,
+                    'nova_proposta',
+                    $solicitacaoId
+                );
+            }
+
+        } catch (Exception $e) {
+            error_log("Erro ao criar notificação de nova proposta: " . $e->getMessage());
         }
     }
 }

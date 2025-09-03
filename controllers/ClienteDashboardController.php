@@ -4,19 +4,22 @@ require_once 'models/Proposta.php';
 require_once 'models/Notificacao.php';
 require_once 'config/session.php';
 
-class ClienteDashboardController {
+class ClienteDashboardController
+{
     private $solicitacaoModel;
     private $propostaModel;
     private $notificacaoModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         Session::requireClientLogin();
         $this->solicitacaoModel = new SolicitacaoServico();
         $this->propostaModel = new Proposta();
         $this->notificacaoModel = new Notificacao();
     }
 
-    public function index() {
+    public function index()
+    {
         $userId = Session::getUserId();
 
         $estatisticas = $this->getEstatisticas($userId);
@@ -27,11 +30,12 @@ class ClienteDashboardController {
         include 'views/cliente/dashboard.php';
     }
 
-    public function getEstatisticas($userId) {
+    public function getEstatisticas($userId)
+    {
         $totalSolicitacoes = $this->solicitacaoModel->contarSolicitacoesPorUsuario($userId);
         $aguardandoPropostas = $this->solicitacaoModel->contarSolicitacoesPorUsuarioEStatus($userId, 1);
         $emAndamento = $this->solicitacaoModel->contarSolicitacoesPorUsuarioEStatus($userId, 3) +
-                       $this->solicitacaoModel->contarSolicitacoesPorUsuarioEStatus($userId, 4);
+            $this->solicitacaoModel->contarSolicitacoesPorUsuarioEStatus($userId, 4);
         $concluidas = $this->solicitacaoModel->contarSolicitacoesPorUsuarioEStatus($userId, 5);
         $propostasPendentes = $this->propostaModel->contarPropostasPorStatusECliente($userId, 'pendente');
         $propostasAceitas = $this->propostaModel->contarPropostasPorStatusECliente($userId, 'aceita');
@@ -46,7 +50,8 @@ class ClienteDashboardController {
         ];
     }
 
-    public function getDashboardData() {
+    public function getDashboardData()
+    {
         $userId = Session::getUserId();
         $estatisticas = $this->getEstatisticas($userId);
 
@@ -58,4 +63,3 @@ class ClienteDashboardController {
         exit;
     }
 }
-?>

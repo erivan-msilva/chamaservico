@@ -1,396 +1,617 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
+session_start();
+$title = 'Gerenciar Usuários - Admin';
+
+// Verificar se é admin
+if (!isset($_SESSION['admin_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
+    header('Location: /chamaservico/admin/login');
+    exit;
 }
+$current_page = 'usuarios';
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Gerenciar Usuários - Chama Serviço</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-4">
-        <h1>Gerenciar Usuários</h1>
-        
-        <!-- Monitor de Sistema -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Sessões Ativas</h6>
-                        <h3 id="total-sessoes">3</h3>
-                    </div>
-                </div>
+
+<div class="page-content">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="page-title">Gerenciar Usuários</h4>
+                <p class="text-muted mb-0">Visualize e gerencie todos os usuários do sistema</p>
             </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Uso de Memória</h6>
-                        <h3 id="memoria-uso">2MB</h3>
-                    </div>
-                </div>
+            <div>
+                <button class="btn btn-outline-primary btn-sm me-2" onclick="exportarUsuarios()">
+                    <i class="bi bi-download me-1"></i>Exportar
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoUsuario">
+                    <i class="bi bi-person-plus me-1"></i>Novo Usuário
+                </button>
             </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Tempo de Resposta</h6>
-                        <h3 id="tempo-resposta">0.10s</h3>
-                    </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Buscar por nome/email</label>
+                    <input type="text" class="form-control" id="searchUsuarios" placeholder="Digite para buscar...">
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Total Usuários</h6>
-                        <h3 id="total-usuarios">0</h3>
-                    </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" id="filterTipo">
+                        <option value="">Todos</option>
+                        <option value="cliente">Cliente</option>
+                        <option value="prestador">Prestador</option>
+                        <option value="ambos">Ambos</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="filterStatus">
+                        <option value="">Todos</option>
+                        <option value="1">Ativo</option>
+                        <option value="0">Inativo</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Período</label>
+                    <select class="form-select" id="filterPeriodo">
+                        <option value="">Todos</option>
+                        <option value="hoje">Hoje</option>
+                        <option value="semana">Esta semana</option>
+                        <option value="mes">Este mês</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" onclick="limparFiltros()">
+                        <i class="bi bi-x-circle me-1"></i>Limpar
+                    </button>
                 </div>
             </div>
         </div>
-        
-        <!-- Filtros -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form id="filtrosForm" class="row g-3">
-                    <div class="col-md-3">
-                        <label for="filtroNome" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="filtroNome" name="nome">
+    </div>
+
+    <!-- Estatísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0" id="totalUsuarios">0</h4>
+                        <small>Total de Usuários</small>
                     </div>
-                    <div class="col-md-3">
-                        <label for="filtroEmail" class="form-label">E-mail</label>
-                        <input type="email" class="form-control" id="filtroEmail" name="email">
+                    <i class="bi bi-people" style="font-size: 2rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0" id="clientesAtivos">0</h4>
+                        <small>Clientes Ativos</small>
                     </div>
-                    <div class="col-md-3">
-                        <label for="filtroTipo" class="form-label">Tipo</label>
-                        <select class="form-select" id="filtroTipo" name="tipo">
-                            <option value="">Todos</option>
+                    <i class="bi bi-person-check" style="font-size: 2rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0" id="prestadoresAtivos">0</h4>
+                        <small>Prestadores Ativos</small>
+                    </div>
+                    <i class="bi bi-tools" style="font-size: 2rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-warning text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0" id="novosHoje">0</h4>
+                        <small>Novos Hoje</small>
+                    </div>
+                    <i class="bi bi-person-plus" style="font-size: 2rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Usuários -->
+    <div class="card">
+        <div class="card-header">
+            <h6 class="mb-0">Lista de Usuários</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="tabelaUsuarios">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Tipo</th>
+                            <th>Cadastro</th>
+                            <th>Último Acesso</th>
+                            <th>Status</th>
+                            <th width="120">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuariosTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginação -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="text-muted">
+            Mostrando <span id="showingFrom">0</span> a <span id="showingTo">0</span> de <span id="totalRecords">0</span> registros
+        </div>
+        <nav>
+            <ul class="pagination mb-0" id="pagination">
+                <!-- Paginação será inserida dinamicamente -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Modal Novo Usuário -->
+<div class="modal fade" id="modalNovoUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Novo Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formNovoUsuario">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome Completo *</label>
+                        <input type="text" class="form-control" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">E-mail *</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Senha *</label>
+                        <input type="password" class="form-control" name="senha" required minlength="6">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Usuário *</label>
+                        <select class="form-select" name="tipo" required>
+                            <option value="">Selecione...</option>
                             <option value="cliente">Cliente</option>
                             <option value="prestador">Prestador</option>
-                            <option value="ambos">Ambos</option>
+                            <option value="ambos">Cliente e Prestador</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary me-2">
-                            <i class="bi bi-search"></i> Filtrar
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="limparFiltros()">
-                            <i class="bi bi-x"></i> Limpar
-                        </button>
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" class="form-control" name="telefone" placeholder="(11) 99999-9999">
                     </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Tabela de usuários -->
-        <div class="card">
-            <div class="card-body">
-                <div id="usuariosLista">
-                    <!-- Conteúdo carregado via JavaScript -->
                 </div>
-                
-                <!-- Paginação -->
-                <nav id="paginacao" class="mt-3">
-                    <!-- Paginação carregada via JavaScript -->
-                </nav>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Usuário</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Modal para editar usuário -->
-    <div class="modal fade" id="editarUsuarioModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Usuário</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form id="editarUsuarioForm">
-                    <div class="modal-body">
-                        <input type="hidden" id="editarId" name="id">
-                        <div class="mb-3">
-                            <label for="editarNome" class="form-label">Nome</label>
-                            <input type="text" class="form-control" id="editarNome" name="nome" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editarEmail" class="form-label">E-mail</label>
-                            <input type="email" class="form-control" id="editarEmail" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editarTelefone" class="form-label">Telefone</label>
-                            <input type="text" class="form-control" id="editarTelefone" name="telefone">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editarTipo" class="form-label">Tipo</label>
-                            <select class="form-select" id="editarTipo" name="tipo" required>
-                                <option value="cliente">Cliente</option>
-                                <option value="prestador">Prestador</option>
-                                <option value="ambos">Ambos</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editarSenha" class="form-label">Nova Senha (deixe em branco para não alterar)</label>
-                            <input type="password" class="form-control" id="editarSenha" name="senha">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Salvar</button>
-                    </div>
-                </form>
+<!-- Modal Editar Usuário -->
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            <form id="formEditarUsuario">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="editUserId">
+                    <div class="mb-3">
+                        <label class="form-label">Nome Completo *</label>
+                        <input type="text" class="form-control" name="nome" id="editUserNome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">E-mail *</label>
+                        <input type="email" class="form-control" name="email" id="editUserEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Usuário *</label>
+                        <select class="form-select" name="tipo" id="editUserTipo" required>
+                            <option value="cliente">Cliente</option>
+                            <option value="prestador">Prestador</option>
+                            <option value="ambos">Cliente e Prestador</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" class="form-control" name="telefone" id="editUserTelefone">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nova Senha (deixe em branco para manter)</label>
+                        <input type="password" class="form-control" name="nova_senha" minlength="6">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let paginaAtual = 1;
-        const porPagina = 10;
+<style>
+.stat-card {
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
 
-        // Carregar usuários
-        function carregarUsuarios(page = 1, filtros = {}) {
-            paginaAtual = page;
-            const params = new URLSearchParams({
-                page: page,
-                per_page: porPagina,
-                ...filtros
-            });
+.stat-card:hover {
+    transform: translateY(-2px);
+}
 
-            fetch(`../controllers/UsuarioController.class.php?acao=listar&${params}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        renderizarUsuarios(data.dados.usuarios);
-                        renderizarPaginacao(data.dados.paginacao);
-                    } else {
-                        alert('Erro ao carregar usuários: ' + data.mensagem);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao carregar usuários');
-                });
-        }
+.page-content {
+    padding: 2rem;
+}
 
-        // Renderizar lista de usuários
-        function renderizarUsuarios(usuarios) {
-            const lista = document.getElementById('usuariosLista');
-            
-            if (usuarios.length === 0) {
-                lista.innerHTML = '<p class="text-center">Nenhum usuário encontrado.</p>';
-                return;
-            }
+.page-header {
+    margin-bottom: 2rem;
+}
 
-            let html = `
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome</th>
-                                <th>E-mail</th>
-                                <th>Tipo</th>
-                                <th>Telefone</th>
-                                <th>Status</th>
-                                <th>Cadastro</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
+.page-title {
+    color: var(--admin-primary);
+    font-weight: 600;
+}
+</style>
 
-            usuarios.forEach(usuario => {
-                const statusBadge = usuario.ativo == 1 ? 
-                    '<span class="badge bg-success">Ativo</span>' : 
-                    '<span class="badge bg-danger">Inativo</span>';
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    carregarUsuarios();
+    carregarEstatisticas();
+    
+    // Filtros em tempo real
+    document.getElementById('searchUsuarios').addEventListener('input', function() {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => carregarUsuarios(), 300);
+    });
+    
+    ['filterTipo', 'filterStatus', 'filterPeriodo'].forEach(id => {
+        document.getElementById(id).addEventListener('change', carregarUsuarios);
+    });
+    
+    // Form submissions
+    document.getElementById('formNovoUsuario').addEventListener('submit', criarUsuario);
+    document.getElementById('formEditarUsuario').addEventListener('submit', editarUsuario);
+});
 
-                html += `
-                    <tr>
-                        <td>${usuario.id}</td>
-                        <td>${usuario.nome}</td>
-                        <td>${usuario.email}</td>
-                        <td><span class="badge bg-primary">${usuario.tipo}</span></td>
-                        <td>${usuario.telefone || '-'}</td>
-                        <td>${statusBadge}</td>
-                        <td>${new Date(usuario.data_cadastro).toLocaleDateString('pt-BR')}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="editarUsuario(${usuario.id})">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-warning" onclick="toggleStatus(${usuario.id})">
-                                <i class="bi bi-toggle-${usuario.ativo == 1 ? 'on' : 'off'}"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deletarUsuario(${usuario.id})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += '</tbody></table></div>';
-            lista.innerHTML = html;
-        }
-
-        // Renderizar paginação
-        function renderizarPaginacao(paginacao) {
-            const nav = document.getElementById('paginacao');
-            
-            if (paginacao.total_pages <= 1) {
-                nav.innerHTML = '';
-                return;
-            }
-
-            let html = '<ul class="pagination justify-content-center">';
-
-            // Anterior
-            if (paginacao.page > 1) {
-                html += `<li class="page-item"><a class="page-link" href="#" onclick="carregarUsuarios(${paginacao.page - 1}, getFiltros())">Anterior</a></li>`;
-            }
-
-            // Páginas
-            for (let i = 1; i <= paginacao.total_pages; i++) {
-                const active = i == paginacao.page ? 'active' : '';
-                html += `<li class="page-item ${active}"><a class="page-link" href="#" onclick="carregarUsuarios(${i}, getFiltros())">${i}</a></li>`;
-            }
-
-            // Próximo
-            if (paginacao.page < paginacao.total_pages) {
-                html += `<li class="page-item"><a class="page-link" href="#" onclick="carregarUsuarios(${paginacao.page + 1}, getFiltros())">Próximo</a></li>`;
-            }
-
-            html += '</ul>';
-            nav.innerHTML = html;
-        }
-
-        // Obter filtros do formulário
-        function getFiltros() {
-            return {
-                nome: document.getElementById('filtroNome').value,
-                email: document.getElementById('filtroEmail').value,
-                tipo: document.getElementById('filtroTipo').value
-            };
-        }
-
-        // Limpar filtros
-        function limparFiltros() {
-            document.getElementById('filtrosForm').reset();
-            carregarUsuarios(1);
-        }
-
-        // Editar usuário
-        function editarUsuario(id) {
-            fetch(`../controllers/UsuarioController.class.php?acao=buscar&id=${id}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        const usuario = data.dados;
-                        document.getElementById('editarId').value = usuario.id;
-                        document.getElementById('editarNome').value = usuario.nome;
-                        document.getElementById('editarEmail').value = usuario.email;
-                        document.getElementById('editarTelefone').value = usuario.telefone || '';
-                        document.getElementById('editarTipo').value = usuario.tipo;
-                        
-                        new bootstrap.Modal(document.getElementById('editarUsuarioModal')).show();
-                    } else {
-                        alert('Erro ao carregar usuário: ' + data.mensagem);
-                    }
-                });
-        }
-
-        // Alternar status
-        function toggleStatus(id) {
-            if (confirm('Deseja alterar o status deste usuário?')) {
-                fetch(`../controllers/UsuarioController.class.php?acao=toggle_status&id=${id}`, {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        alert(data.mensagem);
-                        carregarUsuarios(paginaAtual, getFiltros());
-                    } else {
-                        alert('Erro: ' + data.mensagem);
-                    }
-                });
-            }
-        }
-
-        // Deletar usuário
-        function deletarUsuario(id) {
-            if (confirm('Deseja realmente deletar este usuário? Esta ação não pode ser desfeita.')) {
-                fetch(`../controllers/UsuarioController.class.php?acao=deletar&id=${id}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        alert(data.mensagem);
-                        carregarUsuarios(paginaAtual, getFiltros());
-                    } else {
-                        alert('Erro: ' + data.mensagem);
-                    }
-                });
-            }
-        }
-
-        // Atualizar monitor do sistema
-        function atualizarMonitor() {
-            fetch('monitor.php')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('total-sessoes').textContent = data.total_sessoes || 0;
-                    document.getElementById('memoria-uso').textContent = formatarMemoria(data.memoria_uso || 0);
-                    document.getElementById('tempo-resposta').textContent = (data.tempo_resposta || 0).toFixed(3) + 's';
-                })
-                .catch(error => console.error('Erro ao atualizar monitor:', error));
-        }
-
-        function formatarMemoria(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // Event listeners
-        document.getElementById('filtrosForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            carregarUsuarios(1, getFiltros());
+async function carregarUsuarios(page = 1) {
+    try {
+        const params = new URLSearchParams({
+            page: page,
+            nome: document.getElementById('searchUsuarios').value,
+            tipo: document.getElementById('filterTipo').value,
+            status: document.getElementById('filterStatus').value,
+            periodo: document.getElementById('filterPeriodo').value
         });
+        
+        const response = await fetch(`/chamaservico/admin/api/usuarios?${params}`);
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            renderizarUsuarios(data.dados.usuarios);
+            renderizarPaginacao(data.dados.paginacao);
+        } else {
+            showToast('Erro ao carregar usuários: ' + data.erro, 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+        showToast('Erro ao carregar usuários', 'error');
+    }
+}
 
-        document.getElementById('editarUsuarioForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const id = formData.get('id');
+function renderizarUsuarios(usuarios) {
+    const tbody = document.getElementById('usuariosTableBody');
+    
+    if (usuarios.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i><br>
+                    Nenhum usuário encontrado
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = usuarios.map(usuario => `
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                        ${usuario.nome.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div class="fw-medium">${usuario.nome}</div>
+                        <small class="text-muted">${usuario.email}</small>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="badge bg-${getTipoBadgeColor(usuario.tipo)}">${getTipoLabel(usuario.tipo)}</span>
+            </td>
+            <td>
+                <small>${new Date(usuario.data_cadastro).toLocaleDateString('pt-BR')}</small>
+            </td>
+            <td>
+                <small>${usuario.ultimo_acesso ? new Date(usuario.ultimo_acesso).toLocaleDateString('pt-BR') : 'Nunca'}</small>
+            </td>
+            <td>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" ${usuario.ativo ? 'checked' : ''} 
+                           onchange="toggleStatus(${usuario.id})">
+                </div>
+            </td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" onclick="editarUsuarioModal(${usuario.id})" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="deletarUsuario(${usuario.id})" title="Excluir">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    // Atualizar informações de paginação
+    const total = usuarios.length;
+    document.getElementById('showingFrom').textContent = total > 0 ? 1 : 0;
+    document.getElementById('showingTo').textContent = total;
+    document.getElementById('totalRecords').textContent = total;
+}
 
-            fetch(`../controllers/UsuarioController.class.php?acao=atualizar&id=${id}`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.sucesso) {
-                    alert(data.mensagem);
-                    bootstrap.Modal.getInstance(document.getElementById('editarUsuarioModal')).hide();
-                    carregarUsuarios(paginaAtual, getFiltros());
-                } else {
-                    alert('Erro: ' + data.mensagem);
-                }
-            });
+function getTipoBadgeColor(tipo) {
+    const colors = {
+        'cliente': 'primary',
+        'prestador': 'success',
+        'ambos': 'info'
+    };
+    return colors[tipo] || 'secondary';
+}
+
+function getTipoLabel(tipo) {
+    const labels = {
+        'cliente': 'Cliente',
+        'prestador': 'Prestador', 
+        'ambos': 'Ambos'
+    };
+    return labels[tipo] || tipo;
+}
+
+async function toggleStatus(userId) {
+    try {
+        const response = await fetch('/chamaservico/admin/toggle-status-usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `id=${userId}`
         });
+        
+        const data = await response.json();
+        if (data.sucesso) {
+            showToast(data.mensagem);
+            carregarEstatisticas();
+        } else {
+            showToast(data.mensagem, 'error');
+            carregarUsuarios(); // Recarregar para reverter o estado
+        }
+    } catch (error) {
+        showToast('Erro ao alterar status', 'error');
+        carregarUsuarios();
+    }
+}
 
-        // Carregar usuários na inicialização
-        document.addEventListener('DOMContentLoaded', function() {
+async function criarUsuario(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/chamaservico/admin/api/criar-usuario', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            showToast(data.mensagem);
+            bootstrap.Modal.getInstance(document.getElementById('modalNovoUsuario')).hide();
+            e.target.reset();
             carregarUsuarios();
-            atualizarMonitor();
-            // Atualizar monitor a cada 30 segundos
-            setInterval(atualizarMonitor, 30000);
+            carregarEstatisticas();
+        } else {
+            showToast(data.mensagem, 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao criar usuário', 'error');
+    }
+}
+
+async function editarUsuarioModal(userId) {
+    try {
+        const response = await fetch(`/chamaservico/admin/api/usuario/${userId}`);
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            const usuario = data.dados;
+            document.getElementById('editUserId').value = usuario.id;
+            document.getElementById('editUserNome').value = usuario.nome;
+            document.getElementById('editUserEmail').value = usuario.email;
+            document.getElementById('editUserTipo').value = usuario.tipo;
+            document.getElementById('editUserTelefone').value = usuario.telefone || '';
+            
+            new bootstrap.Modal(document.getElementById('modalEditarUsuario')).show();
+        } else {
+            showToast('Erro ao carregar dados do usuário', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao carregar usuário', 'error');
+    }
+}
+
+async function editarUsuario(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/chamaservico/admin/api/editar-usuario', {
+            method: 'POST',
+            body: formData
         });
-    </script>
-</body>
-</html>
+        
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            showToast(data.mensagem);
+            bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario')).hide();
+            carregarUsuarios();
+        } else {
+            showToast(data.mensagem, 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao editar usuário', 'error');
+    }
+}
+
+async function deletarUsuario(userId) {
+    if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/chamaservico/admin/api/deletar-usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `id=${userId}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            showToast(data.mensagem);
+            carregarUsuarios();
+            carregarEstatisticas();
+        } else {
+            showToast(data.mensagem, 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao excluir usuário', 'error');
+    }
+}
+
+async function carregarEstatisticas() {
+    try {
+        const response = await fetch('/chamaservico/admin/api/dashboard');
+        const data = await response.json();
+        
+        if (data.sucesso) {
+            const stats = data.dados;
+            document.getElementById('totalUsuarios').textContent = stats.total_usuarios || 0;
+            document.getElementById('clientesAtivos').textContent = stats.total_clientes || 0;
+            document.getElementById('prestadoresAtivos').textContent = stats.total_prestadores || 0;
+            document.getElementById('novosHoje').textContent = stats.novos_usuarios_mes || 0;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+    }
+}
+
+function limparFiltros() {
+    document.getElementById('searchUsuarios').value = '';
+    document.getElementById('filterTipo').value = '';
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterPeriodo').value = '';
+    carregarUsuarios();
+}
+
+function exportarUsuarios() {
+    window.open('/chamaservico/admin/api/exportar-usuarios', '_blank');
+}
+
+function renderizarPaginacao(paginacao) {
+    // Implementar paginação se necessário
+    const pagination = document.getElementById('pagination');
+    if (paginacao && paginacao.total_pages > 1) {
+        // Código para renderizar paginação
+    } else {
+        pagination.innerHTML = '';
+    }
+}
+
+function showToast(message, type = 'success') {
+    // Implementar sistema de toast/notificação
+    const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
+    
+    // Auto-remover após 5 segundos
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+    }, 5000);
+}
+</script>
+                            ${usuario.telefone ? '<small class="text-muted">' + usuario.telefone + '</small>' : ''}
+                        </div>
+                    </div>
+                </td>
+                <td>${usuario.email}</td>
+                <td>${tipoBadge}</td>
+                <td>${statusBadge}</td>
+                <td>${dataFormatada}</td>
+                <td>${ultimoAcesso}</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="editarUsuario(${usuario.id})" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-${usuario.ativo == 1 ? 'warning' : 'success'}" 
+                                onclick="toggleStatus(${usuario.id})" 
+                                title="${usuario.ativo == 1 ? 'Desativar' : 'Ativar'}">
+                            <i class="bi bi-${usuario.ativo == 1 ? 'pause' : 'play'}"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="deletarUsuario(${usuario.id})" title="Deletar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });

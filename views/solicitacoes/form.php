@@ -41,11 +41,11 @@ ob_start();
                             <div class="card-body p-4">
                                 <!-- Tipo de Serviço -->
                                 <div class="mb-4">
-                                    <label for="tipo_servico" class="form-label fw-bold">
+                                    <label for="tipo_servico_id" class="form-label fw-bold">
                                         <i class="bi bi-tools text-primary me-2"></i>
                                         Tipo de Serviço *
                                     </label>
-                                    <select class="form-select form-select-lg" id="tipo_servico" name="tipo_servico" required>
+                                    <select class="form-select form-select-lg" id="tipo_servico_id" name="tipo_servico_id" required>
                                         <option value="" disabled <?= !isset($solicitacao) ? 'selected' : '' ?>>
                                             🔍 Selecione o tipo de serviço que você precisa
                                         </option>
@@ -97,7 +97,6 @@ ob_start();
                                         id="descricao"
                                         name="descricao"
                                         rows="5"
-                                        placeholder="Descreva detalhadamente o que precisa ser feito. Inclua informações como:&#10;• Materiais necessários&#10;• Prazo desejado&#10;• Detalhes específicos&#10;• Horários preferenciais"
                                         maxlength="1000"
                                         required><?= htmlspecialchars($solicitacao['descricao'] ?? '') ?></textarea>
                                     <div class="form-text">
@@ -125,11 +124,11 @@ ob_start();
                                 <div class="row">
                                     <!-- Endereço -->
                                     <div class="col-md-8 mb-3">
-                                        <label for="endereco" class="form-label fw-bold">
+                                        <label for="endereco_id" class="form-label fw-bold">
                                             <i class="bi bi-house-door text-primary me-2"></i>
                                             Endereço do Serviço *
                                         </label>
-                                        <select class="form-select form-select-lg" id="endereco" name="endereco" required>
+                                        <select class="form-select form-select-lg" id="endereco_id" name="endereco_id" required>
                                             <option value="" disabled <?= !isset($solicitacao) ? 'selected' : '' ?>>
                                                 📍 Escolha onde o serviço será realizado
                                             </option>
@@ -238,15 +237,15 @@ ob_start();
                             </div>
                             <div class="card-body p-4">
                                 <div class="mb-3">
-                                    <label for="orcamento" class="form-label fw-bold">
+                                    <label for="orcamento_estimado" class="form-label fw-bold">
                                         Valor Estimado (R$)
                                     </label>
                                     <div class="input-group input-group-lg">
                                         <span class="input-group-text">R$</span>
                                         <input type="number"
                                             class="form-control"
-                                            id="orcamento"
-                                            name="orcamento"
+                                            id="orcamento_estimado"
+                                            name="orcamento_estimado"
                                             placeholder="0,00"
                                             step="0.01"
                                             min="0"

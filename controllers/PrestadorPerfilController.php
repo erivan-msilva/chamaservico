@@ -102,6 +102,61 @@ class PrestadorPerfilController extends PerfilController {
             Session::setFlash('error', 'Erro ao atualizar informações profissionais!', 'danger');
         }
     }
+
+    // Método para alterar senha do usuário
+    protected function alterarSenha($userId) {
+        if (empty($_POST['senha_atual']) || empty($_POST['nova_senha']) || empty($_POST['confirmar_senha'])) {
+            Session::setFlash('error', 'Preencha todos os campos de senha!', 'danger');
+            return;
+        }
+
+        $senhaAtual = $_POST['senha_atual'];
+        $novaSenha = $_POST['nova_senha'];
+        $confirmarSenha = $_POST['confirmar_senha'];
+
+        // Validar força da nova senha
+        if (strlen($novaSenha) < 6) {
+            Session::setFlash('error', 'A nova senha deve ter pelo menos 6 caracteres!', 'danger');
+            return;
+        }
+
+        // Buscar usuário
+        $usuario = $this->model->buscarPorId($userId);
+        if (!$usuario) {
+            Session::setFlash('error', 'Usuário não encontrado!', 'danger');
+            return;
+        }
+
+        // Verificar senha atual
+        if (!password_verify($senhaAtual, $usuario['senha'])) {
+            Session::setFlash('error', 'Senha atual incorreta!', 'danger');
+            return;
+        }
+
+        // Verificar confirmação
+        if ($novaSenha !== $confirmarSenha) {
+            Session::setFlash('error', 'A nova senha e a confirmação não coincidem!', 'danger');
+            return;
+        }
+
+        // Verificar se a nova senha é diferente da atual
+        if (password_verify($novaSenha, $usuario['senha'])) {
+            Session::setFlash('error', 'A nova senha deve ser diferente da senha atual!', 'danger');
+            return;
+        }
+
+        // Atualizar senha
+        $novaSenhaHash = password_hash($novaSenha, PASSWORD_DEFAULT);
+        
+        if ($this->model->atualizarSenha($userId, $novaSenhaHash)) {
+            Session::setFlash('success', 'Senha alterada com sucesso!', 'success');
+            
+            // Log de segurança
+            error_log("Senha alterada para usuário ID: $userId pelo próprio usuário");
+        } else {
+            Session::setFlash('error', 'Erro ao alterar senha! Tente novamente.', 'danger');
+        }
+    }
     
     // Implementar método para verificar se existe tabela de perfil profissional
     private function verificarTabelaPerfilProfissional() {
