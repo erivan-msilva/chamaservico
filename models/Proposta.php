@@ -715,9 +715,12 @@ class Proposta {
     /**
      * Criar notificação de resposta à contra-proposta
      * @param int $propostaId ID da proposta
+     * @param int $prestadorId ID do prestador
+     * @param string $tipo Tipo de resposta ('resposta_prestador')
      * @param float $valor Novo valor
      * @param int $prazo Novo prazo
      * @param string $observacoes Observações da resposta
+     * @return bool Sucesso da operação
      */
     private function criarNotificacaoResposta($propostaId, $valor, $prazo, $observacoes = '') {
         try {
@@ -823,6 +826,7 @@ class Proposta {
 
     public function buscarDetalhesServicoAndamento($propostaId, $prestadorId) {
         $sql = "SELECT p.*, s.titulo, s.descricao, s.orcamento_estimado, s.data_atendimento, s.urgencia,
+                   s.status_id, s.solicitacao_id,
                    ts.nome as tipo_servico_nome, c.nome as cliente_nome, c.email as cliente_email, 
                    c.telefone as cliente_telefone,
                    e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep,
@@ -842,6 +846,10 @@ class Proposta {
         if ($servico) {
             // Buscar imagens da solicitação
             $servico['imagens'] = $this->buscarImagensServico($servico['solicitacao_id']);
+            
+            // Garantir que todos os campos necessários estejam presentes
+            $servico['status_id'] = $servico['status_id'] ?? 0;
+            $servico['solicitacao_id'] = $servico['solicitacao_id'] ?? $servico['id'];
         }
         
         return $servico;
@@ -856,76 +864,116 @@ class Proposta {
 
     public function atualizarStatusServico($propostaId, $prestadorId, $novoStatus, $observacoes = '') {
         try {
-            // Verificar se a proposta pertence ao prestador
-            $sql = "SELECT solicitacao_id FROM tb_proposta WHERE id = ? AND prestador_id = ? AND status = 'aceita'";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$propostaId, $prestadorId]);
-            $proposta = $stmt->fetch();
+            error_log("=== INICIANDO ATUALIZAÇÃO DE STATUS NO MODEL ===");
+            error_log("Proposta ID: $propostaId");
+            error_log("Prestador ID: $prestadorId");
+            error_log("Novo Status: $novoStatus");
+            
+            // 1. PRIMEIRO: Verificar se a proposta pertence ao prestador
+            $sqlVerificar = "SELECT p.id, p.solicitacao_id, p.prestador_id, p.status, 
+                                   s.id as solicitacao_id_confirmado, s.titulo, s.status_id as status_atual_solicitacao
+                            FROM tb_proposta p
+                            JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                            WHERE p.id = ? AND p.prestador_id = ? AND p.status = 'aceita'";
+            
+            $stmtVerificar = $this->db->prepare($sqlVerificar);
+            $stmtVerificar->execute([$propostaId, $prestadorId]);
+            $proposta = $stmtVerificar->fetch();
+            
+            error_log("Dados da proposta encontrada: " . print_r($proposta, true));
             
             if (!$proposta) {
-                error_log("Proposta não encontrada ou não pertence ao prestador: ID=$propostaId, Prestador=$prestadorId");
+                error_log("ERRO: Proposta não encontrada ou não pertence ao prestador");
+                error_log("Verificando dados SQL:");
+                
+                // Debug: verificar se proposta existe
+                $debugSql = "SELECT * FROM tb_proposta WHERE id = ?";
+                $debugStmt = $this->db->prepare($debugSql);
+                $debugStmt->execute([$propostaId]);
+                $debugProposta = $debugStmt->fetch();
+                error_log("Proposta existe? " . ($debugProposta ? 'SIM' : 'NÃO'));
+                if ($debugProposta) {
+                    error_log("Dados da proposta: " . print_r($debugProposta, true));
+                }
+                
                 return false;
             }
             
-            // Iniciar transação
+            // 2. SEGUNDO: Iniciar transação
             $this->db->getConnection()->beginTransaction();
             
-            // Mapear status para IDs
+            // 3. TERCEIRO: Mapear status string para IDs da tabela tb_status_solicitacao
             $statusMap = [
-                'em_andamento' => 4,
-                'concluido' => 5,
+                'em_andamento' => 4,      // Em Andamento
+                'concluido' => 5,         // Concluído (ESTE É O IMPORTANTE!)
                 'aguardando_materiais' => 16,
                 'suspenso' => 15
             ];
             
-            $statusId = $statusMap[$novoStatus] ?? 4;
+            $novoStatusId = $statusMap[$novoStatus] ?? 4;
             
-            // Atualizar status da solicitação
-            $sqlUpdate = "UPDATE tb_solicita_servico SET status_id = ? WHERE id = ?";
-            $stmtUpdate = $this->db->prepare($sqlUpdate);
-            $resultStatus = $stmtUpdate->execute([$statusId, $proposta['solicitacao_id']]);
+            error_log("=== MAPEAMENTO DE STATUS ===");
+            error_log("Status String: $novoStatus");
+            error_log("Status ID: $novoStatusId");
+            error_log("Solicitação ID: {$proposta['solicitacao_id']}");
+            error_log("Status atual da solicitação: {$proposta['status_atual_solicitacao']}");
             
-            if (!$resultStatus) {
+            // 4. QUARTO: Atualizar status da solicitação na tabela tb_solicita_servico
+            $sqlUpdateSolicitacao = "UPDATE tb_solicita_servico SET status_id = ? WHERE id = ?";
+            $stmtUpdateSolicitacao = $this->db->prepare($sqlUpdateSolicitacao);
+            $resultadoUpdate = $stmtUpdateSolicitacao->execute([$novoStatusId, $proposta['solicitacao_id']]);
+            
+            error_log("SQL de atualização: $sqlUpdateSolicitacao");
+            error_log("Parâmetros: [" . $novoStatusId . ", " . $proposta['solicitacao_id'] . "]");
+            error_log("Resultado da atualização: " . ($resultadoUpdate ? 'SUCESSO' : 'FALHA'));
+            error_log("Linhas afetadas: " . $stmtUpdateSolicitacao->rowCount());
+            
+            if (!$resultadoUpdate) {
                 $this->db->getConnection()->rollBack();
-                error_log("Erro ao atualizar status da solicitação: ID={$proposta['solicitacao_id']}");
+                error_log("ERRO: Falha ao executar UPDATE na tb_solicita_servico");
+                error_log("Erro SQL: " . print_r($stmtUpdateSolicitacao->errorInfo(), true));
                 return false;
             }
             
-            // Se o status for "concluído", gerar Ordem de Serviço
-            if ($novoStatus === 'concluido') {
-                // Verificar se existe a classe OrdemServico
-                if (class_exists('OrdemServico')) {
-                    require_once 'models/OrdemServico.php';
-                    $ordemServicoModel = new OrdemServico();
-                    $osId = $ordemServicoModel->criarOrdemServico($propostaId, $prestadorId);
-                    
-                    if ($osId) {
-                        // Criar notificação específica para OS
-                        $this->criarNotificacaoOrdemServico($proposta['solicitacao_id'], $osId, $observacoes);
-                    } else {
-                        // Se falhou ao criar OS, continuar mesmo assim e só criar notificação normal
-                        error_log("Falha ao criar Ordem de Serviço para proposta: $propostaId");
-                        $this->criarNotificacaoStatusServico($proposta['solicitacao_id'], $novoStatus, $observacoes);
-                    }
-                } else {
-                    // Classe OrdemServico não existe, criar apenas notificação normal
-                    $this->criarNotificacaoStatusServico($proposta['solicitacao_id'], $novoStatus, $observacoes);
-                }
-            } else {
-                // Criar notificação normal de status
-                $this->criarNotificacaoStatusServico($proposta['solicitacao_id'], $novoStatus, $observacoes);
+            if ($stmtUpdateSolicitacao->rowCount() === 0) {
+                $this->db->getConnection()->rollBack();
+                error_log("AVISO: Nenhuma linha foi afetada pelo UPDATE");
+                return false;
             }
             
+            // 5. QUINTO: Verificar se realmente atualizou
+            $sqlVerificarUpdate = "SELECT status_id FROM tb_solicita_servico WHERE id = ?";
+            $stmtVerificarUpdate = $this->db->prepare($sqlVerificarUpdate);
+            $stmtVerificarUpdate->execute([$proposta['solicitacao_id']]);
+            $novoStatusAtual = $stmtVerificarUpdate->fetchColumn();
+            
+            error_log("Status após UPDATE: $novoStatusAtual (esperado: $novoStatusId)");
+            
+            if ($novoStatusAtual != $novoStatusId) {
+                $this->db->getConnection()->rollBack();
+                error_log("ERRO: Status não foi atualizado corretamente!");
+                return false;
+            }
+            
+            // 6. SEXTO: Se chegou até aqui, criar notificação
+            if ($novoStatus === 'concluido') {
+                $this->criarNotificacaoStatusServico($proposta['solicitacao_id'], $novoStatus, $observacoes);
+                error_log("Notificação de conclusão criada");
+            }
+            
+            // 7. SÉTIMO: Commit da transação
             $this->db->getConnection()->commit();
+            error_log("=== SUCESSO: Status atualizado com sucesso! ===");
             return true;
             
         } catch (Exception $e) {
-            // Verificar se há transação ativa antes de fazer rollback
+            // Rollback se houver erro
             if ($this->db->getConnection()->inTransaction()) {
                 $this->db->getConnection()->rollBack();
             }
-            error_log("Erro ao atualizar status do serviço: " . $e->getMessage());
-            return false;
+            error_log("EXCEÇÃO ao atualizar status do serviço: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            throw $e; // Re-throw para o controller capturar
         }
     }
 
@@ -939,66 +987,42 @@ class Proposta {
             if ($solicitacao) {
                 $statusMessages = [
                     'em_andamento' => 'O prestador iniciou o seu serviço',
-                    'concluido' => 'O prestador concluiu o seu serviço',
+                    'concluido' => '✅ O prestador concluiu o seu serviço! Confirme a conclusão e avalie o trabalho realizado.',
                     'aguardando_materiais' => 'O serviço está aguardando materiais',
                     'suspenso' => 'O serviço foi temporariamente suspenso'
                 ];
                 
-                $titulo = "Atualização do Serviço";
+                $titulo = $novoStatus === 'concluido' ? "🎉 Serviço Concluído!" : "📋 Atualização do Serviço";
                 $mensagem = $statusMessages[$novoStatus] . " '{$solicitacao['titulo']}'";
                 
                 if ($observacoes) {
-                    $mensagem .= "\n\nObservações: " . $observacoes;
+                    $mensagem .= "\n\n💬 Observações do prestador: " . $observacoes;
                 }
                 
-                // Verificar se a classe Notificacao existe
+                // Usar notificação automática se disponível
                 if (class_exists('Notificacao')) {
                     require_once 'models/Notificacao.php';
-                    $notificacaoModel = new Notificacao();
-                    $notificacaoModel->criarNotificacao(
+                    Notificacao::criarNotificacaoAutomatica(
+                        'servico_concluido',
                         $solicitacao['cliente_id'],
-                        $titulo,
-                        $mensagem,
-                        'status_servico',
-                        $solicitacaoId
+                        $solicitacaoId,
+                        [
+                            'servico' => $solicitacao['titulo'],
+                            'observacoes' => $observacoes
+                        ]
                     );
+                } else {
+                    // Fallback: inserir diretamente
+                    $sqlNotif = "INSERT INTO tb_notificacao (pessoa_id, titulo, mensagem, tipo, referencia_id) 
+                                VALUES (?, ?, ?, 'servico_concluido', ?)";
+                    $stmtNotif = $this->db->prepare($sqlNotif);
+                    $stmtNotif->execute([$solicitacao['cliente_id'], $titulo, $mensagem, $solicitacaoId]);
                 }
+                
+                error_log("Notificação criada para cliente: {$solicitacao['cliente_id']}");
             }
         } catch (Exception $e) {
             error_log("Erro ao criar notificação de status: " . $e->getMessage());
-        }
-    }
-
-    private function criarNotificacaoOrdemServico($solicitacaoId, $osId, $observacoes) {
-        try {
-            $sql = "SELECT cliente_id, titulo FROM tb_solicita_servico WHERE id = ?";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$solicitacaoId]);
-            $solicitacao = $stmt->fetch();
-            
-            if ($solicitacao) {
-                $titulo = "Serviço Concluído - Ordem de Serviço Gerada";
-                $mensagem = "O serviço '{$solicitacao['titulo']}' foi concluído! Uma Ordem de Serviço foi gerada automaticamente. Clique para visualizar, assinar digitalmente e fazer o download.";
-                
-                if ($observacoes) {
-                    $mensagem .= "\n\nObservações do prestador: " . $observacoes;
-                }
-                
-                // Verificar se a classe Notificacao existe
-                if (class_exists('Notificacao')) {
-                    require_once 'models/Notificacao.php';
-                    $notificacaoModel = new Notificacao();
-                    $notificacaoModel->criarNotificacao(
-                        $solicitacao['cliente_id'],
-                        $titulo,
-                        $mensagem,
-                        'ordem_servico_gerada',
-                        $osId
-                    );
-                }
-            }
-        } catch (Exception $e) {
-            error_log("Erro ao criar notificação de OS: " . $e->getMessage());
         }
     }
 
@@ -1191,4 +1215,3 @@ class Proposta {
     }
 }
 ?>
-

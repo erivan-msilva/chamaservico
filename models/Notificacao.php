@@ -140,7 +140,7 @@ class Notificacao
                 ],
                 'servico_concluido' => [
                     'titulo' => '✅ Serviço Concluído',
-                    'mensagem' => 'O prestador marcou o serviço "{servico}" como concluído. Confirme a conclusão e avalie o trabalho.'
+                    'mensagem' => 'O prestador {prestador} marcou o serviço "{servico}" como concluído. Confirme a conclusão e avalie o trabalho realizado.'
                 ],
                 'nova_proposta' => [
                     'titulo' => '📋 Nova Proposta Recebida',
@@ -187,4 +187,3 @@ class Notificacao
     }
 }
 ?>
-      

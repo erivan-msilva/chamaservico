@@ -266,7 +266,7 @@ class PrestadorController
     }
 
     /**
-     * Visualizar detalhes de um serviço em andamento
+     * Mostrar detalhes de um serviço em andamento
      */
     public function servicoDetalhes()
     {
@@ -283,14 +283,24 @@ class PrestadorController
             $servico = $this->propostaModel->buscarDetalhesServicoAndamento($propostaId, $prestadorId);
 
             if (!$servico) {
-                Session::setFlash('error', 'Serviço não encontrado ou você não tem permissão!', 'danger');
+                error_log("Serviço não encontrado: Proposta ID=$propostaId, Prestador ID=$prestadorId");
+                Session::setFlash('error', 'Serviço não encontrado ou você não tem permissão para visualizá-lo!', 'danger');
                 header('Location: /chamaservico/prestador/servicos/andamento');
                 exit;
             }
 
+            // Debug melhorado
+            error_log("=== DEBUG SERVIÇO DETALHES ===");
+            error_log("Proposta ID: " . $servico['id']);
+            error_log("Solicitação ID: " . $servico['solicitacao_id']);
+            error_log("Status ID: " . ($servico['status_id'] ?? 'UNDEFINED'));
+            error_log("Status Nome: " . ($servico['status_nome'] ?? 'UNDEFINED'));
+            error_log("Proposta Status: " . $servico['status']);
+            error_log("Campos disponíveis: " . implode(', ', array_keys($servico)));
+
         } catch (Exception $e) {
             error_log("Erro ao buscar detalhes do serviço: " . $e->getMessage());
-            Session::setFlash('error', 'Erro ao carregar detalhes!', 'danger');
+            Session::setFlash('error', 'Erro ao carregar detalhes do serviço!', 'danger');
             header('Location: /chamaservico/prestador/servicos/andamento');
             exit;
         }
@@ -300,7 +310,7 @@ class PrestadorController
     }
 
     /**
-     * Atualizar status de um serviço
+     * Atualizar status de um serviço - CORRIGIDO PARA FUNCIONAR
      */
     public function atualizarStatusServico()
     {
@@ -320,12 +330,55 @@ class PrestadorController
         $observacoes = trim($_POST['observacoes'] ?? '');
         $prestadorId = Session::getUserId();
 
+        error_log("=== DEBUG CONTROLLER ===");
+        error_log("Proposta ID recebido: $propostaId");
+        error_log("Novo Status: $novoStatus");
+        error_log("Prestador ID: $prestadorId");
+        error_log("Observações: $observacoes");
+
+        // VALIDAÇÕES BÁSICAS
+        if (!$propostaId || !$novoStatus || !$prestadorId) {
+            error_log("ERRO: Dados obrigatórios faltando");
+            Session::setFlash('error', 'Dados obrigatórios não informados!', 'danger');
+            header('Location: /chamaservico/prestador/servicos/andamento');
+            exit;
+        }
+
         try {
-            // USAR O MÉTODO DO MODELO PROPOSTA
-            if ($this->propostaModel->atualizarStatusServico($propostaId, $prestadorId, $novoStatus, $observacoes)) {
+            // PRIMEIRO: Verificar se a proposta existe e pertence ao prestador
+            $sqlVerificar = "SELECT p.id, p.solicitacao_id, p.prestador_id, p.status as proposta_status,
+                                   s.titulo, s.status_id as status_atual
+                            FROM tb_proposta p
+                            JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                            WHERE p.id = ? AND p.prestador_id = ?";
+            
+            $stmt = $this->propostaModel->db->prepare($sqlVerificar);
+            $stmt->execute([$propostaId, $prestadorId]);
+            $verificacao = $stmt->fetch();
+            
+            error_log("Resultado da verificação: " . print_r($verificacao, true));
+            
+            if (!$verificacao) {
+                error_log("ERRO: Proposta não encontrada ou não pertence ao prestador");
+                Session::setFlash('error', 'Proposta não encontrada ou você não tem permissão!', 'danger');
+                header('Location: /chamaservico/prestador/servicos/andamento');
+                exit;
+            }
+
+            if ($verificacao['proposta_status'] !== 'aceita') {
+                error_log("ERRO: Proposta não está aceita. Status atual: " . $verificacao['proposta_status']);
+                Session::setFlash('error', 'Apenas propostas aceitas podem ter status alterado!', 'danger');
+                header('Location: /chamaservico/prestador/servicos/detalhes?id=' . $propostaId);
+                exit;
+            }
+
+            // SEGUNDO: Usar o método do model para atualizar
+            $resultado = $this->propostaModel->atualizarStatusServico($propostaId, $prestadorId, $novoStatus, $observacoes);
+            
+            if ($resultado) {
                 $statusMessages = [
                     'em_andamento' => 'Status atualizado para "Em Andamento"',
-                    'concluido' => 'Serviço marcado como concluído! O cliente será notificado.',
+                    'concluido' => '🎉 Parabéns! Serviço marcado como concluído! O cliente foi notificado e agora pode confirmar a conclusão e avaliar seu trabalho.',
                     'aguardando_materiais' => 'Status atualizado para "Aguardando Materiais"',
                     'suspenso' => 'Serviço suspenso temporariamente'
                 ];
@@ -333,19 +386,20 @@ class PrestadorController
                 $message = $statusMessages[$novoStatus] ?? 'Status atualizado com sucesso!';
                 Session::setFlash('success', $message, 'success');
                 
-                // Se marcou como concluído, criar notificação para o cliente
-                if ($novoStatus === 'concluido') {
-                    $this->notificarConclusaoServico($propostaId, $observacoes);
-                }
+                error_log("✅ STATUS ATUALIZADO COM SUCESSO!");
+                
             } else {
-                Session::setFlash('error', 'Erro ao atualizar status!', 'danger');
+                error_log("❌ FALHA ao atualizar status no model");
+                Session::setFlash('error', 'Erro ao atualizar status! Tente novamente.', 'danger');
             }
 
         } catch (Exception $e) {
-            error_log("Erro ao atualizar status do serviço: " . $e->getMessage());
-            Session::setFlash('error', 'Erro interno!', 'danger');
+            error_log("EXCEÇÃO no controller: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            Session::setFlash('error', 'Erro interno: ' . $e->getMessage(), 'danger');
         }
 
+        // SEMPRE redirecionar de volta para os detalhes
         header('Location: /chamaservico/prestador/servicos/detalhes?id=' . $propostaId);
         exit;
     }
@@ -356,10 +410,11 @@ class PrestadorController
     private function notificarConclusaoServico($propostaId, $observacoes = '')
     {
         try {
-            // Buscar dados da proposta
-            $sql = "SELECT s.cliente_id, s.titulo, s.id as solicitacao_id
+            // Buscar dados da proposta e solicitação
+            $sql = "SELECT s.cliente_id, s.titulo, s.id as solicitacao_id, p.prestador_id, pr.nome as prestador_nome
                     FROM tb_proposta p
                     JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                    JOIN tb_pessoa pr ON p.prestador_id = pr.id
                     WHERE p.id = ?";
             
             $stmt = $this->propostaModel->db->prepare($sql);
@@ -368,24 +423,30 @@ class PrestadorController
             
             if ($dados) {
                 require_once 'models/Notificacao.php';
-                $notificacaoModel = new Notificacao();
                 
                 $titulo = "✅ Serviço Concluído";
-                $mensagem = "O prestador concluiu o serviço '{$dados['titulo']}'. Confirme a conclusão e avalie o trabalho realizado.";
+                $mensagem = "O prestador {$dados['prestador_nome']} concluiu o serviço '{$dados['titulo']}'. ".
+                           "Confirme a conclusão e avalie o trabalho realizado.";
                 
                 if ($observacoes) {
-                    $mensagem .= "\n\nObservações: " . $observacoes;
+                    $mensagem .= "\n\nObservações do prestador: " . $observacoes;
                 }
                 
-                $notificacaoModel->criarNotificacao(
-                    $dados['cliente_id'],
-                    $titulo,
-                    $mensagem,
+                // Criar notificação usando método estático
+                Notificacao::criarNotificacaoAutomatica(
                     'servico_concluido',
-                    $dados['solicitacao_id']
+                    $dados['cliente_id'],
+                    $dados['solicitacao_id'],
+                    [
+                        'servico' => $dados['titulo'],
+                        'prestador' => $dados['prestador_nome'],
+                        'observacoes' => $observacoes
+                    ]
                 );
                 
                 error_log("Notificação de conclusão criada para cliente: {$dados['cliente_id']}");
+            } else {
+                error_log("Dados da proposta não encontrados para ID: $propostaId");
             }
             
         } catch (Exception $e) {

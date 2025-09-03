@@ -28,6 +28,10 @@ class ClienteServicoController
         try {
             $servicos = $this->buscarServicosConcluidos($clienteId);
             
+            error_log("=== DEBUG SERVIÇOS CONCLUÍDOS ===");
+            error_log("Cliente ID: " . $clienteId);
+            error_log("Serviços encontrados: " . count($servicos));
+            
         } catch (Exception $e) {
             error_log("Erro ao buscar serviços concluídos: " . $e->getMessage());
             $servicos = [];
@@ -36,6 +40,64 @@ class ClienteServicoController
 
         $title = 'Serviços Concluídos - Cliente';
         include 'views/cliente/servicos/concluidos.php';
+    }
+
+    /**
+     * Buscar serviços concluídos do cliente
+     */
+    private function buscarServicosConcluidos($clienteId)
+    {
+        $sql = "SELECT s.*, ts.nome as tipo_servico_nome, st.nome as status_nome, st.cor as status_cor,
+                       e.logradouro, e.numero, e.bairro, e.cidade, e.estado,
+                       pr.nome as prestador_nome, pr.telefone as prestador_telefone,
+                       p.valor as valor_aceito, p.data_aceite, p.id as proposta_id,
+                       (SELECT COUNT(*) FROM tb_avaliacao WHERE solicitacao_id = s.id AND avaliador_id = ?) as ja_avaliado
+                FROM tb_solicita_servico s
+                JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+                JOIN tb_status_solicitacao st ON s.status_id = st.id
+                JOIN tb_endereco e ON s.endereco_id = e.id
+                JOIN tb_proposta p ON s.id = p.solicitacao_id AND p.status = 'aceita'
+                JOIN tb_pessoa pr ON p.prestador_id = pr.id
+                WHERE s.cliente_id = ? AND s.status_id IN (5, 11, 13)
+                ORDER BY s.data_solicitacao DESC";
+
+        $stmt = $this->solicitacaoModel->db->prepare($sql);
+        $stmt->execute([$clienteId, $clienteId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Confirmar conclusão do serviço
+     */
+    public function confirmarConclusao()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /chamaservico/cliente/servicos/concluidos');
+            exit;
+        }
+
+        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+            header('Location: /chamaservico/cliente/servicos/concluidos');
+            exit;
+        }
+
+        $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
+        $clienteId = Session::getUserId();
+
+        try {
+            if ($this->solicitacaoModel->atualizarStatus($solicitacaoId, 11, $clienteId)) {
+                Session::setFlash('success', 'Conclusão confirmada! Agora você pode avaliar o serviço.', 'success');
+            } else {
+                Session::setFlash('error', 'Erro ao confirmar conclusão!', 'danger');
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao confirmar conclusão: " . $e->getMessage());
+            Session::setFlash('error', 'Erro interno!', 'danger');
+        }
+
+        header('Location: /chamaservico/cliente/servicos/concluidos');
+        exit;
     }
 
     /**
@@ -53,7 +115,6 @@ class ClienteServicoController
         }
 
         try {
-            // Buscar dados do serviço
             $servico = $this->buscarServicoParaAvaliacao($solicitacaoId, $clienteId);
 
             if (!$servico) {
@@ -85,109 +146,6 @@ class ClienteServicoController
     }
 
     /**
-     * Confirmar conclusão do serviço
-     */
-    public function confirmarConclusao()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/cliente/servicos/concluidos');
-            exit;
-        }
-
-        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-            Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/cliente/servicos/concluidos');
-            exit;
-        }
-
-        $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
-        $clienteId = Session::getUserId();
-
-        try {
-            if ($this->solicitacaoModel->atualizarStatus($solicitacaoId, 11, $clienteId)) { // Status 11: Aguardando Avaliação
-                Session::setFlash('success', 'Conclusão confirmada! Agora você pode avaliar o serviço.', 'success');
-            } else {
-                Session::setFlash('error', 'Erro ao confirmar conclusão!', 'danger');
-            }
-        } catch (Exception $e) {
-            error_log("Erro ao confirmar conclusão: " . $e->getMessage());
-            Session::setFlash('error', 'Erro interno!', 'danger');
-        }
-
-        header('Location: /chamaservico/cliente/servicos/concluidos');
-        exit;
-    }
-
-    /**
-     * Solicitar revisão do serviço
-     */
-    public function solicitarRevisao()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/cliente/servicos/concluidos');
-            exit;
-        }
-
-        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-            Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/cliente/servicos/concluidos');
-            exit;
-        }
-
-        $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
-        $motivo = trim($_POST['motivo_revisao'] ?? '');
-        $clienteId = Session::getUserId();
-
-        if (empty($motivo)) {
-            Session::setFlash('error', 'Informe o motivo da revisão!', 'danger');
-            header('Location: /chamaservico/cliente/servicos/concluidos');
-            exit;
-        }
-
-        try {
-            // Atualizar status para "Em Revisão" (novo status)
-            if ($this->solicitacaoModel->solicitarRevisao($solicitacaoId, $clienteId, $motivo)) {
-                // Notificar prestador
-                $this->notificarRevisaoSolicitada($solicitacaoId, $motivo);
-                
-                Session::setFlash('success', 'Revisão solicitada! O prestador foi notificado.', 'success');
-            } else {
-                Session::setFlash('error', 'Erro ao solicitar revisão!', 'danger');
-            }
-        } catch (Exception $e) {
-            error_log("Erro ao solicitar revisão: " . $e->getMessage());
-            Session::setFlash('error', 'Erro interno!', 'danger');
-        }
-
-        header('Location: /chamaservico/cliente/servicos/concluidos');
-        exit;
-    }
-
-    /**
-     * Buscar serviços concluídos do cliente
-     */
-    private function buscarServicosConcluidos($clienteId)
-    {
-        $sql = "SELECT s.*, ts.nome as tipo_servico_nome, st.nome as status_nome, st.cor as status_cor,
-                       e.logradouro, e.numero, e.bairro, e.cidade, e.estado,
-                       pr.nome as prestador_nome, pr.telefone as prestador_telefone,
-                       p.valor as valor_aceito, p.data_aceite,
-                       (SELECT COUNT(*) FROM tb_avaliacao WHERE solicitacao_id = s.id AND avaliador_id = ?) as ja_avaliado
-                FROM tb_solicita_servico s
-                JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
-                JOIN tb_status_solicitacao st ON s.status_id = st.id
-                JOIN tb_endereco e ON s.endereco_id = e.id
-                JOIN tb_proposta p ON s.id = p.solicitacao_id AND p.status = 'aceita'
-                JOIN tb_pessoa pr ON p.prestador_id = pr.id
-                WHERE s.cliente_id = ? AND s.status_id IN (5, 11) -- 5: Concluído, 11: Aguardando Avaliação
-                ORDER BY s.data_solicitacao DESC";
-
-        $stmt = $this->solicitacaoModel->db->prepare($sql);
-        $stmt->execute([$clienteId, $clienteId]);
-        return $stmt->fetchAll();
-    }
-
-    /**
      * Buscar dados do serviço para avaliação
      */
     private function buscarServicoParaAvaliacao($solicitacaoId, $clienteId)
@@ -201,7 +159,7 @@ class ClienteServicoController
                 JOIN tb_endereco e ON s.endereco_id = e.id
                 JOIN tb_proposta p ON s.id = p.solicitacao_id AND p.status = 'aceita'
                 JOIN tb_pessoa pr ON p.prestador_id = pr.id
-                WHERE s.id = ? AND s.cliente_id = ? AND s.status_id IN (5, 11)"; // Status 5: Concluído ou 11: Aguardando Avaliação
+                WHERE s.id = ? AND s.cliente_id = ? AND s.status_id IN (11, 5)";
 
         $stmt = $this->solicitacaoModel->db->prepare($sql);
         $stmt->execute([$solicitacaoId, $clienteId]);
@@ -222,7 +180,6 @@ class ClienteServicoController
         $comentario = trim($_POST['comentario'] ?? '');
         $recomendaria = isset($_POST['recomendaria']) ? 1 : 0;
 
-        // Validações
         if ($nota < 1 || $nota > 5) {
             Session::setFlash('error', 'Selecione uma nota de 1 a 5 estrelas!', 'danger');
             return;
@@ -234,7 +191,6 @@ class ClienteServicoController
         }
 
         try {
-            // Criar avaliação
             $dadosAvaliacao = [
                 'solicitacao_id' => $solicitacaoId,
                 'avaliador_id' => $clienteId,
@@ -264,8 +220,65 @@ class ClienteServicoController
     }
 
     /**
-     * Notificar prestador sobre revisão solicitada
+     * Notificar prestador sobre avaliação recebida
      */
+    private function notificarAvaliacaoRecebida($prestadorId, $servicoTitulo, $nota)
+    {
+        try {
+            require_once 'models/Notificacao.php';
+            Notificacao::criarNotificacaoAutomatica(
+                'avaliacao_recebida',
+                $prestadorId,
+                null,
+                ['servico' => $servicoTitulo, 'nota' => $nota]
+            );
+        } catch (Exception $e) {
+            error_log("Erro ao notificar avaliação: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Solicitar revisão do serviço
+     */
+    public function solicitarRevisao()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /chamaservico/cliente/servicos/concluidos');
+            exit;
+        }
+
+        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+            header('Location: /chamaservico/cliente/servicos/concluidos');
+            exit;
+        }
+
+        $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
+        $motivo = trim($_POST['motivo_revisao'] ?? '');
+        $clienteId = Session::getUserId();
+
+        if (empty($motivo)) {
+            Session::setFlash('error', 'Informe o motivo da revisão!', 'danger');
+            header('Location: /chamaservico/cliente/servicos/concluidos');
+            exit;
+        }
+
+        try {
+            if ($this->solicitacaoModel->solicitarRevisao($solicitacaoId, $clienteId, $motivo)) {
+                $this->notificarRevisaoSolicitada($solicitacaoId, $motivo);
+                Session::setFlash('success', 'Revisão solicitada! O prestador foi notificado.', 'success');
+            } else {
+                Session::setFlash('error', 'Erro ao solicitar revisão!', 'danger');
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao solicitar revisão: " . $e->getMessage());
+            Session::setFlash('error', 'Erro interno!', 'danger');
+        }
+
+        header('Location: /chamaservico/cliente/servicos/concluidos');
+        exit;
+    }
+
     private function notificarRevisaoSolicitada($solicitacaoId, $motivo)
     {
         try {
@@ -291,23 +304,14 @@ class ClienteServicoController
             error_log("Erro ao notificar revisão: " . $e->getMessage());
         }
     }
-
-    /**
-     * Notificar prestador sobre avaliação recebida
-     */
-    private function notificarAvaliacaoRecebida($prestadorId, $servicoTitulo, $nota)
-    {
-        try {
-            require_once 'models/Notificacao.php';
-            Notificacao::criarNotificacaoAutomatica(
-                'avaliacao_recebida',
-                $prestadorId,
-                null,
-                ['servico' => $servicoTitulo, 'nota' => $nota]
-            );
+}
+?>
+                );
+            }
         } catch (Exception $e) {
-            error_log("Erro ao notificar avaliação: " . $e->getMessage());
+            error_log("Erro ao notificar revisão: " . $e->getMessage());
         }
     }
 }
 ?>
+    
