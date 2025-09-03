@@ -4,19 +4,6 @@ ob_start();
 ?>
 
 <div class="container-fluid">
-    <!-- Debug temporário -->
-    <?php if (!empty($servico)): ?>
-        <div class="alert alert-info mb-3">
-            <small>
-                <strong>Debug:</strong> 
-                Proposta ID: <?= $servico['id'] ?> | 
-                Solicitação ID: <?= $servico['solicitacao_id'] ?? 'N/A' ?> | 
-                Status Atual: <?= $servico['status_id'] ?? 'N/A' ?> (<?= $servico['status_nome'] ?? 'N/A' ?>) |
-                Proposta Status: <?= $servico['status'] ?? 'N/A' ?>
-            </small>
-        </div>
-    <?php endif; ?>
-
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
@@ -56,8 +43,8 @@ ob_start();
                                 <i class="bi bi-tools me-2"></i>
                                 <?= htmlspecialchars($servico['titulo']) ?>
                             </h5>
-                            <span class="badge" style="background-color: <?= $servico['status_cor'] ?>;">
-                                <?= htmlspecialchars($servico['status_nome']) ?>
+                            <span class="badge" style="background-color: <?= $servico['status_cor'] ?? '#6c757d' ?>;">
+                                <?= htmlspecialchars($servico['status_nome'] ?? 'Status não definido') ?>
                             </span>
                         </div>
                     </div>
@@ -94,13 +81,6 @@ ob_start();
                             <h6 class="fw-bold">Descrição do Serviço</h6>
                             <p class="mb-0"><?= nl2br(htmlspecialchars($servico['descricao'])) ?></p>
                         </div>
-
-                        <?php if (!empty($servico['descricao'])): ?>
-                            <div class="mb-3">
-                                <h6 class="fw-bold">Observações da Proposta</h6>
-                                <p class="mb-0"><?= nl2br(htmlspecialchars($servico['descricao'])) ?></p>
-                            </div>
-                        <?php endif; ?>
 
                         <!-- Urgência -->
                         <div class="mb-3">
@@ -282,33 +262,37 @@ ob_start();
 document.addEventListener('DOMContentLoaded', function() {
     // Modal de imagens
     const modalImagem = document.getElementById('modalImagem');
-    const imagemModal = document.getElementById('imagemModal');
-    
-    modalImagem.addEventListener('show.bs.modal', function(event) {
-        const trigger = event.relatedTarget;
-        const src = trigger.getAttribute('data-src');
-        imagemModal.src = src;
-    });
+    if (modalImagem) {
+        const imagemModal = document.getElementById('imagemModal');
+        
+        modalImagem.addEventListener('show.bs.modal', function(event) {
+            const trigger = event.relatedTarget;
+            const src = trigger.getAttribute('data-src');
+            imagemModal.src = src;
+        });
+    }
 
     // Validação do formulário de status
     const formStatus = document.getElementById('formStatus');
-    formStatus.addEventListener('submit', function(e) {
-        const novoStatus = document.getElementById('novo_status').value;
-        
-        if (!novoStatus) {
-            e.preventDefault();
-            alert('Por favor, selecione um novo status.');
-            return;
-        }
-
-        // Confirmação para status "concluído"
-        if (novoStatus === 'concluido') {
-            if (!confirm('Tem certeza que deseja marcar este serviço como concluído? O cliente será notificado.')) {
+    if (formStatus) {
+        formStatus.addEventListener('submit', function(e) {
+            const novoStatus = document.getElementById('novo_status').value;
+            
+            if (!novoStatus) {
                 e.preventDefault();
+                alert('Por favor, selecione um novo status.');
                 return;
             }
-        }
-    });
+
+            // Confirmação para status "concluído"
+            if (novoStatus === 'concluido') {
+                if (!confirm('Tem certeza que deseja marcar este serviço como concluído? O cliente será notificado.')) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+    }
 });
 </script>
 

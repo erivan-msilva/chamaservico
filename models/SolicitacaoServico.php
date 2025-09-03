@@ -13,9 +13,6 @@ class SolicitacaoServico
     public function criar($dados)
     {
         try {
-            error_log("=== MODELO: Iniciando criação da solicitação ===");
-            error_log("Dados recebidos: " . print_r($dados, true));
-            
             $this->db->getConnection()->beginTransaction();
 
             $sql = "INSERT INTO tb_solicita_servico 
@@ -34,9 +31,6 @@ class SolicitacaoServico
                 $dados['status_id'] ?? 1, // Aguardando Propostas
                 $dados['urgencia']
             ];
-            
-            error_log("SQL: $sql");
-            error_log("Parâmetros: " . print_r($params, true));
 
             $stmt = $this->db->prepare($sql);
             $resultado = $stmt->execute($params);
@@ -44,22 +38,17 @@ class SolicitacaoServico
             if ($resultado) {
                 $solicitacaoId = $this->db->lastInsertId();
                 $this->db->getConnection()->commit();
-                
-                error_log("Solicitação criada com sucesso! ID: $solicitacaoId");
                 return $solicitacaoId;
             } else {
                 $this->db->getConnection()->rollBack();
-                $errorInfo = $stmt->errorInfo();
-                error_log("Erro ao executar SQL: " . print_r($errorInfo, true));
                 return false;
             }
         } catch (Exception $e) {
             if ($this->db->getConnection()->inTransaction()) {
                 $this->db->getConnection()->rollBack();
             }
-            error_log("EXCEÇÃO no modelo: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
-            throw $e; // Re-throw para o controller capturar
+            error_log("Erro ao criar solicitação: " . $e->getMessage());
+            return false;
         }
     }
 
@@ -390,4 +379,4 @@ class SolicitacaoServico
         }
     }
 }
-
+?>

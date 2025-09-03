@@ -252,16 +252,53 @@ class PrestadorController
     public function servicosAndamento()
     {
         $prestadorId = Session::getUserId();
+        
+        // Capturar filtros
+        $filtros = [
+            'status' => $_GET['status'] ?? '',
+            'urgencia' => $_GET['urgencia'] ?? '',
+            'busca' => $_GET['busca'] ?? ''
+        ];
 
         try {
-            $servicos = $this->propostaModel->buscarServicosEmAndamento($prestadorId);
+            // Buscar todos os serviços em andamento
+            $servicosAndamento = $this->propostaModel->buscarServicosEmAndamento($prestadorId);
+            
+            // Garantir que todos os serviços tenham os campos necessários
+            foreach ($servicosAndamento as &$servico) {
+                $servico['status_id'] = $servico['status_id'] ?? 4; // Default: Em Andamento
+                $servico['status_nome'] = $servico['status_nome'] ?? 'Em Andamento';
+                $servico['status_cor'] = $servico['status_cor'] ?? '#FF9800';
+            }
+            
+            // Aplicar filtros se necessário
+            if (!empty($filtros['status'])) {
+                $servicosAndamento = array_filter($servicosAndamento, function($servico) use ($filtros) {
+                    return $servico['status_id'] == $filtros['status'];
+                });
+            }
+            
+            if (!empty($filtros['urgencia'])) {
+                $servicosAndamento = array_filter($servicosAndamento, function($servico) use ($filtros) {
+                    return $servico['urgencia'] == $filtros['urgencia'];
+                });
+            }
+            
+            if (!empty($filtros['busca'])) {
+                $termo = strtolower($filtros['busca']);
+                $servicosAndamento = array_filter($servicosAndamento, function($servico) use ($termo) {
+                    return strpos(strtolower($servico['titulo']), $termo) !== false ||
+                           strpos(strtolower($servico['cliente_nome']), $termo) !== false ||
+                           strpos(strtolower($servico['cidade']), $termo) !== false;
+                });
+            }
+            
         } catch (Exception $e) {
             error_log("Erro ao buscar serviços em andamento: " . $e->getMessage());
-            $servicos = [];
-            Session::setFlash('error', 'Erro ao carregar serviços!', 'danger');
+            $servicosAndamento = [];
+            Session::setFlash('error', 'Erro ao carregar serviços em andamento!', 'danger');
         }
 
-        $title = 'Serviços em Andamento - Prestador';
         include 'views/prestador/servicos/andamento.php';
     }
 
@@ -283,20 +320,10 @@ class PrestadorController
             $servico = $this->propostaModel->buscarDetalhesServicoAndamento($propostaId, $prestadorId);
 
             if (!$servico) {
-                error_log("Serviço não encontrado: Proposta ID=$propostaId, Prestador ID=$prestadorId");
                 Session::setFlash('error', 'Serviço não encontrado ou você não tem permissão para visualizá-lo!', 'danger');
                 header('Location: /chamaservico/prestador/servicos/andamento');
                 exit;
             }
-
-            // Debug melhorado
-            error_log("=== DEBUG SERVIÇO DETALHES ===");
-            error_log("Proposta ID: " . $servico['id']);
-            error_log("Solicitação ID: " . $servico['solicitacao_id']);
-            error_log("Status ID: " . ($servico['status_id'] ?? 'UNDEFINED'));
-            error_log("Status Nome: " . ($servico['status_nome'] ?? 'UNDEFINED'));
-            error_log("Proposta Status: " . $servico['status']);
-            error_log("Campos disponíveis: " . implode(', ', array_keys($servico)));
 
         } catch (Exception $e) {
             error_log("Erro ao buscar detalhes do serviço: " . $e->getMessage());
@@ -310,7 +337,7 @@ class PrestadorController
     }
 
     /**
-     * Atualizar status de um serviço - CORRIGIDO PARA FUNCIONAR
+     * Atualizar status de um serviço
      */
     public function atualizarStatusServico()
     {
@@ -330,22 +357,15 @@ class PrestadorController
         $observacoes = trim($_POST['observacoes'] ?? '');
         $prestadorId = Session::getUserId();
 
-        error_log("=== DEBUG CONTROLLER ===");
-        error_log("Proposta ID recebido: $propostaId");
-        error_log("Novo Status: $novoStatus");
-        error_log("Prestador ID: $prestadorId");
-        error_log("Observações: $observacoes");
-
-        // VALIDAÇÕES BÁSICAS
+        // Validações básicas
         if (!$propostaId || !$novoStatus || !$prestadorId) {
-            error_log("ERRO: Dados obrigatórios faltando");
             Session::setFlash('error', 'Dados obrigatórios não informados!', 'danger');
             header('Location: /chamaservico/prestador/servicos/andamento');
             exit;
         }
 
         try {
-            // PRIMEIRO: Verificar se a proposta existe e pertence ao prestador
+            // Verificar se a proposta existe e pertence ao prestador
             $sqlVerificar = "SELECT p.id, p.solicitacao_id, p.prestador_id, p.status as proposta_status,
                                    s.titulo, s.status_id as status_atual
                             FROM tb_proposta p
@@ -356,23 +376,19 @@ class PrestadorController
             $stmt->execute([$propostaId, $prestadorId]);
             $verificacao = $stmt->fetch();
             
-            error_log("Resultado da verificação: " . print_r($verificacao, true));
-            
             if (!$verificacao) {
-                error_log("ERRO: Proposta não encontrada ou não pertence ao prestador");
                 Session::setFlash('error', 'Proposta não encontrada ou você não tem permissão!', 'danger');
                 header('Location: /chamaservico/prestador/servicos/andamento');
                 exit;
             }
 
             if ($verificacao['proposta_status'] !== 'aceita') {
-                error_log("ERRO: Proposta não está aceita. Status atual: " . $verificacao['proposta_status']);
                 Session::setFlash('error', 'Apenas propostas aceitas podem ter status alterado!', 'danger');
                 header('Location: /chamaservico/prestador/servicos/detalhes?id=' . $propostaId);
                 exit;
             }
 
-            // SEGUNDO: Usar o método do model para atualizar
+            // Atualizar status usando o método do model
             $resultado = $this->propostaModel->atualizarStatusServico($propostaId, $prestadorId, $novoStatus, $observacoes);
             
             if ($resultado) {
@@ -386,20 +402,15 @@ class PrestadorController
                 $message = $statusMessages[$novoStatus] ?? 'Status atualizado com sucesso!';
                 Session::setFlash('success', $message, 'success');
                 
-                error_log("✅ STATUS ATUALIZADO COM SUCESSO!");
-                
             } else {
-                error_log("❌ FALHA ao atualizar status no model");
                 Session::setFlash('error', 'Erro ao atualizar status! Tente novamente.', 'danger');
             }
 
         } catch (Exception $e) {
-            error_log("EXCEÇÃO no controller: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
+            error_log("Erro no controller ao atualizar status: " . $e->getMessage());
             Session::setFlash('error', 'Erro interno: ' . $e->getMessage(), 'danger');
         }
 
-        // SEMPRE redirecionar de volta para os detalhes
         header('Location: /chamaservico/prestador/servicos/detalhes?id=' . $propostaId);
         exit;
     }

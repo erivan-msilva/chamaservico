@@ -802,7 +802,7 @@ class Proposta {
     }
 
     public function buscarServicosEmAndamento($prestadorId, $limit = null) {
-        $sql = "SELECT p.*, s.titulo, s.descricao, s.data_atendimento, s.urgencia,
+        $sql = "SELECT p.*, s.titulo, s.descricao, s.data_atendimento, s.urgencia, s.status_id,
                    ts.nome as tipo_servico_nome, c.nome as cliente_nome, c.telefone as cliente_telefone,
                    e.logradouro, e.numero, e.bairro, e.cidade, e.estado,
                    st.nome as status_nome, st.cor as status_cor
@@ -821,12 +821,21 @@ class Proposta {
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$prestadorId]);
-        return $stmt->fetchAll();
+        $servicos = $stmt->fetchAll();
+        
+        // Garantir que todos os campos necessários estejam presentes
+        foreach ($servicos as &$servico) {
+            $servico['status_id'] = $servico['status_id'] ?? 0;
+            $servico['status_nome'] = $servico['status_nome'] ?? 'Status não definido';
+            $servico['status_cor'] = $servico['status_cor'] ?? '#6c757d';
+        }
+        
+        return $servicos;
     }
 
     public function buscarDetalhesServicoAndamento($propostaId, $prestadorId) {
         $sql = "SELECT p.*, s.titulo, s.descricao, s.orcamento_estimado, s.data_atendimento, s.urgencia,
-                   s.status_id, s.solicitacao_id,
+                   s.status_id, s.id as solicitacao_id,
                    ts.nome as tipo_servico_nome, c.nome as cliente_nome, c.email as cliente_email, 
                    c.telefone as cliente_telefone,
                    e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep,
@@ -864,12 +873,7 @@ class Proposta {
 
     public function atualizarStatusServico($propostaId, $prestadorId, $novoStatus, $observacoes = '') {
         try {
-            error_log("=== INICIANDO ATUALIZAÇÃO DE STATUS NO MODEL ===");
-            error_log("Proposta ID: $propostaId");
-            error_log("Prestador ID: $prestadorId");
-            error_log("Novo Status: $novoStatus");
-            
-            // 1. PRIMEIRO: Verificar se a proposta pertence ao prestador
+            // Verificar se a proposta pertence ao prestador
             $sqlVerificar = "SELECT p.id, p.solicitacao_id, p.prestador_id, p.status, 
                                    s.id as solicitacao_id_confirmado, s.titulo, s.status_id as status_atual_solicitacao
                             FROM tb_proposta p
@@ -880,100 +884,59 @@ class Proposta {
             $stmtVerificar->execute([$propostaId, $prestadorId]);
             $proposta = $stmtVerificar->fetch();
             
-            error_log("Dados da proposta encontrada: " . print_r($proposta, true));
-            
             if (!$proposta) {
-                error_log("ERRO: Proposta não encontrada ou não pertence ao prestador");
-                error_log("Verificando dados SQL:");
-                
-                // Debug: verificar se proposta existe
-                $debugSql = "SELECT * FROM tb_proposta WHERE id = ?";
-                $debugStmt = $this->db->prepare($debugSql);
-                $debugStmt->execute([$propostaId]);
-                $debugProposta = $debugStmt->fetch();
-                error_log("Proposta existe? " . ($debugProposta ? 'SIM' : 'NÃO'));
-                if ($debugProposta) {
-                    error_log("Dados da proposta: " . print_r($debugProposta, true));
-                }
-                
                 return false;
             }
             
-            // 2. SEGUNDO: Iniciar transação
+            // Iniciar transação
             $this->db->getConnection()->beginTransaction();
             
-            // 3. TERCEIRO: Mapear status string para IDs da tabela tb_status_solicitacao
+            // Mapear status string para IDs da tabela tb_status_solicitacao
             $statusMap = [
                 'em_andamento' => 4,      // Em Andamento
-                'concluido' => 5,         // Concluído (ESTE É O IMPORTANTE!)
+                'concluido' => 5,         // Concluído
                 'aguardando_materiais' => 16,
                 'suspenso' => 15
             ];
             
             $novoStatusId = $statusMap[$novoStatus] ?? 4;
             
-            error_log("=== MAPEAMENTO DE STATUS ===");
-            error_log("Status String: $novoStatus");
-            error_log("Status ID: $novoStatusId");
-            error_log("Solicitação ID: {$proposta['solicitacao_id']}");
-            error_log("Status atual da solicitação: {$proposta['status_atual_solicitacao']}");
-            
-            // 4. QUARTO: Atualizar status da solicitação na tabela tb_solicita_servico
+            // Atualizar status da solicitação na tabela tb_solicita_servico
             $sqlUpdateSolicitacao = "UPDATE tb_solicita_servico SET status_id = ? WHERE id = ?";
             $stmtUpdateSolicitacao = $this->db->prepare($sqlUpdateSolicitacao);
             $resultadoUpdate = $stmtUpdateSolicitacao->execute([$novoStatusId, $proposta['solicitacao_id']]);
             
-            error_log("SQL de atualização: $sqlUpdateSolicitacao");
-            error_log("Parâmetros: [" . $novoStatusId . ", " . $proposta['solicitacao_id'] . "]");
-            error_log("Resultado da atualização: " . ($resultadoUpdate ? 'SUCESSO' : 'FALHA'));
-            error_log("Linhas afetadas: " . $stmtUpdateSolicitacao->rowCount());
-            
-            if (!$resultadoUpdate) {
+            if (!$resultadoUpdate || $stmtUpdateSolicitacao->rowCount() === 0) {
                 $this->db->getConnection()->rollBack();
-                error_log("ERRO: Falha ao executar UPDATE na tb_solicita_servico");
-                error_log("Erro SQL: " . print_r($stmtUpdateSolicitacao->errorInfo(), true));
                 return false;
             }
             
-            if ($stmtUpdateSolicitacao->rowCount() === 0) {
-                $this->db->getConnection()->rollBack();
-                error_log("AVISO: Nenhuma linha foi afetada pelo UPDATE");
-                return false;
-            }
-            
-            // 5. QUINTO: Verificar se realmente atualizou
+            // Verificar se realmente atualizou
             $sqlVerificarUpdate = "SELECT status_id FROM tb_solicita_servico WHERE id = ?";
             $stmtVerificarUpdate = $this->db->prepare($sqlVerificarUpdate);
             $stmtVerificarUpdate->execute([$proposta['solicitacao_id']]);
             $novoStatusAtual = $stmtVerificarUpdate->fetchColumn();
             
-            error_log("Status após UPDATE: $novoStatusAtual (esperado: $novoStatusId)");
-            
             if ($novoStatusAtual != $novoStatusId) {
                 $this->db->getConnection()->rollBack();
-                error_log("ERRO: Status não foi atualizado corretamente!");
                 return false;
             }
             
-            // 6. SEXTO: Se chegou até aqui, criar notificação
+            // Se o status for "concluído", criar notificação
             if ($novoStatus === 'concluido') {
                 $this->criarNotificacaoStatusServico($proposta['solicitacao_id'], $novoStatus, $observacoes);
-                error_log("Notificação de conclusão criada");
             }
             
-            // 7. SÉTIMO: Commit da transação
+            // Commit da transação
             $this->db->getConnection()->commit();
-            error_log("=== SUCESSO: Status atualizado com sucesso! ===");
             return true;
             
         } catch (Exception $e) {
-            // Rollback se houver erro
             if ($this->db->getConnection()->inTransaction()) {
                 $this->db->getConnection()->rollBack();
             }
-            error_log("EXCEÇÃO ao atualizar status do serviço: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
-            throw $e; // Re-throw para o controller capturar
+            error_log("Erro ao atualizar status do serviço: " . $e->getMessage());
+            return false;
         }
     }
 
