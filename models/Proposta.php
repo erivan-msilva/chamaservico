@@ -44,7 +44,7 @@ class Proposta {
     }
 
     public function buscarUltimasPropostas($prestadorId, $limit = 5) {
-        $sql = "SELECT p.*, s.titulo, s.urgencia, ts.nome as tipo_servico_nome
+        $sql = "SELECT p.*, s.titulo as solicitacao_titulo, s.urgencia, ts.nome as tipo_servico_nome
                 FROM tb_proposta p
                 JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
                 JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id

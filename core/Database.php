@@ -11,9 +11,9 @@ class Database
 
     // CORREÇÃO: Configurações do banco conforme fornecidas
     private $host = 'localhost';
-    private $db_name = 'bd_servicos';
-    private $username = '';
-    private $password = '';
+    private $db_name = 'td187899_bd_servicos';
+    private $username = 'td187899_bd_servicos';
+    private $password = 'pdSNPX6rm2MJE8XM4rTq';
     private $charset = 'utf8mb4';
     private $port = 3306;
 
@@ -34,16 +34,16 @@ class Database
         if ($isLocalhost) {
             // Configurações para desenvolvimento local (XAMPP)
             $this->host = 'localhost';
-            $this->db_name = 'bd_servicos'; // Usar o banco que você já tem
-            $this->username = 'root';
-            $this->password = '';
+            $this->db_name = 'td187899_bd_servicos'; // Usar o banco que você já tem
+            $this->username = 'td187899_bd_servicos';
+            $this->password = 'pdSNPX6rm2MJE8XM4rTq';
             error_log("Database: Usando configuração LOCAL");
         } else {
             // Configurações para servidor hospedado
             $this->host = 'h63.servidorhh.com';
-            $this->db_name = 'td187899_chamaservico';
-            $this->username = 'td187899_chamaservico';
-            $this->password = 'XHRmnbDHgMVP4sk45N5Z';
+            $this->db_name = 'td187899_bd_servicos';
+            $this->username = 'td187899_bd_servicos';
+            $this->password = 'pdSNPX6rm2MJE8XM4rTq';
             error_log("Database: Usando configuração HOSPEDADA");
         }
 

@@ -58,69 +58,159 @@ class ClienteServicoController
      */
     public function avaliarServico()
     {
-        $solicitacaoId = $_GET['id'] ?? 0;
+        $servicoId = $_GET['id'] ?? 0;
         $clienteId = Session::getUserId();
 
-        if (!$solicitacaoId) {
+        if (!$servicoId) {
             Session::setFlash('error', 'Serviço não informado!', 'danger');
             header('Location: /chamaservico/cliente/servicos/concluidos');
             exit;
         }
 
-        try {
-            // Verificar se o serviço pertence ao cliente e está concluído
-            $servico = $this->solicitacaoModel->buscarPorId($solicitacaoId, $clienteId);
-            
-            if (!$servico || $servico['status_id'] != 5) {
-                Session::setFlash('error', 'Serviço não encontrado ou não está concluído!', 'danger');
-                header('Location: /chamaservico/cliente/servicos/concluidos');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+                header('Location: /chamaservico/cliente/servicos/avaliar?id=' . $servicoId);
                 exit;
             }
 
-            // Buscar proposta aceita
-            $propostas = $this->propostaModel->buscarPropostasRecebidas($clienteId, [
-                'solicitacao_id' => $solicitacaoId,
-                'status' => 'aceita'
-            ]);
+            // ADICIONADO: Debug da nota recebida
+            $nota = $_POST['nota'] ?? 0;
+            error_log("DEBUG: Nota recebida = " . $nota);
 
-            if (empty($propostas)) {
-                Session::setFlash('error', 'Nenhuma proposta aceita encontrada!', 'danger');
-                header('Location: /chamaservico/cliente/servicos/concluidos');
+            $comentario = trim($_POST['comentario'] ?? '');
+            $recomendaria = isset($_POST['recomendaria']) ? 1 : 0;
+
+            // Validações
+            if (empty($nota) || $nota < 1 || $nota > 5) {
+                Session::setFlash('error', 'Selecione uma nota válida de 1 a 5 estrelas!', 'danger');
+                header('Location: /chamaservico/cliente/servicos/avaliar?id=' . $servicoId);
                 exit;
             }
 
-            $proposta = $propostas[0];
+            if (empty($comentario) || strlen($comentario) < 10) {
+                Session::setFlash('error', 'O comentário deve ter pelo menos 10 caracteres!', 'danger');
+                header('Location: /chamaservico/cliente/servicos/avaliar?id=' . $servicoId);
+                exit;
+            }
 
-            // Processar formulário de avaliação
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                    Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                    header('Location: /chamaservico/cliente/servicos/avaliar?id=' . $solicitacaoId);
+            try {
+                // Buscar dados do serviço
+                $sql = "SELECT s.*, p.prestador_id, p.valor as valor_aceito,
+                               pr.nome as prestador_nome
+                        FROM tb_solicita_servico s
+                        JOIN tb_proposta p ON s.id = p.solicitacao_id AND p.status = 'aceita'
+                        JOIN tb_pessoa pr ON p.prestador_id = pr.id
+                        WHERE s.id = ? AND s.cliente_id = ? AND s.status_id = 5";
+                
+                $stmt = $this->solicitacaoModel->db->prepare($sql);
+                $stmt->execute([$servicoId, $clienteId]);
+                $servico = $stmt->fetch();
+
+                if (!$servico) {
+                    Session::setFlash('error', 'Serviço não encontrado ou não está concluído!', 'danger');
+                    header('Location: /chamaservico/cliente/servicos/concluidos');
                     exit;
                 }
 
-                $nota = $_POST['nota'] ?? 0;
-                $comentario = trim($_POST['comentario'] ?? '');
-
-                if ($nota < 1 || $nota > 5) {
-                    Session::setFlash('error', 'Nota deve estar entre 1 e 5!', 'danger');
-                    header('Location: /chamaservico/cliente/servicos/avaliar?id=' . $solicitacaoId);
+                // Verificar se já foi avaliado
+                require_once 'models/Avaliacao.php';
+                $avaliacaoModel = new Avaliacao();
+                if ($avaliacaoModel->verificarAvaliacaoExistente($servicoId, $clienteId, $servico['prestador_id'])) {
+                    Session::setFlash('info', 'Você já avaliou este serviço!', 'info');
+                    header('Location: /chamaservico/cliente/servicos/concluidos');
                     exit;
                 }
 
-                // Salvar avaliação
-                if ($this->salvarAvaliacao($solicitacaoId, $clienteId, $proposta['prestador_id'], $nota, $comentario)) {
-                    Session::setFlash('success', 'Avaliação salva com sucesso!', 'success');
+                // Criar avaliação
+                $dadosAvaliacao = [
+                    'solicitacao_id' => $servicoId,
+                    'avaliador_id' => $clienteId,
+                    'avaliado_id' => $servico['prestador_id'],
+                    'nota' => floatval($nota), // CORRIGIDO: garantir que seja float
+                    'comentario' => $comentario
+                ];
+
+                if ($avaliacaoModel->criarAvaliacao($dadosAvaliacao)) {
+                    // Criar notificação para o prestador
+                    $notasTexto = [
+                        1 => 'uma avaliação (⭐)',
+                        2 => 'uma avaliação (⭐⭐)',
+                        3 => 'uma avaliação (⭐⭐⭐)',
+                        4 => 'uma avaliação positiva (⭐⭐⭐⭐)',
+                        5 => 'uma avaliação excelente (⭐⭐⭐⭐⭐)'
+                    ];
+
+                    require_once 'models/Notificacao.php';
+                    $notificacaoModel = new Notificacao();
+                    $titulo = $nota >= 4 ? "🌟 Nova Avaliação Positiva!" : "📝 Nova Avaliação Recebida";
+                    $mensagem = "Você recebeu {$notasTexto[$nota]} do cliente para o serviço '{$servico['titulo']}'";
+                    
+                    if ($recomendaria) {
+                        $mensagem .= " e foi recomendado!";
+                    }
+
+                    $notificacaoModel->criarNotificacao(
+                        $servico['prestador_id'],
+                        $titulo,
+                        $mensagem,
+                        'nova_avaliacao',
+                        $servicoId
+                    );
+
+                    Session::setFlash('success', 'Avaliação enviada com sucesso! Obrigado pelo feedback.', 'success');
                     header('Location: /chamaservico/cliente/servicos/concluidos');
                     exit;
                 } else {
                     Session::setFlash('error', 'Erro ao salvar avaliação!', 'danger');
                 }
+
+            } catch (Exception $e) {
+                error_log("Erro ao processar avaliação: " . $e->getMessage());
+                Session::setFlash('error', 'Erro interno ao processar avaliação!', 'danger');
+            }
+        }
+
+        // Código GET existente...
+        try {
+            $sql = "SELECT s.*, 
+                           p.valor as valor_aceito,
+                           pr.nome as prestador_nome,
+                           pr.id as prestador_id,
+                           ts.nome as tipo_servico_nome,
+                           st.nome as status_nome,
+                           st.cor as status_cor,
+                           e.logradouro, e.numero, e.bairro, e.cidade, e.estado
+                    FROM tb_solicita_servico s
+                    JOIN tb_proposta p ON s.id = p.solicitacao_id AND p.status = 'aceita'
+                    JOIN tb_pessoa pr ON p.prestador_id = pr.id
+                    JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+                    JOIN tb_status_solicitacao st ON s.status_id = st.id
+                    JOIN tb_endereco e ON s.endereco_id = e.id
+                    WHERE s.id = ? AND s.cliente_id = ? AND s.status_id = 5";
+            
+            $stmt = $this->solicitacaoModel->db->prepare($sql);
+            $stmt->execute([$servicoId, $clienteId]);
+            $servico = $stmt->fetch();
+
+            if (!$servico) {
+                Session::setFlash('error', 'Serviço não encontrado ou não está concluído!', 'danger');
+                header('Location: /chamaservico/cliente/servicos/concluidos');
+                exit;
+            }
+
+            // Verificar se já foi avaliado
+            require_once 'models/Avaliacao.php';
+            $avaliacaoModel = new Avaliacao();
+            if ($avaliacaoModel->verificarAvaliacaoExistente($servicoId, $clienteId, $servico['prestador_id'])) {
+                Session::setFlash('info', 'Você já avaliou este serviço!', 'info');
+                header('Location: /chamaservico/cliente/servicos/concluidos');
+                exit;
             }
 
         } catch (Exception $e) {
-            error_log("Erro ao avaliar serviço: " . $e->getMessage());
-            Session::setFlash('error', 'Erro interno!', 'danger');
+            error_log("Erro ao carregar serviço para avaliação: " . $e->getMessage());
+            Session::setFlash('error', 'Erro ao carregar dados do serviço!', 'danger');
             header('Location: /chamaservico/cliente/servicos/concluidos');
             exit;
         }

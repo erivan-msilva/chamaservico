@@ -492,12 +492,50 @@
                 </ul>
 
                 <div class="d-flex gap-2">
-                    <a href="/chamaservico/login" class="btn btn-outline-primary">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
-                    </a>
-                    <a href="/chamaservico/registro" class="btn btn-primary">
-                        <i class="bi bi-person-plus me-1"></i>Criar Conta
-                    </a>
+                    <?php if (Session::isLoggedIn()): ?>
+                        <!-- Menu para usuários logados -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i>
+                                <?= htmlspecialchars(Session::getUserName() ?? 'Usuário') ?>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <?php if (Session::isCliente()): ?>
+                                    <li><a class="dropdown-item" href="/chamaservico/cliente/dashboard">
+                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard Cliente
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar">
+                                        <i class="bi bi-plus-circle me-2"></i>Nova Solicitação
+                                    </a></li>
+                                <?php endif; ?>
+                                
+                                <?php if (Session::isPrestador()): ?>
+                                    <li><a class="dropdown-item" href="/chamaservico/prestador/dashboard">
+                                        <i class="bi bi-tools me-2"></i>Dashboard Prestador
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes">
+                                        <i class="bi bi-search me-2"></i>Buscar Trabalhos
+                                    </a></li>
+                                <?php endif; ?>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/chamaservico/perfil">
+                                    <i class="bi bi-person-gear me-2"></i>Meu Perfil
+                                </a></li>
+                                <li><a class="dropdown-item text-danger" href="/chamaservico/logout">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Sair
+                                </a></li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <!-- Menu para usuários não logados -->
+                        <a href="/chamaservico/login" class="btn btn-outline-primary">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                        </a>
+                        <a href="/chamaservico/registro" class="btn btn-primary">
+                            <i class="bi bi-person-plus me-1"></i>Criar Conta
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -517,29 +555,50 @@
                         Rápido, seguro e sem complicações.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
-                        <a href="/chamaservico/registro" class="btn-hero btn-hero-primary">
-                            <i class="bi bi-search"></i>
-                            Encontrar Profissionais
-                        </a>
-                        <a href="/chamaservico/registro" class="btn-hero btn-hero-secondary">
-                            <i class="bi bi-briefcase"></i>
-                            Oferecer Serviços
-                        </a>
+                        <?php if (Session::isLoggedIn()): ?>
+                            <!-- Botões para usuários logados -->
+                            <?php if (Session::isCliente()): ?>
+                                <a href="/chamaservico/cliente/solicitacoes/criar" class="btn-hero btn-hero-primary">
+                                    <i class="bi bi-plus-circle"></i>
+                                    Criar Nova Solicitação
+                                </a>
+                                <a href="/chamaservico/cliente/dashboard" class="btn-hero btn-hero-secondary">
+                                    <i class="bi bi-speedometer2"></i>
+                                    Meu Dashboard
+                                </a>
+                            <?php endif; ?>
+                            
+                            <?php if (Session::isPrestador()): ?>
+                                <a href="/chamaservico/prestador/solicitacoes" class="btn-hero btn-hero-primary">
+                                    <i class="bi bi-search"></i>
+                                    Buscar Trabalhos
+                                </a>
+                                <a href="/chamaservico/prestador/dashboard" class="btn-hero btn-hero-secondary">
+                                    <i class="bi bi-tools"></i>
+                                    Meu Dashboard
+                                </a>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <!-- Botões para usuários não logados -->
+                            <a href="/chamaservico/registro?tipo=cliente" class="btn-hero btn-hero-primary">
+                                <i class="bi bi-search"></i>
+                                Encontrar Profissionais
+                            </a>
+                            <a href="/chamaservico/registro?tipo=prestador" class="btn-hero btn-hero-secondary">
+                                <i class="bi bi-briefcase"></i>
+                                Oferecer Serviços
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="col-lg-6" data-aos="fade-left">
                     <div class="d-flex justify-content-center align-items-center h-100">
-                        <img
-                            src="assets/img/marketplace-hero.png"
-                            alt="Ilustração profissional do marketplace Chama Serviço"
-                            class="img-fluid floating shadow rounded-1 border border-3 border-light"
-                            style="max-width: 90%; background: #fff; padding: 1px;"
-                            loading="lazy">
+                        <div class="floating" style="font-size: 15rem; color: var(--primary-blue); opacity: 0.1;">
+                            <i class="bi bi-tools"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        </div>
         </div>
     </section>
 
@@ -759,14 +818,37 @@
                     Junte-se a milhares de pessoas que já transformaram a forma de contratar e oferecer serviços
                 </p>
                 <div class="d-flex flex-wrap justify-content-center gap-3">
-                    <a href="/chamaservico/registro" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
-                        <i class="bi bi-person-plus"></i>
-                        Cadastrar Gratuitamente
-                    </a>
-                    <a href="/chamaservico/login" class="btn-hero" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
-                        <i class="bi bi-box-arrow-in-right"></i>
-                        Já Tenho Conta
-                    </a>
+                    <?php if (Session::isLoggedIn()): ?>
+                        <!-- CTAs para usuários logados -->
+                        <?php if (Session::isCliente()): ?>
+                            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
+                                <i class="bi bi-plus-circle"></i>
+                                Criar Primeira Solicitação
+                            </a>
+                        <?php endif; ?>
+                        
+                        <?php if (Session::isPrestador()): ?>
+                            <a href="/chamaservico/prestador/solicitacoes" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
+                                <i class="bi bi-search"></i>
+                                Buscar Primeiros Trabalhos
+                            </a>
+                        <?php endif; ?>
+                        
+                        <a href="/chamaservico/perfil" class="btn-hero" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
+                            <i class="bi bi-person-gear"></i>
+                            Completar Perfil
+                        </a>
+                    <?php else: ?>
+                        <!-- CTAs para usuários não logados -->
+                        <a href="/chamaservico/registro" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
+                            <i class="bi bi-person-plus"></i>
+                            Cadastrar Gratuitamente
+                        </a>
+                        <a href="/chamaservico/login" class="btn-hero" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            Já Tenho Conta
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

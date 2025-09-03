@@ -2,6 +2,7 @@
 require_once 'models/Pessoa.php';
 require_once 'config/session.php';
 
+
 class AuthController
 {
     private $model;
@@ -159,71 +160,196 @@ class AuthController
     public function redefinirSenha()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+                header('Location: /chamaservico/redefinir-senha');
+                exit;
+            }
+
             $email = trim($_POST['email'] ?? '');
+            
             if (empty($email)) {
                 Session::setFlash('error', 'Informe o e-mail cadastrado!', 'danger');
                 header('Location: /chamaservico/redefinir-senha');
                 exit;
             }
 
-            // Buscar usuário pelo e-mail
-            require_once 'models/Pessoa.php';
-            $pessoaModel = new Pessoa();
-            $usuario = $pessoaModel->buscarPorEmail($email);
-
-            if (!$usuario) {
-                Session::setFlash('error', 'E-mail não encontrado!', 'danger');
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Session::setFlash('error', 'E-mail inválido!', 'danger');
                 header('Location: /chamaservico/redefinir-senha');
                 exit;
             }
 
-            // Gerar token de redefinição (simples, para exemplo)
-            $token = bin2hex(random_bytes(32));
-            // Salve o token no banco (implemente no model se necessário)
-            $pessoaModel->salvarTokenRedefinicao($usuario['id'], $token);
+            try {
+                // Buscar usuário pelo e-mail
+                $usuario = $this->model->buscarPorEmail($email);
 
-            // Envie o e-mail com o link de redefinição (implemente envio real)
-            // $link = BASE_URL . "redefinir-senha-nova?token=$token";
-            // mail($email, "Redefinição de senha", "Clique no link para redefinir: $link");
+                if (!$usuario) {
+                    // Por segurança, sempre mostramos sucesso mesmo se email não existir
+                    Session::setFlash('success', 'Se o e-mail estiver cadastrado, você receberá as instruções em alguns minutos.', 'info');
+                    header('Location: /chamaservico/redefinir-senha');
+                    exit;
+                }
 
-            Session::setFlash('success', 'Instruções enviadas para seu e-mail!', 'success');
-            header('Location: /chamaservico/login');
+                // Gerar token seguro
+                $token = bin2hex(random_bytes(32));
+                $expiracao = date('Y-m-d H:i:s', strtotime('+1 hour'));
+                
+                // Salvar token no banco
+                if ($this->model->salvarTokenRedefinicao($usuario['id'], $token, $expiracao)) {
+                    // Tentar enviar e-mail usando o EmailService
+                    require_once 'core/EmailService.php';
+                    $emailService = new EmailService();
+                    
+                    if ($emailService->enviarEmailRedefinicao($email, $usuario['nome'], $token)) {
+                        Session::setFlash('success', '📧 Instruções de redefinição enviadas para seu email! Verifique sua caixa de entrada.', 'success');
+                    } else {
+                        // Fallback: mostrar link direto em desenvolvimento
+                        if (defined('AMBIENTE') && AMBIENTE === 'desenvolvimento') {
+                            $linkRedefinicao = "http://localhost:8083/chamaservico/redefinir-senha-nova?token=" . $token;
+                            Session::setFlash('warning', 
+                                "⚠️ Problema no envio do email. <strong>Link temporário para desenvolvimento:</strong><br><a href='$linkRedefinicao' target='_blank' class='btn btn-sm btn-outline-primary mt-2'>🔑 Redefinir Senha</a>", 
+                                'warning'
+                            );
+                        } else {
+                            Session::setFlash('error', 'Erro temporário no sistema de e-mail. Tente novamente em alguns minutos.', 'danger');
+                        }
+                    }
+                } else {
+                    Session::setFlash('error', 'Erro interno. Tente novamente.', 'danger');
+                }
+
+            } catch (Exception $e) {
+                error_log("Erro na redefinição de senha: " . $e->getMessage());
+                Session::setFlash('error', 'Erro interno no sistema. Tente novamente.', 'danger');
+            }
+
+            header('Location: /chamaservico/redefinir-senha');
             exit;
         }
 
+        $title = 'Redefinir Senha - ChamaServiço';
         include 'views/auth/redefini.php';
     }
 
     public function redefinirSenhaNova()
     {
         $token = $_GET['token'] ?? '';
-        require_once 'models/Pessoa.php';
-        $pessoaModel = new Pessoa();
-        $usuario = $pessoaModel->buscarPorTokenRedefinicao($token);
-
-        if (!$usuario) {
-            Session::setFlash('error', 'Token inválido ou expirado!', 'danger');
+        
+        if (empty($token)) {
+            Session::setFlash('error', 'Link inválido ou expirado!', 'danger');
             header('Location: /chamaservico/redefinir-senha');
             exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
+                header("Location: /chamaservico/redefinir-senha-nova?token=$token");
+                exit;
+            }
+
             $novaSenha = $_POST['nova_senha'] ?? '';
             $confirmarSenha = $_POST['confirmar_senha'] ?? '';
-            if (empty($novaSenha) || strlen($novaSenha) < 6) {
+            
+            // Validações
+            if (empty($novaSenha) || empty($confirmarSenha)) {
+                Session::setFlash('error', 'Preencha todos os campos!', 'danger');
+                header("Location: /chamaservico/redefinir-senha-nova?token=$token");
+                exit;
+            }
+
+            if (strlen($novaSenha) < 6) {
                 Session::setFlash('error', 'A senha deve ter pelo menos 6 caracteres!', 'danger');
-            } elseif ($novaSenha !== $confirmarSenha) {
+                header("Location: /chamaservico/redefinir-senha-nova?token=$token");
+                exit;
+            }
+
+            if ($novaSenha !== $confirmarSenha) {
                 Session::setFlash('error', 'As senhas não coincidem!', 'danger');
-            } else {
-                $pessoaModel->alterarSenha($usuario['id'], $novaSenha);
-                $pessoaModel->removerTokenRedefinicao($usuario['id']);
-                Session::setFlash('success', 'Senha redefinida com sucesso!', 'success');
-                header('Location: /chamaservico/login');
+                header("Location: /chamaservico/redefinir-senha-nova?token=$token");
+                exit;
+            }
+
+            try {
+                if ($this->model->redefinirSenhaComToken($token, $novaSenha)) {
+                    // Enviar email de confirmação
+                    $this->enviarEmailConfirmacaoRedefinicao($token);
+                    
+                    Session::setFlash('success', '✅ Senha redefinida com sucesso! Faça login com sua nova senha.', 'success');
+                    header('Location: /chamaservico/login');
+                    exit;
+                } else {
+                    Session::setFlash('error', 'Link inválido ou expirado!', 'danger');
+                    header('Location: /chamaservico/redefinir-senha');
+                    exit;
+                }
+            } catch (Exception $e) {
+                error_log("Erro ao redefinir senha: " . $e->getMessage());
+                Session::setFlash('error', 'Erro interno. Tente novamente.', 'danger');
+                header("Location: /chamaservico/redefinir-senha-nova?token=$token");
                 exit;
             }
         }
 
+        // Verificar se o token é válido antes de mostrar o formulário
+        try {
+            $usuario = $this->model->verificarTokenRedefinicao($token);
+            if (!$usuario) {
+                Session::setFlash('error', 'Link inválido ou expirado!', 'danger');
+                header('Location: /chamaservico/redefinir-senha');
+                exit;
+            }
+        } catch (Exception $e) {
+            Session::setFlash('error', 'Erro ao verificar token!', 'danger');
+            header('Location: /chamaservico/redefinir-senha');
+            exit;
+        }
+
+        $title = 'Nova Senha - ChamaServiço';
         include 'views/auth/redefinir_nova.php';
     }
+
+    private function verificarLimiteTentativas($userId)
+    {
+        try {
+            $sql = "SELECT COUNT(*) FROM tb_tentativa_redefinicao 
+                    WHERE usuario_id = ? AND data_tentativa > DATE_SUB(NOW(), INTERVAL 15 MINUTE)";
+            $stmt = $this->model->db->prepare($sql);
+            $stmt->execute([$userId]);
+            return $stmt->fetchColumn() >= 3; // Máximo 3 tentativas em 15 minutos
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    private function registrarTentativaRedefinicao($userId)
+    {
+        try {
+            $sql = "INSERT INTO tb_tentativa_redefinicao (usuario_id, data_tentativa, ip_address) 
+                    VALUES (?, NOW(), ?)";
+            $stmt = $this->model->db->prepare($sql);
+            $stmt->execute([$userId, $_SERVER['REMOTE_ADDR'] ?? 'unknown']);
+        } catch (Exception $e) {
+            error_log("Erro ao registrar tentativa: " . $e->getMessage());
+        }
+    }
+
+    private function enviarEmailConfirmacaoRedefinicao($token)
+    {
+        try {
+            $usuario = $this->model->verificarTokenRedefinicao($token);
+            if ($usuario) {
+                require_once 'core/EmailService.php';
+                $emailService = new EmailService();
+                $emailService->enviarEmailConfirmacaoRedefinicao($usuario['email'], $usuario['nome']);
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao enviar confirmação: " . $e->getMessage());
+        }
+    }
+
+    // ...existing code...
 }
 ?>
+             

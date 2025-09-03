@@ -85,7 +85,7 @@ if (!defined('DB_CONFIG')) {
     define('DB_CONFIG', [
         'host' => $_ENV['DB_HOST'] ?? 'localhost',
         'port' => $_ENV['DB_PORT'] ?? '3306',
-        'dbname' => $_ENV['DB_NAME'] ?? 'bd_servicos',
+        'dbname' => $_ENV['DB_NAME'] ?? 'td187899_bd_servicos',
         'username' => $_ENV['DB_USER'] ?? 'root',
         'password' => $_ENV['DB_PASS'] ?? '',
         'charset' => 'utf8mb4',
@@ -155,6 +155,22 @@ if (!defined('EMAIL_CONFIG')) {
         'from_name' => $_ENV['FROM_NAME'] ?? 'ChamaServiço'
     ]);
 }
+
+// Configurações de Email
+define('EMAIL_SMTP_HOST', 'smtp.gmail.com');
+define('EMAIL_SMTP_PORT', 587);
+define('EMAIL_SMTP_USERNAME', 'seu_email@gmail.com'); // ⚠️ CONFIGURE AQUI
+define('EMAIL_SMTP_PASSWORD', 'sua_senha_de_app');    // ⚠️ CONFIGURE AQUI
+define('EMAIL_FROM_NAME', 'ChamaServiço');
+define('EMAIL_FROM_EMAIL', 'noreply@chamaservico.com');
+
+// Ambiente (desenvolvimento/producao)
+define('AMBIENTE', 'desenvolvimento');
+
+// Configurações de Segurança
+define('MAX_TENTATIVAS_REDEFINICAO', 3);
+define('TEMPO_BLOQUEIO_TENTATIVAS', 15); // minutos
+define('TEMPO_EXPIRACAO_TOKEN', 60); // minutos
 
 // =====================================
 // CONFIGURAÇÕES DE ARQUIVOS

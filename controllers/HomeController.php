@@ -5,19 +5,9 @@ class HomeController
 {
     public function index()
     {
-        // Se o usuário estiver logado, redirecionar para o dashboard apropriado
-        if (Session::isLoggedIn()) {
-            if (Session::isPrestador() && !Session::isCliente()) {
-                header('Location: /chamaservico/prestador/dashboard');
-                exit;
-            } elseif (Session::isCliente()) {
-                header('Location: /chamaservico/cliente/dashboard');
-                exit;
-            }
-        }
-
+        // SEMPRE exibir a página inicial pública, mesmo se logado
         $title = 'ChamaServiço - Conectando você aos melhores prestadores';
-        include 'views/home/index.php';
+        include 'views/public/HomePage.php';
     }
 
     public function acessoNegado()
@@ -42,7 +32,7 @@ class HomeController
     {
         $title = 'Área Administrativa - Não Disponível';
         ob_start();
-        ?>
+?>
         <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col-lg-8">
@@ -52,7 +42,7 @@ class HomeController
                         </div>
                         <h1 class="display-5 fw-bold text-dark mb-3">Área Administrativa</h1>
                         <h2 class="h4 text-muted mb-4">Esta funcionalidade ainda não foi implementada</h2>
-                        
+
                         <div class="alert alert-info border-0 shadow-sm">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-info-circle-fill text-info me-3 fs-4"></i>
@@ -76,10 +66,9 @@ class HomeController
                 </div>
             </div>
         </div>
-        <?php
+<?php
         $content = ob_get_clean();
         include 'views/layouts/app.php';
     }
 }
 ?>
-

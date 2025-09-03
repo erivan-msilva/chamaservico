@@ -1,36 +1,11 @@
 <?php
-// Este arquivo está sendo utilizado como o roteador principal do sistema.
-// Ele é incluído no final do index.php para definir e executar as rotas do sistema web.
-// Não é necessário usar core/Router.php, pois router.php já implementa toda a lógica e configuração das rotas.
+// SOLUÇÃO: Usar autoloader em vez de require_once manual
 
-require_once 'controllers/AuthController.php';
-require_once 'controllers/HomeController.php';
-require_once 'controllers/SolicitacaoController.php';
-require_once 'controllers/PerfilController.php';
-require_once 'controllers/ClientePerfilController.php';
-require_once 'controllers/PrestadorPerfilController.php';
-require_once 'controllers/PrestadorController.php';
-require_once 'controllers/PropostaController.php';
-require_once 'controllers/ClienteDashboardController.php';
-require_once 'controllers/ClientePropostaController.php';
-require_once 'controllers/ClienteServicoController.php';
-
-// Incluir controllers opcionais se existirem
-if (file_exists('controllers/NegociacaoController.php')) {
-    require_once 'controllers/NegociacaoController.php';
-}
-
-if (file_exists('controllers/NotificacaoController.php')) {
-    require_once 'controllers/NotificacaoController.php';
-}
-
-if (file_exists('controllers/OrdemServicoController.php')) {
-    require_once 'controllers/OrdemServicoController.php';
-}
-
-// Verificar se AdminController existe antes de incluir
-if (file_exists('controllers/AdminController.php')) {
-    require_once 'controllers/AdminController.php';
+// Carregar autoloader se ainda não foi carregado
+if (!class_exists('Autoloader')) {
+    require_once 'core/Autoloader.php';
+    Autoloader::register();
+    Autoloader::loadDependencies();
 }
 
 class Router {
@@ -66,14 +41,13 @@ class Router {
             $methodName = $route['method'];
 
             try {
-                // Verificar se a classe existe
+                // AUTOLOAD: A classe será carregada automaticamente aqui
                 if (!class_exists($controllerName)) {
                     throw new Exception("Controller '$controllerName' não encontrado");
                 }
                 
                 $controller = new $controllerName();
                 
-                // Verificar se o método existe
                 if (!method_exists($controller, $methodName)) {
                     throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
                 }
@@ -162,10 +136,11 @@ class Router {
 $router = new Router();
 
 // ========================================
-// ROTAS PÚBLICAS
+// ROTAS PÚBLICAS - SEM REQUIRE_ONCE!
 // ========================================
 $router->get('/', 'HomeController', 'index');
 $router->get('/home', 'HomeController', 'index');
+$router->get('/inicio', 'HomeController', 'index'); // Rota adicional
 
 // Rotas de autenticação
 $router->get('/login', 'AuthController', 'login');

@@ -1,175 +1,293 @@
 <?php
 $title = 'Nova Senha - ChamaServiço';
+$token = $_GET['token'] ?? '';
 ob_start();
 ?>
 
-<style>
-    body {
-        background: #283579;
-        min-height: 100vh;
-    }
-
-    .login-container {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .card-login {
-        border-radius: 18px;
-        box-shadow: 0 8px 32px rgba(40, 53, 121, 0.12);
-        border: none;
-        padding: 0;
-        max-width: 380px;
-        width: 100%;
-    }
-
-    .card-login .card-body {
-        padding: 2.5rem 2rem;
-    }
-
-    .btn-success {
-        background: #f5a522;
-        color: #fff;
-        font-weight: 600;
-        border-radius: 24px;
-        border: none;
-        box-shadow: 0 2px 8px rgba(245, 165, 34, 0.08);
-        transition: background 0.2s;
-    }
-
-    .btn-success:hover {
-        background: #d48c00;
-        color: #fff;
-    }
-
-    .input-group-text {
-        background: #f8f9fa;
-        border: none;
-    }
-
-    .form-control:focus {
-        border-color: #f5a522;
-        box-shadow: 0 0 0 0.2rem rgba(245, 165, 34, 0.15);
-    }
-
-    .link-login {
-        color: #283579;
-        font-weight: 500;
-        text-decoration: none;
-    }
-
-    .link-login:hover {
-        text-decoration: underline;
-        color: #f5a522;
-    }
-</style>
-
-<div class="login-container">
-    <div class="card card-login mx-auto">
-        <div class="card-body">
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <!-- Logo e Título -->
             <div class="text-center mb-4">
-                <i class="bi bi-shield-lock" style="font-size: 3rem; color: #f5a522;"></i>
-                <h3 class="mb-1 mt-3" style="color: #f5a522;">Definir Nova Senha</h3>
-                <p class="text-muted mb-3">Digite sua nova senha</p>
+                <div class="d-inline-flex align-items-center mb-3">
+                    <span style="width: 20px; height: 20px; background-color: #f5a522; border-radius: 50%; margin-right: 10px;"></span>
+                    <span class="h3 fw-bold" style="color: #283579;">CHAMA</span>
+                    <span class="h3" style="color: #f5a522; font-weight: 300;">SERVIÇO</span>
+                </div>
+                <h1 class="h4 text-dark mb-2">Definir Nova Senha</h1>
+                <p class="text-muted">Crie uma senha segura para sua conta</p>
             </div>
-            <form method="POST" action="/chamaservico/redefinir-senha-nova">
-                <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                <input type="hidden" name="token" value="<?= htmlspecialchars($_GET['token'] ?? '') ?>">
-                <div class="mb-3">
-                    <label for="nova_senha" class="form-label fw-semibold">Nova Senha</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" class="form-control" id="nova_senha" name="nova_senha" required minlength="6" placeholder="Digite a nova senha">
+
+            <!-- Card de Nova Senha -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="POST" id="formNovaSenha">
+                        <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
+                        
+                        <div class="mb-3">
+                            <label for="nova_senha" class="form-label fw-bold">
+                                <i class="bi bi-lock me-2 text-primary"></i>
+                                Nova Senha *
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control form-control-lg" 
+                                       id="nova_senha" 
+                                       name="nova_senha" 
+                                       required 
+                                       minlength="6"
+                                       placeholder="Digite sua nova senha">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('nova_senha')">
+                                    <i class="bi bi-eye" id="nova_senha-icon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <small>Mínimo de 6 caracteres</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirmar_senha" class="form-label fw-bold">
+                                <i class="bi bi-lock-fill me-2 text-primary"></i>
+                                Confirmar Nova Senha *
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control form-control-lg" 
+                                       id="confirmar_senha" 
+                                       name="confirmar_senha" 
+                                       required 
+                                       minlength="6"
+                                       placeholder="Confirme sua nova senha">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmar_senha')">
+                                    <i class="bi bi-eye" id="confirmar_senha-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Indicador de Força da Senha -->
+                        <div class="mb-3">
+                            <div class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strengthFill"></div>
+                                </div>
+                                <small class="strength-text" id="strengthText">Digite uma senha</small>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Redefinir Senha
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Links de Navegação -->
+                    <div class="text-center">
+                        <hr class="my-3">
+                        <p class="mb-0">
+                            <a href="/chamaservico/login" class="text-decoration-none fw-bold">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Voltar ao Login
+                            </a>
+                        </p>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label for="confirmar_senha" class="form-label fw-semibold">Confirmar Nova Senha</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                        <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required minlength="6" placeholder="Confirme a nova senha">
-                    </div>
-                </div>
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="bi bi-check-lg me-1"></i>Redefinir Senha
-                    </button>
-                </div>
-            </form>
-            <div class="text-center">
-                <a href="/chamaservico/login" class="link-login small">
-                    <i class="bi bi-arrow-left me-1"></i>Voltar ao Login
-                </a>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-function toggleSenha(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('bi-eye');
-        icon.classList.add('bi-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('bi-eye-slash');
-        icon.classList.add('bi-eye');
-    }
+<style>
+:root {
+    --cor-primaria: #283579;
+    --cor-secundaria: #f5a522;
 }
 
-document.getElementById('formNovaSenha').addEventListener('submit', function(e) {
-    e.preventDefault();
+body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
 
-    const senha = document.getElementById('nova_senha').value;
-    const confirmar = document.getElementById('confirmar_senha').value;
-    const btn = document.getElementById('btnRedefinir');
+.card {
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
 
-    // Validação no frontend
-    if (senha.length < 6) {
-        alert('A senha deve ter pelo menos 6 caracteres.');
-        return;
+.form-control:focus {
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 0 0.2rem rgba(40, 53, 121, 0.25);
+}
+
+.btn-primary {
+    background: var(--cor-primaria);
+    border-color: var(--cor-primaria);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(40, 53, 121, 0.3);
+}
+
+.password-strength {
+    margin-top: 8px;
+}
+
+.strength-bar {
+    height: 6px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+}
+
+.strength-weak { background-color: #dc3545; }
+.strength-fair { background-color: #fd7e14; }
+.strength-good { background-color: #ffc107; }
+.strength-strong { background-color: #28a745; }
+
+.strength-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 15px;
     }
-    if (senha !== confirmar) {
-        alert('As senhas não coincidem.');
-        return;
-    }
+}
+</style>
 
-    // Desabilitar botão
-    btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Redefinindo...';
-
-    // Enviar via AJAX
-    fetch(window.location.pathname + window.location.search, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams(new FormData(this))
-    })
-    .then(response => response.text())
-    .then(html => {
-        // Se a resposta não contém erro, redirecionar
-        if (html.includes('Senha redefinida com sucesso')) {
-            alert('Senha redefinida com sucesso!');
-            window.location.href = '/chamaservico/login';
-        } else {
-            // Atualizar a página com a resposta
-            document.body.innerHTML = html;
-        }
-    })
-    .catch(() => {
-        alert('Erro ao redefinir senha. Tente novamente.');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Redefinir Senha';
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formNovaSenha');
+    const senhaInput = document.getElementById('nova_senha');
+    const confirmarSenhaInput = document.getElementById('confirmar_senha');
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+    
+    // Verificar força da senha
+    senhaInput.addEventListener('input', function() {
+        const senha = this.value;
+        const strength = checkPasswordStrength(senha);
+        
+        // Atualizar barra de força
+        strengthFill.style.width = strength.percentage + '%';
+        strengthFill.className = 'strength-fill ' + strength.class;
+        strengthText.textContent = strength.text;
+        strengthText.className = 'strength-text ' + strength.class;
     });
+    
+    // Verificar se as senhas coincidem
+    function validatePasswordMatch() {
+        const senha = senhaInput.value;
+        const confirmarSenha = confirmarSenhaInput.value;
+        
+        if (confirmarSenha && senha !== confirmarSenha) {
+            confirmarSenhaInput.classList.add('is-invalid');
+            showFieldError(confirmarSenhaInput, 'As senhas não coincidem');
+        } else {
+            confirmarSenhaInput.classList.remove('is-invalid');
+            hideFieldError(confirmarSenhaInput);
+        }
+    }
+    
+    confirmarSenhaInput.addEventListener('blur', validatePasswordMatch);
+    confirmarSenhaInput.addEventListener('input', function() {
+        if (this.classList.contains('is-invalid')) {
+            validatePasswordMatch();
+        }
+    });
+    
+    // Validação no submit
+    form.addEventListener('submit', function(e) {
+        const senha = senhaInput.value;
+        const confirmarSenha = confirmarSenhaInput.value;
+        
+        if (senha.length < 6) {
+            e.preventDefault();
+            senhaInput.classList.add('is-invalid');
+            showFieldError(senhaInput, 'A senha deve ter pelo menos 6 caracteres');
+            senhaInput.focus();
+            return;
+        }
+        
+        if (senha !== confirmarSenha) {
+            e.preventDefault();
+            confirmarSenhaInput.classList.add('is-invalid');
+            showFieldError(confirmarSenhaInput, 'As senhas não coincidem');
+            confirmarSenhaInput.focus();
+            return;
+        }
+        
+        // Mostrar loading
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Redefinindo...';
+        submitBtn.disabled = true;
+    });
+    
+    function checkPasswordStrength(password) {
+        let score = 0;
+        
+        if (password.length >= 6) score += 1;
+        if (password.length >= 8) score += 1;
+        if (/[a-z]/.test(password)) score += 1;
+        if (/[A-Z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+        
+        if (score < 3) {
+            return { percentage: 25, class: 'strength-weak', text: 'Senha fraca' };
+        } else if (score < 4) {
+            return { percentage: 50, class: 'strength-fair', text: 'Senha razoável' };
+        } else if (score < 5) {
+            return { percentage: 75, class: 'strength-good', text: 'Senha boa' };
+        } else {
+            return { percentage: 100, class: 'strength-strong', text: 'Senha forte' };
+        }
+    }
+    
+    function showFieldError(input, message) {
+        hideFieldError(input);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        errorDiv.textContent = message;
+        input.parentNode.parentNode.appendChild(errorDiv);
+    }
+    
+    function hideFieldError(input) {
+        const errorDiv = input.parentNode.parentNode.querySelector('.invalid-feedback');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    }
 });
+
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(fieldId + '-icon');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        field.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
 </script>
 
 <?php
 $content = ob_get_clean();
-include 'views/layouts/app.php';
+include 'views/layouts/app_public.php';
 ?>
