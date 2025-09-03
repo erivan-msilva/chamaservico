@@ -1,68 +1,68 @@
-# Arquivos de sistema
-.DS_Store
-Thumbs.db
+# # Arquivos de sistema
+# #.DS_Store
+# #Thumbs.db
 
-# Arquivos de configuração local
-config/local.php
-config/database_local.php
+# # Arquivos de configuração local
+# config/local.php
+# config/database_local.php
 
-# Uploads de usuários
-uploads/perfil/*
-uploads/solicitacoes/*
-!uploads/perfil/.gitkeep
-!uploads/solicitacoes/.gitkeep
+# # Uploads de usuários
+# uploads/perfil/*
+# uploads/solicitacoes/*
+# !uploads/perfil/.gitkeep
+# !uploads/solicitacoes/.gitkeep
 
-# Logs
-logs/
-*.log
+# # Logs
+# logs/
+# *.log
 
-# Cache
-cache/
-temp/
+# # Cache
+# cache/
+# temp/
 
-# Arquivos do IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# # Arquivos do IDE
+# .vscode/
+# .idea/
+# *.swp
+# *.swo
 
-# Dependências (se usar Composer no futuro)
-vendor/
-composer.lock
+# # Dependências (se usar Composer no futuro)
+# vendor/
+# composer.lock
 
-# Arquivos de ambiente
-.env
-.env.local
-.env.production
+# # Arquivos de ambiente
+# .env
+# .env.local
+# .env.production
 
-# Backup do banco
-backup/
-*.sql.backup
+# # Backup do banco
+# backup/
+# *.sql.backup
 
-# Arquivos temporários
-tmp/
-temp/
+# # Arquivos temporários
+# tmp/
+# temp/
 
-# Arquivos de teste
-test_uploads/
-phpunit.xml
-.phpunit.result.cache
+# # Arquivos de teste
+# test_uploads/
+# phpunit.xml
+# .phpunit.result.cache
 
-# Documentação gerada
-docs/generated/
+# # Documentação gerada
+# docs/generated/
 
-# Node modules (se usar Node.js)
-node_modules/
-package-lock.json
+# # Node modules (se usar Node.js)
+# node_modules/
+# package-lock.json
 
-# Arquivos específicos do Windows
-desktop.ini
-$RECYCLE.BIN/
+# # Arquivos específicos do Windows
+# desktop.ini
+# $RECYCLE.BIN/
 
-# Arquivos específicos do Mac
-.DS_Store
-.AppleDouble
-.LSOverride
+# # Arquivos específicos do Mac
+# .DS_Store
+# .AppleDouble
+# .LSOverride
 
-# Thumbnails
-._*
+# # Thumbnails
+# ._*
