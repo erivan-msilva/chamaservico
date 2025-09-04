@@ -14,7 +14,7 @@ ob_start();
             <p class="text-muted mb-0">Gerencie suas propostas enviadas para clientes</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="/chamaservico/prestador/solicitacoes" class="btn btn-outline-primary">
+            <a href="prestador/solicitacoes" class="btn btn-outline-primary">
                 <i class="bi bi-search me-1"></i>
                 Buscar Serviços
             </a>
@@ -126,7 +126,7 @@ ob_start();
                         <i class="bi bi-funnel me-1"></i>
                         Filtrar
                     </button>
-                    <a href="/chamaservico/prestador/propostas" class="btn btn-outline-secondary">
+                    <a href="prestador/propostas" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-clockwise me-1"></i>
                         Limpar
                     </a>
@@ -152,7 +152,7 @@ ob_start();
                                 Você ainda não enviou nenhuma proposta. Que tal buscar alguns serviços?
                             <?php endif; ?>
                         </p>
-                        <a href="/chamaservico/prestador/solicitacoes" class="btn btn-primary">
+                        <a href="prestador/solicitacoes" class="btn btn-primary">
                             <i class="bi bi-search me-2"></i>
                             Buscar Serviços Disponíveis
                         </a>
@@ -230,14 +230,14 @@ ob_start();
                         <div class="card-footer bg-white border-top">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="btn-group" role="group">
-                                    <a href="/chamaservico/prestador/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                    <a href="prestador/propostas/detalhes?id=<?= $proposta['id'] ?>" 
                                        class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-eye me-1"></i>
                                         Detalhes
                                     </a>
                                     
                                     <?php if ($proposta['status'] === 'aceita'): ?>
-                                        <a href="/chamaservico/prestador/servicos/detalhes?id=<?= $proposta['id'] ?>" 
+                                        <a href="prestador/servicos/detalhes?id=<?= $proposta['id'] ?>" 
                                            class="btn btn-success btn-sm">
                                             <i class="bi bi-tools me-1"></i>
                                             Gerenciar Serviço
@@ -284,7 +284,7 @@ ob_start();
                     <i class="bi bi-x me-1"></i>
                     Não, manter proposta
                 </button>
-                <form method="POST" action="/chamaservico/prestador/propostas/cancelar" style="display: inline;">
+                <form method="POST" action="prestador/propostas/cancelar" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="proposta_id_cancelar" value="">
                     <button type="submit" class="btn btn-danger">

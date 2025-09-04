@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Verificar se está logado como admin
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: /chamaservico/admin/login');
+    header('Location: admin/login');
     exit;
 }
 
@@ -162,7 +162,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                             <i class="bi bi-speedometer2 me-1"></i>Painel
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/dashboard">
+                            <a class="nav-link" href="admin/dashboard">
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Dashboard
                             </a>
@@ -173,7 +173,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                             <i class="bi bi-gear me-1"></i>Gestão
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex justify-content-between align-items-center active" href="/chamaservico/admin/solicitacoes">
+                            <a class="nav-link d-flex justify-content-between align-items-center active" href="admin/solicitacoes">
                                 <span>
                                     <i class="bi bi-list-task me-2"></i>
                                     Solicitações
@@ -184,13 +184,13 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/usuarios">
+                            <a class="nav-link" href="admin/usuarios">
                                 <i class="bi bi-people me-2"></i>
                                 Usuários
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/tipos-servico">
+                            <a class="nav-link" href="admin/tipos-servico">
                                 <i class="bi bi-tools me-2"></i>
                                 Tipos de Serviços
                             </a>
@@ -201,7 +201,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                             <i class="bi bi-graph-up me-1"></i>Análise
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/relatorios">
+                            <a class="nav-link" href="admin/relatorios">
                                 <i class="bi bi-graph-up me-2"></i>
                                 Relatórios
                             </a>
@@ -212,7 +212,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                             <i class="bi bi-gear-fill me-1"></i>Sistema
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/chamaservico/admin/configuracoes">
+                            <a class="nav-link" href=admin/configuracoes">
                                 <i class="bi bi-gear me-2"></i>
                                 Configurações
                             </a>
@@ -227,7 +227,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                             <div class="text-white fw-bold small">
                                 <?= htmlspecialchars($_SESSION['admin_nome'] ?? 'Admin Sistema') ?>
                             </div>
-                            <a href="/chamaservico/admin/logout" class="btn btn-outline-light btn-sm mt-2">
+                            <a href="admin/logout" class="btn btn-outline-light btn-sm mt-2">
                                 <i class="bi bi-box-arrow-right me-1"></i>
                                 Sair
                             </a>
@@ -397,7 +397,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                                 <button type="submit" class="btn btn-primary me-2">
                                     <i class="bi bi-search me-1"></i>Filtrar
                                 </button>
-                                <a href="/chamaservico/admin/solicitacoes" class="btn btn-outline-secondary">
+                                <a href="admin/solicitacoes" class="btn btn-outline-secondary">
                                     <i class="bi bi-x-circle me-1"></i>Limpar
                                 </a>
                             </div>
@@ -472,7 +472,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
 
                                             <div class="card-footer bg-transparent">
                                                 <div class="d-flex gap-1">
-                                                    <a href="/chamaservico/admin/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                                    <a href="admin/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
                                                         class="btn btn-outline-primary btn-sm flex-fill">
                                                         <i class="bi bi-eye me-1"></i>Ver
                                                     </a>
@@ -556,7 +556,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                                                         </td>
                                                         <td>
                                                             <div class="btn-group btn-group-sm" role="group">
-                                                                <a href="/chamaservico/admin/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                                                <a href="admin/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
                                                                     class="btn btn-outline-primary" title="Visualizar">
                                                                     <i class="bi bi-eye"></i>
                                                                 </a>
@@ -670,7 +670,7 @@ $novasSolicitacoes = 3; // Esta variável viria do controller/model
                     <h5 class="modal-title" id="modalAlterarStatusLabel">Alterar Status da Solicitação</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" action="/chamaservico/admin/solicitacoes/alterar-status">
+                <form method="POST" action="admin/solicitacoes/alterar-status">
                     <div class="modal-body">
                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                         <input type="hidden" name="id" id="modalSolicitacaoId">

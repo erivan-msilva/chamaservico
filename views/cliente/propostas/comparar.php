@@ -13,7 +13,7 @@ ob_start();
                 </p>
             </div>
             <div>
-                <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-outline-secondary">
+                <a href="cliente/propostas/recebidas" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Voltar às Propostas
                 </a>
             </div>
@@ -99,7 +99,7 @@ ob_start();
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <?php if (!empty($proposta['prestador_foto']) && file_exists("uploads/perfil/" . $proposta['prestador_foto'])): ?>
-                                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($proposta['prestador_foto']) ?>" 
+                                                    <img src="uploads/perfil/<?= htmlspecialchars($proposta['prestador_foto']) ?>" 
                                                          class="rounded-circle me-2" width="32" height="32" alt="Foto do prestador">
                                                 <?php else: ?>
                                                     <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" 
@@ -134,7 +134,7 @@ ob_start();
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                                <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
                                                    class="btn btn-outline-primary btn-sm">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
@@ -188,7 +188,7 @@ ob_start();
                             <p class="card-text"><?= htmlspecialchars(substr($proposta['descricao'], 0, 100)) ?>...</p>
                             
                             <div class="d-flex gap-1">
-                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
                                    class="btn btn-outline-primary btn-sm flex-fill">Ver Detalhes</a>
                                 <?php if ($proposta['status'] === 'pendente'): ?>
                                     <button type="button" class="btn btn-success btn-sm flex-fill" 
@@ -211,7 +211,7 @@ ob_start();
                 <h5 class="modal-title">Aceitar Proposta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/aceitar">
+            <form method="POST" action="cliente/propostas/aceitar">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaIdAceitar">
@@ -245,7 +245,7 @@ ob_start();
                 <h5 class="modal-title">Recusar Proposta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/recusar">
+            <form method="POST" action="cliente/propostas/recusar">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaIdRecusar">

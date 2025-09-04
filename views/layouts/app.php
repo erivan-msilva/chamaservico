@@ -460,8 +460,8 @@
     <?php if (Session::isLoggedIn()): ?>
         <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
             <div class="container">
-                <!-- Logo Limpo -->
-                <a href="<?= Session::isLoggedIn() ? (Session::isCliente() ? '/chamaservico/cliente/dashboard' : '/chamaservico/prestador/dashboard') : '/chamaservico/' ?>"
+                <!-- Logo Limpo - CORREÇÃO: Usar url() helper -->
+                <a href="<?= url(Session::isLoggedIn() ? (Session::isCliente() ? '/cliente/dashboard' : '/prestador/dashboard') : '/') ?>"
                     class="navbar-brand d-flex align-items-center">
                     <span class="logo-circle"></span>
                     <span class="brand-text">CHAMA</span>
@@ -473,18 +473,18 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <!-- Navegação Principal - Links Limpos -->
+                    <!-- Navegação Principal - CORREÇÃO: URLs com BASE_URL -->
                     <ul class="navbar-nav me-auto">
                         <!-- Dashboard/Início -->
                         <li class="nav-item">
                             <?php if (Session::isPrestador() && !Session::isCliente()): ?>
                                 <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') !== false ? ' active' : '' ?>" 
-                                   href="/chamaservico/prestador/dashboard">
+                                   href="<?= url('prestador/dashboard') ?>">
                                     Dashboard
                                 </a>
                             <?php elseif (Session::isCliente()): ?>
                                 <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/cliente/dashboard') !== false ? ' active' : '' ?>" 
-                                   href="/chamaservico/cliente/dashboard">
+                                   href="<?= url('cliente/dashboard') ?>">
                                     Dashboard
                                 </a>
                             <?php endif; ?>
@@ -499,16 +499,16 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><h6 class="dropdown-header">Solicitações</h6></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes">
+                                    <li><a class="dropdown-item" href="<?= url('cliente/solicitacoes') ?>">
                                         <i class="bi bi-list"></i>Minhas Solicitações
                                     </a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar">
+                                    <li><a class="dropdown-item" href="<?= url('cliente/solicitacoes/criar') ?>">
                                         <i class="bi bi-plus-circle"></i>Nova Solicitação
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Propostas</h6></li>
                                     <li>
-                                        <a class="dropdown-item" href="/chamaservico/cliente/propostas/recebidas">
+                                        <a class="dropdown-item" href="<?= url('cliente/propostas/recebidas') ?>">
                                             <i class="bi bi-envelope"></i>Propostas Recebidas
                                             <?php
                                             try {
@@ -526,7 +526,7 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Serviços</h6></li>
                                     <li>
-                                        <a class="dropdown-item" href="/chamaservico/cliente/servicos/concluidos">
+                                        <a class="dropdown-item" href="<?= url('cliente/servicos/concluidos') ?>">
                                             <i class="bi bi-check-circle"></i>Serviços Concluídos
                                             <?php
                                             try {
@@ -553,13 +553,13 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><h6 class="dropdown-header">Trabalho</h6></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes">
+                                    <li><a class="dropdown-item" href="<?= url('prestador/solicitacoes') ?>">
                                         <i class="bi bi-search"></i>Buscar Serviços
                                     </a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/propostas">
+                                    <li><a class="dropdown-item" href="<?= url('prestador/propostas') ?>">
                                         <i class="bi bi-file-earmark-text"></i>Minhas Propostas
                                     </a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/servicos/andamento">
+                                    <li><a class="dropdown-item" href="<?= url('prestador/servicos/andamento') ?>">
                                         <i class="bi bi-tools"></i>Serviços em Andamento
                                     </a></li>
                                 </ul>
@@ -573,24 +573,24 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <?php if (Session::isCliente()): ?>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar">
+                                    <li><a class="dropdown-item" href="<?= url('cliente/solicitacoes/criar') ?>">
                                         <i class="bi bi-plus-circle"></i>Nova Solicitação
                                     </a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/propostas/recebidas">
+                                    <li><a class="dropdown-item" href="<?= url('cliente/propostas/recebidas') ?>">
                                         <i class="bi bi-inbox"></i>Ver Propostas
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>
                                 <?php endif; ?>
                                 <?php if (Session::isPrestador()): ?>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes">
+                                    <li><a class="dropdown-item" href="<?= url('prestador/solicitacoes') ?>">
                                         <i class="bi bi-search"></i>Buscar Trabalhos
                                     </a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/propostas">
+                                    <li><a class="dropdown-item" href="<?= url('prestador/propostas') ?>">
                                         <i class="bi bi-file-earmark-text"></i>Minhas Propostas
                                     </a></li>
                                     <li><hr class="dropdown-divider"></li>
                                 <?php endif; ?>
-                                <li><a class="dropdown-item" href="/chamaservico/perfil">
+                                <li><a class="dropdown-item" href="<?= url('/perfil') ?>">
                                     <i class="bi bi-person-gear"></i>Editar Perfil
                                 </a></li>
                             </ul>
@@ -615,7 +615,7 @@
                         }
 
                         if ($notificacoesNaoLidas > 0): ?>
-                            <div class="notification-area" onclick="window.location.href='/chamaservico/notificacoes'">
+                            <div class="notification-area" onclick="window.location.href='<?= BASE_URL ?>/notificacoes'">
                                 <i class="bi bi-bell-fill notification-bell"></i>
                                 <span class="notification-badge"><?= $notificacoesNaoLidas ?></span>
                             </div>
@@ -632,7 +632,7 @@
                                     $arquivoExiste = file_exists($caminhoCompleto);
                                 }
                                 if ($fotoPerfil && $arquivoExiste): ?>
-                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
+                                    <img src="<?= BASE_URL ?>/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
                                         class="user-avatar" alt="Foto do perfil">
                                 <?php else: ?>
                                     <div class="user-avatar-placeholder">
@@ -654,7 +654,7 @@
                                     <div class="dropdown-item-text">
                                         <div class="d-flex align-items-center">
                                             <?php if ($fotoPerfil && file_exists("uploads/perfil/" . $fotoPerfil)): ?>
-                                                <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
+                                                <img src="<?= BASE_URL ?>/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
                                                     class="rounded-circle me-2" width="40" height="40" alt="Foto do perfil">
                                             <?php else: ?>
                                                 <i class="bi bi-person-circle me-2" style="font-size: 2.5rem; color: #6c757d;"></i>
@@ -677,7 +677,7 @@
                                     </div>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/chamaservico/notificacoes">
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/notificacoes">
                                     <i class="bi bi-bell"></i>Notificações
                                     <?php if ($notificacoesNaoLidas > 0): ?>
                                         <span class="notification-badge-menu"><?= $notificacoesNaoLidas ?></span>
@@ -685,14 +685,14 @@
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header">Minha Conta</h6></li>
-                                <li><a class="dropdown-item" href="/chamaservico/perfil">
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>/perfil">
                                     <i class="bi bi-person"></i>Meu Perfil
                                 </a></li>
-                                <li><a class="dropdown-item" href="<?= Session::isPrestador() && !Session::isCliente() ? '/chamaservico/prestador/perfil/enderecos' : '/chamaservico/cliente/perfil/enderecos' ?>">
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?><?= Session::isPrestador() && !Session::isCliente() ? '/prestador/perfil/enderecos' : '/cliente/perfil/enderecos' ?>">
                                     <i class="bi bi-geo-alt"></i>Meus Endereços
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="/chamaservico/logout">
+                                <li><a class="dropdown-item text-danger" href="<?= BASE_URL ?>/logout">
                                     <i class="bi bi-box-arrow-right"></i>Sair da Conta
                                 </a></li>
                             </ul>
@@ -908,7 +908,8 @@
 
             async verificarNovas() {
                 try {
-                    const response = await fetch('/chamaservico/notificacoes/contador');
+                    // CORREÇÃO: Usar BASE_URL
+                    const response = await fetch('<?= BASE_URL ?>/notificacoes/contador');
                     const data = await response.json();
 
                     if (data.sucesso) {

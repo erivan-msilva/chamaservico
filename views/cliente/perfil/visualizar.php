@@ -54,10 +54,10 @@ $corBarra = $completude >= 80 ? '#b3d9ff' : ($completude >= 50 ? '#ffeb99' : '#f
                     <i class="bi bi-person-badge me-2"></i>Meu Perfil Cliente
                 </h2>
                 <div class="d-flex gap-2">
-                    <a href="/chamaservico/cliente/perfil/editar" class="btn btn-success">
+                    <a href="cliente/perfil/editar" class="btn btn-success">
                         <i class="bi bi-pencil me-1"></i>Editar Perfil
                     </a>
-                    <a href="/chamaservico/cliente/dashboard" class="btn btn-outline-primary">
+                    <a href="cliente/dashboard" class="btn btn-outline-primary">
                         <i class="bi bi-speedometer2 me-1"></i>Dashboard
                     </a>
                 </div>
@@ -72,7 +72,7 @@ $corBarra = $completude >= 80 ? '#b3d9ff' : ($completude >= 50 ? '#ffeb99' : '#f
                             <h5 class="mb-0 text-primary">
                                 <i class="bi bi-person-vcard me-2"></i>Informações do Perfil
                             </h5>
-                            <a href="/chamaservico/cliente/perfil/editar" class="btn btn-sm btn-outline-success">
+                            <a href="cliente/perfil/editar" class="btn btn-sm btn-outline-success">
                                 <i class="bi bi-pencil me-1"></i>Editar
                             </a>
                         </div>
@@ -80,7 +80,7 @@ $corBarra = $completude >= 80 ? '#b3d9ff' : ($completude >= 50 ? '#ffeb99' : '#f
                             <div class="row align-items-center">
                                 <div class="col-md-3 text-center">
                                     <?php if ($fotoExiste): ?>
-                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoNome) ?>"
+                                        <img src="uploads/perfil/<?= htmlspecialchars($fotoNome) ?>"
                                              class="rounded-circle border border-3 border-primary" 
                                              style="width: 100px; height: 100px; object-fit: cover;"
                                              alt="Foto do cliente">
@@ -126,7 +126,7 @@ $corBarra = $completude >= 80 ? '#b3d9ff' : ($completude >= 50 ? '#ffeb99' : '#f
                             <h5 class="mb-0 text-primary">
                                 <i class="bi bi-clock-history me-2"></i>Atividade Recente
                             </h5>
-                            <a href="/chamaservico/cliente/solicitacoes" class="btn btn-sm btn-outline-primary">
+                            <a href="cliente/solicitacoes" class="btn btn-sm btn-outline-primary">
                                 Ver Todas
                             </a>
                         </div>
@@ -139,7 +139,7 @@ $corBarra = $completude >= 80 ? '#b3d9ff' : ($completude >= 50 ? '#ffeb99' : '#f
                                     <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
                                     <h6 class="text-muted mt-2">Nenhuma solicitação criada ainda</h6>
                                     <p class="text-muted">Comece criando sua primeira solicitação de serviço</p>
-                                    <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+                                    <a href="cliente/solicitacoes/criar" class="btn btn-primary">
                                         <i class="bi bi-plus-circle me-1"></i>Criar Solicitação
                                     </a>
                                 </div>
@@ -246,7 +246,7 @@ $corBarra = $completude >= 80 ? '#b3d9ff' : ($completude >= 50 ? '#ffeb99' : '#f
                             </div>
                             
                             <?php if ($completude < 100): ?>
-                                <a href="/chamaservico/cliente/perfil/editar" class="btn btn-primary btn-sm">
+                                <a href="cliente/perfil/editar" class="btn btn-primary btn-sm">
                                     <i class="bi bi-pencil me-1"></i>Completar Perfil
                                 </a>
                             <?php endif; ?>
@@ -262,19 +262,19 @@ $corBarra = $completude >= 80 ? '#b3d9ff' : ($completude >= 50 ? '#ffeb99' : '#f
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="/chamaservico/cliente/perfil/editar" class="btn btn-success">
+                                <a href="cliente/perfil/editar" class="btn btn-success">
                                     <i class="bi bi-pencil me-2"></i>Editar Perfil
                                 </a>
-                                <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+                                <a href="cliente/solicitacoes/criar" class="btn btn-primary">
                                     <i class="bi bi-plus-circle me-2"></i>Nova Solicitação
                                 </a>
-                                <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-outline-success">
+                                <a href="cliente/propostas/recebidas" class="btn btn-outline-success">
                                     <i class="bi bi-envelope me-2"></i>Ver Propostas
                                 </a>
-                                <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-info">
+                                <a href="cliente/solicitacoes" class="btn btn-outline-info">
                                     <i class="bi bi-list-task me-2"></i>Minhas Solicitações
                                 </a>
-                                <a href="/chamaservico/cliente/perfil/enderecos" class="btn btn-outline-secondary">
+                                <a href="cliente/perfil/enderecos" class="btn btn-outline-secondary">
                                     <i class="bi bi-geo-alt me-2"></i>Meus Endereços
                                 </a>
                             </div>

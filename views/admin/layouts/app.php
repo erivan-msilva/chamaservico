@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Verificar se está logado como admin
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: /chamaservico/admin/login');
+    header('Location: admin/login');
     exit;
 }
 
@@ -137,7 +137,7 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                             <i class="bi bi-speedometer2 me-1"></i>Painel
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'dashboard' ? 'active' : '' ?>" href="/chamaservico/admin/dashboard">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'dashboard' ? 'active' : '' ?>" href="admin/dashboard">
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Dashboard
                             </a>
@@ -148,7 +148,7 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                             <i class="bi bi-gear me-1"></i>Gestão
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex justify-content-between align-items-center <?= ($currentPage ?? '') === 'solicitacoes' ? 'active' : '' ?>" href="/chamaservico/admin/solicitacoes">
+                            <a class="nav-link d-flex justify-content-between align-items-center <?= ($currentPage ?? '') === 'solicitacoes' ? 'active' : '' ?>" href="admin/solicitacoes">
                                 <span>
                                     <i class="bi bi-list-task me-2"></i>
                                     Solicitações
@@ -159,13 +159,13 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'usuarios' ? 'active' : '' ?>" href="/chamaservico/admin/usuarios">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'usuarios' ? 'active' : '' ?>" href="admin/usuarios">
                                 <i class="bi bi-people me-2"></i>
                                 Usuários
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'tipos-servico' ? 'active' : '' ?>" href="/chamaservico/admin/tipos-servico">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'tipos-servico' ? 'active' : '' ?>" href="admin/tipos-servico">
                                 <i class="bi bi-tools me-2"></i>
                                 Tipos de Serviços
                             </a>
@@ -176,7 +176,7 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                             <i class="bi bi-graph-up me-1"></i>Análise
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'relatorios' ? 'active' : '' ?>" href="/chamaservico/admin/relatorios">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'relatorios' ? 'active' : '' ?>" href="admin/relatorios">
                                 <i class="bi bi-graph-up me-2"></i>
                                 Relatórios
                             </a>
@@ -187,7 +187,7 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                             <i class="bi bi-gear-fill me-1"></i>Sistema
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'configuracoes' ? 'active' : '' ?>" href="/chamaservico/admin/configuracoes">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'configuracoes' ? 'active' : '' ?>" href="admin/configuracoes">
                                 <i class="bi bi-gear me-2"></i>
                                 Configurações
                             </a>
@@ -202,7 +202,7 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                             <div class="text-white fw-bold small">
                                 <?= htmlspecialchars($_SESSION['admin_nome'] ?? 'Admin Sistema') ?>
                             </div>
-                            <a href="/chamaservico/admin/logout" class="btn btn-outline-light btn-sm mt-2">
+                            <a href="admin/logout" class="btn btn-outline-light btn-sm mt-2">
                                 <i class="bi bi-box-arrow-right me-1"></i>
                                 Sair
                             </a>

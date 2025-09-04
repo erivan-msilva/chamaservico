@@ -5,7 +5,7 @@ ob_start();
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-list-task me-2"></i>Minhas Solicitações</h2>
-    <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+    <a href="cliente/solicitacoes/criar" class="btn btn-primary">
         <i class="bi bi-plus-circle me-1"></i>Nova Solicitação
     </a>
 </div>
@@ -57,11 +57,11 @@ ob_start();
             Crie sua primeira solicitação de serviço!
         </p>
         <div class="d-flex gap-2 justify-content-center">
-            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+            <a href="cliente/solicitacoes/criar" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-1"></i>Criar Solicitação
             </a>
             <?php if (!empty($_GET['status']) || !empty($_GET['urgencia']) || !empty($_GET['busca'])): ?>
-                <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-secondary">
+                <a href="cliente/solicitacoes" class="btn btn-outline-secondary">
                     <i class="bi bi-x-circle me-1"></i>Limpar Filtros
                 </a>
             <?php endif; ?>
@@ -123,13 +123,13 @@ ob_start();
                     </div>
                     <div class="card-footer bg-transparent">
                         <div class="d-flex gap-1">
-                            <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                            <a href="cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
                                 class="btn btn-outline-primary btn-sm flex-fill">
                                 <i class="bi bi-eye me-1"></i>Ver
                             </a>
 
                             <?php if (in_array($solicitacao['status_id'] ?? 0, [1, 2])): ?>
-                                <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>"
+                                <a href="cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>"
                                     class="btn btn-outline-secondary btn-sm flex-fill">
                                     <i class="bi bi-pencil me-1"></i>Editar
                                 </a>
@@ -144,7 +144,7 @@ ob_start();
 
                         <?php if ($solicitacao['status_id'] == 1): ?>
                             <div class="mt-2">
-                                <a href="/chamaservico/cliente/propostas/recebidas?solicitacao_id=<?= $solicitacao['id'] ?>"
+                                <a href="cliente/propostas/recebidas?solicitacao_id=<?= $solicitacao['id'] ?>"
                                     class="btn btn-success btn-sm w-100">
                                     <i class="bi bi-inbox me-1"></i>Ver Propostas Recebidas
                                 </a>
@@ -194,7 +194,7 @@ ob_start();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form method="POST" action="/chamaservico/cliente/solicitacoes/deletar" style="display: inline;">
+                <form method="POST" action="cliente/solicitacoes/deletar" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="id" id="idExcluir">
                     <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>

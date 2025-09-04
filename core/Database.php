@@ -1,6 +1,8 @@
 <?php
-// Certifique-se de que as configurações foram carregadas
-if (!defined('DB_HOST')) {
+// Configurações do banco de dados - VERSÃO CORRIGIDA PARA PRODUÇÃO
+
+// Incluir configurações se ainda não estiverem carregadas
+if (!defined('CHAMASERVICO_CONFIG_LOADED')) {
     require_once __DIR__ . '/../config/config.php';
 }
 
@@ -9,91 +11,52 @@ class Database
     private static $instance = null;
     private $connection;
 
-    // CORREÇÃO: Configurações do banco conforme fornecidas
-    private $host = 'localhost';
-    private $db_name = 'td187899_bd_servicos';
-    private $username = 'td187899_bd_servicos';
-    private $password = 'pdSNPX6rm2MJE8XM4rTq';
-    private $charset = 'utf8mb4';
-    private $port = 3306;
-
-    public function __construct()
+    private function __construct()
     {
-        // MELHORIA: Detectar ambiente e usar configurações apropriadas
-        $this->detectEnvironment();
-
-        // NOVA ABORDAGEM: Tentar diferentes métodos de conexão
-        $this->connection = $this->tryConnection();
+        $this->connection = $this->createConnection();
     }
 
-    private function detectEnvironment()
+    private function createConnection()
     {
-        // Verificar se estamos em localhost (desenvolvimento)
-        $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8083']);
+        // CORREÇÃO: Usar sempre as constantes definidas no config
+        $host = DB_HOST;
+        $dbname = DB_NAME;
+        $username = DB_USER;
+        $password = DB_PASS;
+        $charset = 'utf8mb4';
+        $port = 3306;
+        
+        error_log("DATABASE: Tentando conectar - Host: $host, DB: $dbname, User: $username");
 
-        if ($isLocalhost) {
-            // Configurações para desenvolvimento local (XAMPP)
-            $this->host = 'localhost';
-            $this->db_name = 'td187899_bd_servicos'; // Usar o banco que você já tem
-            $this->username = 'td187899_bd_servicos';
-            $this->password = 'pdSNPX6rm2MJE8XM4rTq';
-            error_log("Database: Usando configuração LOCAL");
-        } else {
-            // Configurações para servidor hospedado
-            $this->host = 'h63.servidorhh.com';
-            $this->db_name = 'td187899_bd_servicos';
-            $this->username = 'td187899_bd_servicos';
-            $this->password = 'pdSNPX6rm2MJE8XM4rTq';
-            error_log("Database: Usando configuração HOSPEDADA");
-        }
-
-        // Sobrescrever com constantes se definidas
-        if (defined('DB_HOST')) {
-            $this->host = DB_HOST;
-            $this->db_name = DB_NAME;
-            $this->username = DB_USER;
-            $this->password = DB_PASS;
-            $this->charset = DB_CHARSET ?? 'utf8mb4';
-            $this->port = DB_PORT ?? 3306;
-        }
-    }
-
-    private function tryConnection()
-    {
+        // Lista de tentativas simplificada para produção
         $attempts = [
-            // Tentativa 1: Conexão padrão
+            // Tentativa 1: Conexão básica sem SSL
             [
-                'dsn' => "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset={$this->charset}",
+                'dsn' => "mysql:host=$host;port=$port;dbname=$dbname;charset=$charset",
                 'options' => [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$this->charset}",
-                    PDO::ATTR_PERSISTENT => false,
-                    PDO::ATTR_TIMEOUT => 10,
-                ]
-            ],
-            // Tentativa 2: Sem SSL (para servidor hospedado)
-            [
-                'dsn' => "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset={$this->charset}",
-                'options' => [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES {$this->charset}",
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES $charset",
                     PDO::ATTR_PERSISTENT => false,
                     PDO::ATTR_TIMEOUT => 15,
-                    PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
-                    PDO::MYSQL_ATTR_SSL_CA => null,
                 ]
             ],
-            // Tentativa 3: Conexão simples sem banco específico
+            // Tentativa 2: Conexão com timeout maior
             [
-                'dsn' => "mysql:host={$this->host};port={$this->port};charset={$this->charset}",
+                'dsn' => "mysql:host=$host;port=$port;dbname=$dbname;charset=$charset",
                 'options' => [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_TIMEOUT => 20,
-                    PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_TIMEOUT => 30,
+                ]
+            ],
+            // Tentativa 3: Sem especificar porta
+            [
+                'dsn' => "mysql:host=$host;dbname=$dbname;charset=$charset",
+                'options' => [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_TIMEOUT => 45,
                 ]
             ]
         ];
@@ -102,58 +65,62 @@ class Database
 
         foreach ($attempts as $index => $attempt) {
             try {
-                error_log("Database: Tentativa " . ($index + 1) . " - {$this->host}/{$this->db_name}");
+                error_log("DATABASE: Tentativa " . ($index + 1) . " - DSN: {$attempt['dsn']}");
 
-                $pdo = new PDO($attempt['dsn'], $this->username, $this->password, $attempt['options']);
+                $pdo = new PDO($attempt['dsn'], $username, $password, $attempt['options']);
 
-                // Se tentativa 3 funcionou, selecionar o banco
-                if ($index === 2) {
-                    $pdo->exec("USE `{$this->db_name}`");
+                // Teste rápido de consulta
+                $stmt = $pdo->query("SELECT 1");
+                if ($stmt === false) {
+                    throw new PDOException("Falha no teste de consulta");
                 }
 
-                error_log("Database: Conexão bem-sucedida na tentativa " . ($index + 1));
+                error_log("DATABASE: ✅ Conexão bem-sucedida na tentativa " . ($index + 1));
                 return $pdo;
+                
             } catch (PDOException $e) {
                 $lastError = $e;
-                error_log("Database: Tentativa " . ($index + 1) . " falhou: " . $e->getMessage());
+                error_log("DATABASE: ❌ Tentativa " . ($index + 1) . " falhou: " . $e->getMessage());
                 continue;
             }
         }
 
         // Se chegou aqui, todas as tentativas falharam
-        $this->handleConnectionError($lastError);
+        $this->handleConnectionError($lastError, $host, $dbname, $username);
         return null;
     }
 
-    private function handleConnectionError($exception)
+    private function handleConnectionError($exception, $host, $dbname, $username)
     {
-        $errorMessage = $exception->getMessage();
-        error_log("Database: ERRO FINAL de conexão: " . $errorMessage);
-
-        if (defined('DEBUG_MODE') && DEBUG_MODE) {
+        $errorMessage = $exception ? $exception->getMessage() : 'Erro desconhecido';
+        error_log("DATABASE: 🚨 ERRO FINAL de conexão: " . $errorMessage);
+        
+        // CORREÇÃO: Não matar a aplicação imediatamente, deixar o index.php lidar
+        if (defined('AMBIENTE') && AMBIENTE === 'desenvolvimento') {
+            // Em desenvolvimento, mostrar detalhes
             $debugInfo = "
             <div style='background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; margin: 20px; font-family: Arial, sans-serif;'>
                 <h3>❌ Erro de Conexão com Banco de Dados</h3>
-                <p><strong>Erro:</strong> {$errorMessage}</p>
-                <p><strong>Host:</strong> {$this->host}:{$this->port}</p>
-                <p><strong>Database:</strong> {$this->db_name}</p>
-                <p><strong>User:</strong> {$this->username}</p>
-                <p><strong>Ambiente:</strong> " . ($_SERVER['HTTP_HOST'] ?? 'desconhecido') . "</p>
+                <p><strong>Erro:</strong> $errorMessage</p>
+                <p><strong>Host:</strong> $host</p>
+                <p><strong>Database:</strong> $dbname</p>
+                <p><strong>User:</strong> $username</p>
+                <p><strong>Ambiente:</strong> " . AMBIENTE . "</p>
                 
-                <h4>🔧 Diagnóstico:</h4>
+                <h4>🔧 Soluções:</h4>
                 <ul>
-                    <li>Verifique se o MySQL está rodando</li>
-                    <li>Confirme as credenciais do banco</li>
-                    <li>Teste a conectividade de rede</li>
-                    <li>Verifique permissões do usuário</li>
+                    <li>Verifique se o servidor MySQL está online</li>
+                    <li>Confirme as credenciais no config.php</li>
+                    <li>Teste conectividade de rede com o host</li>
+                    <li>Verifique permissões do usuário no banco</li>
                 </ul>
                 
-                <p><a href='/chamaservico/config/test-connection.php' style='background: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;'>🔍 Executar Diagnóstico Completo</a></p>
-                <p><a href='/chamaservico/config/setup-local.php' style='background: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin-left: 10px;'>🛠️ Configurar Banco Local</a></p>
+                <p><a href='debug.php' style='background: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;'>🔍 Executar Diagnóstico</a></p>
             </div>";
             die($debugInfo);
         } else {
-            die("Erro na conexão com o banco de dados. Entre em contato com o suporte.");
+            // Em produção, gerar exceção para ser capturada pelo index.php
+            throw new Exception("Falha na conexão com banco de dados: " . $errorMessage);
         }
     }
 
@@ -172,42 +139,26 @@ class Database
 
     public function prepare($sql)
     {
+        if (!$this->connection) {
+            throw new Exception("Conexão com banco de dados não estabelecida");
+        }
         return $this->connection->prepare($sql);
     }
 
     public function lastInsertId()
     {
+        if (!$this->connection) {
+            throw new Exception("Conexão com banco de dados não estabelecida");
+        }
         return $this->connection->lastInsertId();
     }
 
-    // Método para verificar se há transação ativa
-    public function inTransaction()
-    {
-        return $this->connection->inTransaction();
-    }
-
-    // Método para rollback seguro
-    public function safeRollback()
-    {
-        if ($this->connection->inTransaction()) {
-            return $this->connection->rollBack();
-        }
-        return true;
-    }
-
-    // Método para commit seguro
-    public function safeCommit()
-    {
-        if ($this->connection->inTransaction()) {
-            return $this->connection->commit();
-        }
-        return true;
-    }
-
-    // Método para testar conexão
     public function testConnection()
     {
         try {
+            if (!$this->connection) {
+                return false;
+            }
             $stmt = $this->connection->query("SELECT 1");
             return $stmt !== false;
         } catch (PDOException $e) {
@@ -225,3 +176,4 @@ class Database
         throw new Exception("Cannot unserialize singleton");
     }
 }
+?>

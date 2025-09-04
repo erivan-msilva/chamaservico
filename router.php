@@ -1,15 +1,54 @@
 <?php
-// SOLUÇÃO: Usar autoloader em vez de require_once manual
+// Router otimizado para produção - CORRIGIDO PARA RAIZ
 
-// Carregar autoloader se ainda não foi carregado
-if (!class_exists('Autoloader')) {
-    require_once 'core/Autoloader.php';
-    Autoloader::register();
-    Autoloader::loadDependencies();
+// HABILITAR ERROS PARA DEBUG
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Log de início
+error_log("=== ROUTER INICIADO ===");
+error_log("REQUEST_URI: " . ($_SERVER['REQUEST_URI'] ?? 'undefined'));
+error_log("HTTP_HOST: " . ($_SERVER['HTTP_HOST'] ?? 'undefined'));
+error_log("SCRIPT_NAME: " . ($_SERVER['SCRIPT_NAME'] ?? 'undefined'));
+
+// Carregar configurações primeiro
+try {
+    if (!defined('BASE_URL')) {
+        require_once __DIR__ . '/config/config.php';
+        error_log("Config carregado - BASE_URL: " . BASE_URL);
+    }
+} catch (Exception $e) {
+    error_log("ERRO ao carregar config: " . $e->getMessage());
+    die("Erro de configuração: " . $e->getMessage());
+}
+
+// Carregar autoloader
+try {
+    if (!class_exists('Autoloader')) {
+        require_once 'core/Autoloader.php';
+        Autoloader::register();
+        Autoloader::loadDependencies();
+        error_log("Autoloader carregado");
+    }
+} catch (Exception $e) {
+    error_log("ERRO no autoloader: " . $e->getMessage());
+    die("Erro no autoloader: " . $e->getMessage());
 }
 
 class Router {
     private $routes = [];
+    private $basePath = '';
+
+    public function __construct() {
+        $this->detectBasePath();
+    }
+
+    private function detectBasePath() {
+        // CORREÇÃO: Para arquivos na raiz do domínio, sempre usar base path vazio
+        $this->basePath = '';
+        
+        error_log("Base path detectado: '" . $this->basePath . "' (Arquivos na raiz do domínio)");
+    }
 
     public function get($path, $controller, $method) {
         $this->routes['GET'][$path] = ['controller' => $controller, 'method' => $method];
@@ -21,74 +60,101 @@ class Router {
 
     public function run() {
         $method = $_SERVER['REQUEST_METHOD'];
-        $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
         
-        // Remover o prefixo do projeto se estiver presente
-        $basePath = '/chamaservico';
-        if (strpos($path, $basePath) === 0) {
-            $path = substr($path, strlen($basePath));
+        // Remover query string
+        $path = parse_url($requestUri, PHP_URL_PATH);
+        
+        error_log("Processando - Method: $method, Original path: $path");
+        
+        // Remover base path se existir
+        if (!empty($this->basePath) && strpos($path, $this->basePath) === 0) {
+            $path = substr($path, strlen($this->basePath));
+            error_log("Path após remover base: $path");
         }
         
-        // Se path está vazio, definir como /
-        if (empty($path) || $path === '') {
-            $path = '/';
+        // Garantir que comece com /
+        if (empty($path) || $path[0] !== '/') {
+            $path = '/' . $path;
         }
+        
+        // Remover trailing slash (exceto para raiz)
+        if ($path !== '/' && substr($path, -1) === '/') {
+            $path = substr($path, 0, -1);
+        }
+        
+        error_log("Path final processado: $path");
 
         // Buscar rota
         if (isset($this->routes[$method][$path])) {
-            $route = $this->routes[$method][$path];
-            $controllerName = $route['controller'];
-            $methodName = $route['method'];
+            error_log("Rota encontrada: {$this->routes[$method][$path]['controller']}::{$this->routes[$method][$path]['method']}");
+            $this->executeRoute($this->routes[$method][$path]);
+            return;
+        }
 
-            try {
-                // AUTOLOAD: A classe será carregada automaticamente aqui
-                if (!class_exists($controllerName)) {
-                    throw new Exception("Controller '$controllerName' não encontrado");
-                }
-                
-                $controller = new $controllerName();
-                
-                if (!method_exists($controller, $methodName)) {
-                    throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
-                }
-                
-                $controller->$methodName();
-            } catch (Exception $e) {
-                $this->showError("Erro interno: " . $e->getMessage());
+        error_log("Rota não encontrada para: $method $path");
+        $this->showNotFound($path, $method);
+    }
+
+    private function executeRoute($route) {
+        $controllerName = $route['controller'];
+        $methodName = $route['method'];
+
+        try {
+            error_log("Executando: $controllerName::$methodName");
+            
+            if (!class_exists($controllerName)) {
+                throw new Exception("Controller '$controllerName' não encontrado");
             }
-        } else {
-            $this->showNotFound($path, $method);
+            
+            $controller = new $controllerName();
+            
+            if (!method_exists($controller, $methodName)) {
+                throw new Exception("Método '$methodName' não encontrado no controller '$controllerName'");
+            }
+            
+            $controller->$methodName();
+            error_log("Rota executada com sucesso");
+            
+        } catch (Exception $e) {
+            error_log("ERRO na execução da rota: " . $e->getMessage());
+            $this->showError("Erro interno: " . $e->getMessage());
         }
     }
 
     private function showNotFound($path, $method) {
         http_response_code(404);
+        
+        // CORREÇÃO: URLs sem subdiretório hardcoded
+        $loginUrl = BASE_URL . '/login';
+        $homeUrl = BASE_URL . '/';
+        
         echo "<!DOCTYPE html>
         <html lang='pt-BR'>
         <head>
             <meta charset='UTF-8'>
-            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
             <title>404 - Página não encontrada</title>
             <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet'>
         </head>
         <body class='bg-light'>
             <div class='container mt-5'>
-                <div class='row justify-content-center'>
-                    <div class='col-md-6'>
-                        <div class='card'>
-                            <div class='card-body text-center'>
-                                <h1 class='display-1 text-muted'>404</h1>
-                                <h2>Página não encontrada</h2>
-                                <p><strong>Rota solicitada:</strong> $path</p>
-                                <p><strong>Método:</strong> $method</p>
-                                <a href='/chamaservico/login' class='btn btn-primary'>Ir para Login</a>
-                                
-                                <hr>
-                                <details class='mt-3'>
-                                    <summary>Debug Info:</summary>
-                                    <div class='text-start mt-2'>
-                                        <small><strong>Rotas disponíveis:</strong></small>
-                                        <ul class='list-unstyled small'>";
+                <div class='card'>
+                    <div class='card-body text-center'>
+                        <h1 class='display-1 text-muted'>404</h1>
+                        <h2>Página não encontrada</h2>
+                        <p><strong>Rota solicitada:</strong> $method $path</p>
+                        <a href='$homeUrl' class='btn btn-primary'>Página Inicial</a>
+                        <a href='$loginUrl' class='btn btn-outline-primary'>Login</a>
+                        
+                        <hr>
+                        <details>
+                            <summary>Debug Info</summary>
+                            <div class='text-start mt-2'>
+                                <p><strong>BASE_URL:</strong> " . BASE_URL . "</p>
+                                <p><strong>Ambiente:</strong> " . AMBIENTE . "</p>
+                                <p><strong>Base Path:</strong> {$this->basePath}</p>
+                                <strong>Rotas disponíveis:</strong>
+                                <ul>";
         
         foreach ($this->routes as $method => $routes) {
             foreach ($routes as $route => $config) {
@@ -96,11 +162,9 @@ class Router {
             }
         }
         
-        echo "                        </ul>
-                                    </div>
-                                </details>
+        echo "              </ul>
                             </div>
-                        </div>
+                        </details>
                     </div>
                 </div>
             </div>
@@ -110,8 +174,12 @@ class Router {
 
     private function showError($message) {
         http_response_code(500);
+        
+        // CORREÇÃO: URL sem subdiretório hardcoded
+        $homeUrl = BASE_URL . '/';
+        
         echo "<!DOCTYPE html>
-        <html lang='pt-BR'>
+        <html>
         <head>
             <meta charset='UTF-8'>
             <title>Erro 500</title>
@@ -123,7 +191,7 @@ class Router {
                     <div class='card-body text-center'>
                         <h1 class='text-danger'>Erro 500</h1>
                         <p>$message</p>
-                        <a href='/chamaservico' class='btn btn-primary'>Voltar ao Início</a>
+                        <a href='" . BASE_URL . "' class='btn btn-primary'>Voltar ao Início</a>
                     </div>
                 </div>
             </div>
@@ -133,209 +201,129 @@ class Router {
 }
 
 // Configurar router
-$router = new Router();
+try {
+    $router = new Router();
 
-// ========================================
-// ROTAS PÚBLICAS - SEM REQUIRE_ONCE!
-// ========================================
-$router->get('/', 'HomeController', 'index');
-$router->get('/home', 'HomeController', 'index');
-$router->get('/inicio', 'HomeController', 'index'); // Rota adicional
-
-// Rotas de autenticação
-$router->get('/login', 'AuthController', 'login');
-$router->post('/login', 'AuthController', 'authenticate');
-$router->get('/registro', 'AuthController', 'registro');
-$router->post('/registro', 'AuthController', 'store');
-$router->get('/logout', 'AuthController', 'logout');
-
-// Rotas de redefinição de senha
-$router->get('/redefinir-senha', 'AuthController', 'redefinirSenha');
-$router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
-$router->get('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
-$router->post('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
-
-// Rota de acesso negado
-$router->get('/acesso-negado', 'HomeController', 'acessoNegado');
-
-// ========================================
-// ROTAS DO ADMINISTRADOR - ESTRUTURA MODULAR
-// ========================================
-if (class_exists('AdminController')) {
-    // Rotas principais
-    $router->get('/admin', 'AdminController', 'index');
-    $router->get('/admin/', 'AdminController', 'index');
+    // ========================================
+    // ROTAS PRINCIPAIS - FUNCIONANDO NA RAIZ
+    // ========================================
+    $router->get('/', 'HomeController', 'index');
+    $router->get('/home', 'HomeController', 'index');
     
     // Autenticação
-    $router->get('/admin/login', 'AdminController', 'login');
-    $router->post('/admin/login', 'AdminController', 'authenticate');
-    $router->get('/admin/logout', 'AdminController', 'logout');
+    $router->get('/login', 'AuthController', 'login');
+    $router->post('/login', 'AuthController', 'authenticate');
+    $router->get('/registro', 'AuthController', 'registro');
+    $router->post('/registro', 'AuthController', 'store');
+    $router->get('/logout', 'AuthController', 'logout');
     
-    // Dashboard
-    $router->get('/admin/dashboard', 'AdminController', 'dashboard');
+    // Redefinição de senha
+    $router->get('/redefinir-senha', 'AuthController', 'redefinirSenha');
+    $router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
+    $router->get('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
+    $router->post('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');
     
-    // Gestão de Usuários
-    $router->get('/admin/usuarios', 'AdminController', 'usuarios');
-    $router->get('/admin/usuarios/visualizar', 'AdminController', 'usuarioVisualizar');
-    $router->post('/admin/usuarios/ativar', 'AdminController', 'usuarioAtivar');
-    $router->post('/admin/usuarios/desativar', 'AdminController', 'usuarioDesativar');
+    // ========================================
+    // ÁREA DO CLIENTE - ROTAS COMPLETAS
+    // ========================================
+    $router->get('/cliente/dashboard', 'ClienteDashboardController', 'index');
     
-    // Gestão de Solicitações
-    $router->get('/admin/solicitacoes', 'AdminController', 'solicitacoes');
-    $router->get('/admin/solicitacoes/visualizar', 'AdminController', 'solicitacaoVisualizar');
-    $router->post('/admin/solicitacoes/alterar-status', 'AdminController', 'solicitacaoAlterarStatus');
-    $router->get('/admin/solicitacoes/estatisticas', 'AdminController', 'solicitacoesEstatisticas');
+    // Solicitações do Cliente
+    $router->get('/cliente/solicitacoes', 'SolicitacaoController', 'listar');
+    $router->get('/cliente/solicitacoes/criar', 'SolicitacaoController', 'criar');
+    $router->post('/cliente/solicitacoes/criar', 'SolicitacaoController', 'criar');
+    $router->get('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
+    $router->post('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
+    $router->get('/cliente/solicitacoes/visualizar', 'SolicitacaoController', 'visualizar');
+    $router->post('/cliente/solicitacoes/deletar', 'SolicitacaoController', 'deletar');
+    $router->get('/cliente/solicitacoes/baixar-imagens', 'SolicitacaoController', 'baixarImagens');
     
-    // Tipos de Serviços
-    $router->get('/admin/tipos-servico', 'AdminController', 'tiposServico');
-    $router->post('/admin/tipos-servico/criar', 'AdminController', 'tiposServicoCriar');
-    $router->get('/admin/tipos-servico/editar', 'AdminController', 'tiposServicoEditar');
-    $router->post('/admin/tipos-servico/editar', 'AdminController', 'tiposServicoEditar');
-    $router->post('/admin/tipos-servico/alterar-status', 'AdminController', 'tiposServicoAlterarStatus');
-    $router->post('/admin/tipos-servico/excluir', 'AdminController', 'tiposServicoExcluir');
-    $router->post('/admin/tipos-servico/ordenar', 'AdminController', 'tiposServicoOrdenar');
+    // Propostas do Cliente
+    $router->get('/cliente/propostas/recebidas', 'ClientePropostaController', 'recebidas');
+    $router->get('/cliente/propostas/comparar', 'ClientePropostaController', 'comparar');
+    $router->get('/cliente/propostas/detalhes', 'ClientePropostaController', 'detalhes');
+    $router->post('/cliente/propostas/aceitar', 'ClientePropostaController', 'aceitar');
+    $router->post('/cliente/propostas/recusar', 'ClientePropostaController', 'recusar');
     
-    // Funcionalidades futuras (mostram página "em desenvolvimento")
-    $router->get('/admin/propostas', 'AdminController', 'propostas');
-    $router->get('/admin/relatorios', 'AdminController', 'relatorios');
-    $router->get('/admin/configuracoes', 'AdminController', 'configuracoes');
-    $router->post('/admin/configuracoes/salvar', 'AdminController', 'configuracoesSalvar');
-    $router->post('/admin/configuracoes/testar-email', 'AdminController', 'configuracaoTestarEmail');
-    $router->post('/admin/configuracoes/backup', 'AdminController', 'configuracaoBackup');
-} else {
-    // Se AdminController não existir, criar uma rota de fallback
-    $router->get('/admin', 'HomeController', 'adminNotFound');
-    $router->get('/admin/', 'HomeController', 'adminNotFound');
-    $router->get('/admin/login', 'HomeController', 'adminNotFound');
-}
+    // NOVO: Serviços do Cliente
+    $router->get('/cliente/servicos/concluidos', 'ClienteServicoController', 'concluidos');
+    $router->get('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliar');
+    $router->post('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliar');
+    $router->post('/cliente/servicos/confirmar-conclusao', 'ClienteServicoController', 'confirmarConclusao');
 
-// ========================================
-// ROTAS DE PERFIL GENÉRICAS (REDIRECIONAMENTO)
-// ========================================
-$router->get('/perfil', 'PerfilController', 'index');
-$router->get('/perfil/editar', 'PerfilController', 'editar');
-$router->post('/perfil/editar', 'PerfilController', 'editar');
-$router->get('/perfil/enderecos', 'PerfilController', 'enderecos');
-$router->post('/perfil/enderecos', 'PerfilController', 'enderecos');
-
-// ========================================
-// ROTAS DO CLIENTE
-// ========================================
-
-// Perfil do Cliente
-$router->get('/cliente/perfil', 'ClientePerfilController', 'index');
-$router->get('/cliente/perfil/editar', 'ClientePerfilController', 'editar');
-$router->post('/cliente/perfil/editar', 'ClientePerfilController', 'editar');
-$router->get('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
-$router->post('/cliente/perfil/enderecos', 'ClientePerfilController', 'enderecos');
-
-// Solicitações do Cliente
-$router->get('/cliente/solicitacoes', 'SolicitacaoController', 'listar');
-$router->get('/cliente/solicitacoes/criar', 'SolicitacaoController', 'criar');
-$router->post('/cliente/solicitacoes/criar', 'SolicitacaoController', 'criar');
-$router->get('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
-$router->post('/cliente/solicitacoes/editar', 'SolicitacaoController', 'editar');
-$router->get('/cliente/solicitacoes/visualizar', 'SolicitacaoController', 'visualizar');
-$router->post('/cliente/solicitacoes/deletar', 'SolicitacaoController', 'deletar');
-
-// Propostas para Clientes
-$router->get('/cliente/propostas/recebidas', 'ClientePropostaController', 'recebidas');
-$router->get('/cliente/propostas/comparar', 'ClientePropostaController', 'comparar');
-$router->get('/cliente/propostas/detalhes', 'ClientePropostaController', 'detalhes');
-$router->post('/cliente/propostas/aceitar', 'ClientePropostaController', 'aceitar');
-$router->post('/cliente/propostas/recusar', 'ClientePropostaController', 'recusar');
-
-// ========================================
-// ROTAS DO CLIENTE - DASHBOARD
-// ========================================
-$router->get('/cliente/dashboard', 'ClienteDashboardController', 'index');
-$router->get('/cliente/dashboard/dados', 'ClienteDashboardController', 'getDashboardData');
-
-// ========================================
-// ROTAS DO PRESTADOR
-// ========================================
-
-// Perfil do Prestador
-$router->get('/prestador/perfil', 'PrestadorPerfilController', 'index');
-$router->get('/prestador/perfil/editar', 'PrestadorPerfilController', 'editar');
-$router->post('/prestador/perfil/editar', 'PrestadorPerfilController', 'editar');
-$router->get('/prestador/perfil/enderecos', 'PrestadorPerfilController', 'enderecos');
-$router->post('/prestador/perfil/enderecos', 'PrestadorPerfilController', 'enderecos');
-
-// Dashboard do Prestador
-$router->get('/prestador/dashboard', 'PrestadorController', 'dashboard');
-$router->get('/prestador/dashboard/dados', 'PrestadorController', 'getDashboardData');
-
-// Solicitações para Prestadores
-$router->get('/prestador/solicitacoes', 'PrestadorController', 'solicitacoes');
-$router->get('/prestador/solicitacoes/detalhes', 'PrestadorController', 'detalheSolicitacao');
-
-// Propostas do Prestador
-$router->get('/prestador/propostas', 'PropostaController', 'minhas');
-$router->get('/prestador/propostas/detalhes', 'PropostaController', 'detalhes');
-$router->post('/prestador/propostas/enviar', 'PrestadorController', 'enviarProposta');
-$router->post('/prestador/propostas/cancelar', 'PropostaController', 'cancelar');
-
-// Serviços em Andamento (Prestador)
-$router->get('/prestador/servicos/andamento', 'PrestadorController', 'servicosAndamento');
-$router->get('/prestador/servicos/detalhes', 'PrestadorController', 'servicoDetalhes');
-$router->post('/prestador/servicos/atualizar-status', 'PrestadorController', 'atualizarStatusServico');
-
-// ========================================
-// ROTAS DE NOTIFICAÇÕES (Condicionais)
-// ========================================
-if (class_exists('NotificacaoController')) {
+    // ========================================
+    // ÁREA DO PRESTADOR - ROTAS COMPLETAS
+    // ========================================
+    $router->get('/prestador/dashboard', 'PrestadorController', 'dashboard');
+    $router->get('/prestador/solicitacoes', 'PrestadorController', 'solicitacoes');
+    $router->get('/prestador/solicitacoes/detalhes', 'PrestadorController', 'detalhesSolicitacao');
+    $router->post('/prestador/solicitacoes/proposta', 'PrestadorController', 'enviarProposta');
+    
+    // Propostas do Prestador
+    $router->get('/prestador/propostas', 'PropostaController', 'minhas');
+    $router->get('/prestador/propostas/detalhes', 'PropostaController', 'detalhes');
+    $router->post('/prestador/propostas/cancelar', 'PropostaController', 'cancelar');
+    $router->post('/prestador/propostas/negociar', 'PropostaController', 'negociar');
+    
+    // Serviços em Andamento (Prestador)
+    $router->get('/prestador/servicos/andamento', 'PropostaController', 'servicosAndamento');
+    $router->get('/prestador/servicos/detalhes', 'PropostaController', 'detalhesServico');
+    $router->post('/prestador/servicos/atualizar-status', 'PropostaController', 'atualizarStatus');
+    
+    // ========================================
+    // PERFIL E CONFIGURAÇÕES
+    // ========================================
+    $router->get('/perfil', 'PerfilController', 'index');
+    $router->post('/perfil', 'PerfilController', 'atualizar');
+    $router->get('/perfil/editar', 'PerfilController', 'editar');
+    $router->post('/perfil/foto', 'PerfilController', 'atualizarFoto');
+    
+    // Endereços
+    $router->get('/cliente/perfil/enderecos', 'PerfilController', 'enderecos');
+    $router->post('/cliente/perfil/enderecos', 'PerfilController', 'salvarEndereco');
+    $router->get('/prestador/perfil/enderecos', 'PerfilController', 'enderecos');
+    $router->post('/prestador/perfil/enderecos', 'PerfilController', 'salvarEndereco');
+    
+    // ========================================
+    // NOTIFICAÇÕES
+    // ========================================
     $router->get('/notificacoes', 'NotificacaoController', 'index');
+    $router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarLida');
     $router->get('/notificacoes/contador', 'NotificacaoController', 'contador');
-    $router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarComoLida');
-    $router->post('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas');
-    $router->post('/notificacoes/deletar', 'NotificacaoController', 'deletar');
+    
+    // ========================================
+    // API E AJAX
+    // ========================================
+    $router->get('/api/cep', 'ApiController', 'buscarCep');
+    $router->get('/api/tipos-servico', 'ApiController', 'tiposServico');
+    
+    // ========================================
+    // PÁGINAS ESPECIAIS
+    // ========================================
+    $router->get('/acesso-negado', 'HomeController', 'acessoNegado');
+    
+    // ========================================
+    // REDIRECIONAMENTOS PARA COMPATIBILIDADE
+    // ========================================
+    // Redirecionar rotas antigas (sem /cliente ou /prestador)
+    $router->get('/solicitacoes', 'SolicitacaoController', 'redirectToClient');
+    $router->get('/solicitacoes/criar', 'SolicitacaoController', 'redirectToClient');
+    $router->get('/propostas/recebidas', 'ClientePropostaController', 'recebidas');
+    
+    // ========================================
+    // ÁREA ADMINISTRATIVA
+    // ========================================
+    $router->get('/admin', 'AdminController', 'dashboard');
+    $router->get('/admin/dashboard', 'AdminController', 'dashboard');
+    $router->get('/admin/usuarios', 'AdminController', 'usuarios');
+    $router->get('/admin/solicitacoes', 'AdminController', 'solicitacoes');
+    $router->get('/admin/propostas', 'AdminController', 'propostas');
+    
+    error_log("Rotas configuradas para raiz do domínio, executando router...");
+    $router->run();
+    
+} catch (Exception $e) {
+    error_log("ERRO FATAL no router: " . $e->getMessage());
+    die("Erro fatal: " . $e->getMessage());
 }
-
-// ========================================
-// ROTAS DE NEGOCIAÇÃO (Condicionais)
-// ========================================
-if (class_exists('NegociacaoController')) {
-    $router->get('/negociacao/negociar', 'NegociacaoController', 'negociar');
-    $router->post('/negociacao/negociar', 'NegociacaoController', 'negociar');
-}
-
-// ========================================
-// ROTAS DE ORDEM DE SERVIÇO (Condicionais)
-// ========================================
-if (class_exists('OrdemServicoController')) {
-    $router->get('/ordem-servico/visualizar', 'OrdemServicoController', 'visualizar');
-    $router->get('/ordem-servico/download', 'OrdemServicoController', 'download');
-    $router->post('/ordem-servico/enviar-email', 'OrdemServicoController', 'enviarEmail');
-    $router->post('/ordem-servico/assinar', 'OrdemServicoController', 'assinar');
-    $router->get('/ordem-servico/listar', 'OrdemServicoController', 'listar');
-}
-
-// ========================================
-// ROTAS DE COMPATIBILIDADE (LEGADO)
-// ========================================
-
-// Rotas antigas de solicitações (redirecionam para cliente)
-$router->get('/solicitacoes', 'SolicitacaoController', 'redirectToClient');
-$router->get('/solicitacoes/criar', 'SolicitacaoController', 'redirectToClient');
-$router->post('/solicitacoes/criar', 'SolicitacaoController', 'redirectToClient');
-$router->get('/solicitacoes/editar', 'SolicitacaoController', 'redirectToClient');
-$router->post('/solicitacoes/editar', 'SolicitacaoController', 'redirectToClient');
-$router->get('/solicitacoes/visualizar', 'SolicitacaoController', 'redirectToClient');
-$router->post('/solicitacoes/deletar', 'SolicitacaoController', 'redirectToClient');
-
-// Rotas antigas de propostas (redirecionam conforme usuário)
-$router->get('/propostas/recebidas', 'PropostaController', 'redirectToUserType');
-$router->post('/propostas/aceitar', 'PropostaController', 'redirectToUserType');
-$router->post('/propostas/recusar', 'PropostaController', 'redirectToUserType');
-
-// Serviços Concluídos (Cliente)
-$router->get('/cliente/servicos/concluidos', 'ClienteServicoController', 'servicosConcluidos');
-$router->get('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliarServico');
-$router->post('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliarServico');
-$router->post('/cliente/servicos/confirmar-conclusao', 'ClienteServicoController', 'confirmarConclusao');
-$router->post('/cliente/servicos/solicitar-revisao', 'ClienteServicoController', 'solicitarRevisao');
-
-// Executar roteamento
-$router->run();
 ?>

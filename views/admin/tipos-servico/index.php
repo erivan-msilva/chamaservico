@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Verificar se está logado como admin
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: /chamaservico/admin/login');
+    header('Location: admin/login');
     exit;
 }
 
@@ -257,7 +257,7 @@ ob_start();
                 </button>
             </div>
             <div class="col-md-2 d-flex align-items-end">
-                <a href="/chamaservico/admin/tipos-servico" class="btn btn-outline-secondary w-100">
+                <a href="admin/tipos-servico" class="btn btn-outline-secondary w-100">
                     <i class="bi bi-x-circle me-1"></i>Limpar
                 </a>
             </div>
@@ -392,7 +392,7 @@ ob_start();
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/admin/tipos-servico/criar">
+            <form method="POST" action="admin/tipos-servico/criar">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     
@@ -460,7 +460,7 @@ ob_start();
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/admin/tipos-servico/editar" id="formEditarTipo">
+            <form method="POST" action="admin/tipos-servico/editar" id="formEditarTipo">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="id" id="editId">
@@ -591,7 +591,7 @@ function alterarStatus(id, novoStatus) {
     btnConfirmar.onclick = function() {
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = "/chamaservico/admin/tipos-servico/alterar-status";
+        form.action = "admin/tipos-servico/alterar-status";
         
         const inputId = document.createElement("input");
         inputId.type = "hidden";
@@ -640,7 +640,7 @@ function confirmarExclusao(id) {
     btnConfirmar.onclick = function() {
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = "/chamaservico/admin/tipos-servico/excluir";
+        form.action = "admin/tipos-servico/excluir";
         
         const inputId = document.createElement("input");
         inputId.type = "hidden";

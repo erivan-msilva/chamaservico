@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Se já estiver logado, redirecionar
 if (isset($_SESSION['admin_id'])) {
-    header('Location: /chamaservico/admin/dashboard');
+    header('Location: admin/dashboard');
     exit;
 }
 
@@ -393,7 +393,7 @@ $mensagem_sessao = isset($_GET['sessao_expirada']) ? 'Sua sessão expirou. Faça
                 <div class="col-lg-6">
                     <div class="login-image-section">
                         <div class="admin-illustration">
-                            <img src="/chamaservico/assets/img/admin-login.png"
+                            <img src="assets/img/admin-login.png"
                                 alt="Admin Login"
                                 class="login-image"
                                 style="max-width: 100%; height: auto; max-height: 400px; border-radius: 15px; box-shadow: 0 0 30px rgba(122, 93, 235, 0.4); position: relative; z-index: 2; opacity: 0.85; border: none; filter: drop-shadow(0 0 20px rgba(122, 93, 235, 0.6)) saturate(1.1); mix-blend-mode: soft-light;">
@@ -447,7 +447,7 @@ $mensagem_sessao = isset($_GET['sessao_expirada']) ? 'Sua sessão expirou. Faça
                         <?php endif; ?>
 
                         <!-- Formulário de Login -->
-                        <form method="POST" action="/chamaservico/admin/login" id="loginForm">
+                        <form method="POST" action="admin/login" id="loginForm">
                             <div class="form-floating">
                                 <input type="email"
                                     class="form-control"
@@ -490,7 +490,7 @@ $mensagem_sessao = isset($_GET['sessao_expirada']) ? 'Sua sessão expirou. Faça
                         </div>
 
                         <div class="text-center mt-3">
-                            <a href="/chamaservico/" class="text-decoration-none" style="color: #2c3e50;">
+                            <a href="/" class="text-decoration-none" style="color: #2c3e50;">
                                 <i class="bi bi-arrow-left me-1"></i>Voltar ao Site
                             </a>
                         </div>

@@ -151,7 +151,7 @@ ob_start();
                 <h5 class="modal-title">Enviar OS por Email</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/ordem-servico/enviar-email">
+            <form method="POST" action="ordem-servico/enviar-email">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="os_id" value="<?= $ordemServico['id'] ?>">
@@ -186,7 +186,7 @@ ob_start();
                 <h5 class="modal-title">Assinatura Digital</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/ordem-servico/assinar">
+            <form method="POST" action="ordem-servico/assinar">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="os_id" value="<?= $ordemServico['id'] ?>">
@@ -218,7 +218,7 @@ ob_start();
 $scripts = '
 <script>
 function downloadPDF() {
-    window.open("/chamaservico/ordem-servico/download?id=' . $ordemServico['id'] . '", "_blank");
+    window.open("ordem-servico/download?id=' . $ordemServico['id'] . '", "_blank");
 }
 </script>
 ';

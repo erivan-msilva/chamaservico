@@ -18,7 +18,7 @@ class NegociacaoController {
         
         if (!$proposta) {
             Session::setFlash('error', 'Proposta não encontrada!', 'danger');
-            header('Location: /chamaservico/cliente/propostas/recebidas');
+            header('Location: cliente/propostas/recebidas');
             exit;
         }
         
@@ -28,14 +28,14 @@ class NegociacaoController {
         
         if (!$isCliente && !$isPrestador) {
             Session::setFlash('error', 'Acesso não autorizado!', 'danger');
-            header('Location: /chamaservico/');
+            header('Location: /');
             exit;
         }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/negociacao/negociar?proposta_id=' . $propostaId);
+                header('Location:negociacao/negociar?proposta_id=' . $propostaId);
                 exit;
             }
             
@@ -52,8 +52,8 @@ class NegociacaoController {
                     $this->recusarContraProposta($propostaId, $userId);
                     break;
             }
-            
-            header('Location: /chamaservico/negociacao/negociar?proposta_id=' . $propostaId);
+
+            header('Location:negociacao/negociar?proposta_id=' . $propostaId);
             exit;
         }
         

@@ -30,7 +30,7 @@ ob_start();
                             <h6>
                                 <i class="bi bi-camera me-2"></i>Fotos Anexadas
                                 <span class="badge bg-primary"><?= count($solicitacao['imagens']) ?></span>
-                                <a href="/chamaservico/cliente/solicitacoes/baixar-imagens?id=<?= $solicitacao['id'] ?>" class="btn btn-outline-secondary btn-sm ms-2">
+                                <a href="cliente/solicitacoes/baixar-imagens?id=<?= $solicitacao['id'] ?>" class="btn btn-outline-secondary btn-sm ms-2">
                                     <i class="bi bi-download"></i> Baixar Todas
                                 </a>
                             </h6>
@@ -41,7 +41,7 @@ ob_start();
                                             <div class="position-relative">
                                                 <?php
                                                 // CORREÇÃO: Caminho correto para imagens anexadas
-                                                $imagemPath = "/chamaservico/uploads/solicitacoes/" . basename($imagem['caminho_imagem']);
+                                                $imagemPath = "uploads/solicitacoes/" . basename($imagem['caminho_imagem']);
                                                 ?>
                                                 <a href="<?= $imagemPath ?>" target="_blank">
                                                     <img src="<?= $imagemPath ?>"
@@ -140,7 +140,7 @@ ob_start();
                                             <?= ucfirst($proposta['status']) ?>
                                         </span>
                                     </span>
-                                    <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" class="btn btn-outline-primary btn-sm">
+                                    <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-eye"></i> Ver Detalhes
                                     </a>
                                 </li>
@@ -164,10 +164,10 @@ ob_start();
                 <?php endif; ?>
 
                 <div class="d-flex gap-2">
-                    <a href="/chamaservico/cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" class="btn btn-primary">
+                    <a href="cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" class="btn btn-primary">
                         <i class="bi bi-pencil me-1"></i>Editar
                     </a>
-                    <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-secondary">
+                    <a href="cliente/solicitacoes" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i>Voltar
                     </a>
                     <button type="button" class="btn btn-outline-danger ms-auto"
@@ -220,7 +220,7 @@ ob_start();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form method="POST" action="/chamaservico/cliente/solicitacoes/deletar" style="display: inline;">
+                <form method="POST" action="cliente/solicitacoes/deletar" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="id" value="<?= $solicitacao['id'] ?>">
                     <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>

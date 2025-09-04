@@ -4,7 +4,7 @@ $title = 'Gerenciar Usuários - Admin';
 
 // Verificar se é admin
 if (!isset($_SESSION['admin_id']) || !isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
-    header('Location: /chamaservico/admin/login');
+    header('Location: admin/login');
     exit;
 }
 $current_page = 'usuarios';
@@ -312,7 +312,7 @@ async function carregarUsuarios(page = 1) {
             periodo: document.getElementById('filterPeriodo').value
         });
         
-        const response = await fetch(`/chamaservico/admin/api/usuarios?${params}`);
+        const response = await fetch(`admin/api/usuarios?${params}`);
         const data = await response.json();
         
         if (data.sucesso) {
@@ -410,7 +410,7 @@ function getTipoLabel(tipo) {
 
 async function toggleStatus(userId) {
     try {
-        const response = await fetch('/chamaservico/admin/toggle-status-usuario', {
+        const response = await fetch('admin/toggle-status-usuario', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `id=${userId}`
@@ -436,7 +436,7 @@ async function criarUsuario(e) {
     const formData = new FormData(e.target);
     
     try {
-        const response = await fetch('/chamaservico/admin/api/criar-usuario', {
+        const response = await fetch('admin/api/criar-usuario', {
             method: 'POST',
             body: formData
         });
@@ -459,7 +459,7 @@ async function criarUsuario(e) {
 
 async function editarUsuarioModal(userId) {
     try {
-        const response = await fetch(`/chamaservico/admin/api/usuario/${userId}`);
+        const response = await fetch(`admin/api/usuario/${userId}`);
         const data = await response.json();
         
         if (data.sucesso) {
@@ -485,7 +485,7 @@ async function editarUsuario(e) {
     const formData = new FormData(e.target);
     
     try {
-        const response = await fetch('/chamaservico/admin/api/editar-usuario', {
+        const response = await fetch('admin/api/editar-usuario', {
             method: 'POST',
             body: formData
         });
@@ -510,7 +510,7 @@ async function deletarUsuario(userId) {
     }
     
     try {
-        const response = await fetch('/chamaservico/admin/api/deletar-usuario', {
+        const response = await fetch('admin/api/deletar-usuario', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `id=${userId}`
@@ -532,7 +532,7 @@ async function deletarUsuario(userId) {
 
 async function carregarEstatisticas() {
     try {
-        const response = await fetch('/chamaservico/admin/api/dashboard');
+        const response = await fetch('admin/api/dashboard');
         const data = await response.json();
         
         if (data.sucesso) {
@@ -556,7 +556,7 @@ function limparFiltros() {
 }
 
 function exportarUsuarios() {
-    window.open('/chamaservico/admin/api/exportar-usuarios', '_blank');
+    window.open('admin/api/exportar-usuarios', '_blank');
 }
 
 function renderizarPaginacao(paginacao) {
@@ -588,30 +588,3 @@ function showToast(message, type = 'success') {
     }, 5000);
 }
 </script>
-                            ${usuario.telefone ? '<small class="text-muted">' + usuario.telefone + '</small>' : ''}
-                        </div>
-                    </div>
-                </td>
-                <td>${usuario.email}</td>
-                <td>${tipoBadge}</td>
-                <td>${statusBadge}</td>
-                <td>${dataFormatada}</td>
-                <td>${ultimoAcesso}</td>
-                <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" onclick="editarUsuario(${usuario.id})" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-outline-${usuario.ativo == 1 ? 'warning' : 'success'}" 
-                                onclick="toggleStatus(${usuario.id})" 
-                                title="${usuario.ativo == 1 ? 'Desativar' : 'Ativar'}">
-                            <i class="bi bi-${usuario.ativo == 1 ? 'pause' : 'play'}"></i>
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="deletarUsuario(${usuario.id})" title="Deletar">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });

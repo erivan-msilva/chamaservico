@@ -17,7 +17,7 @@ class PrestadorPropostaController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/prestador/solicitacoes');
+                header('Location: prestador/solicitacoes');
                 exit;
             }
             
@@ -66,7 +66,7 @@ class PrestadorPropostaController {
             }
         }
         
-        header('Location: /chamaservico/prestador/propostas');
+        header('Location: prestador/propostas');
         exit;
     }
 }

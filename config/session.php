@@ -128,6 +128,13 @@ class Session {
     }
 
     /**
+     * Verificar se sessão foi iniciada
+     */
+    public static function isStarted() {
+        return self::$isStarted;
+    }
+
+    /**
      * Verificar se usuário está logado
      */
     public static function isLoggedIn() {
@@ -143,12 +150,12 @@ class Session {
             if (!empty($_SERVER['REQUEST_URI'])) {
                 self::set('redirect_after_login', $_SERVER['REQUEST_URI']);
             }
-            header('Location: /chamaservico/login');
+            header('Location: login');
             exit;
         }
         
         if (!self::checkTimeout()) {
-            header('Location: /chamaservico/login?timeout=1');
+            header('Location: login?timeout=1');
             exit;
         }
     }
@@ -159,7 +166,7 @@ class Session {
     public static function requireClientLogin() {
         self::requireLogin();
         if (!self::isCliente()) {
-            header('Location: /chamaservico/acesso-negado');
+            header('Location: acesso-negado');
             exit;
         }
     }
@@ -170,7 +177,7 @@ class Session {
     public static function requirePrestadorLogin() {
         self::requireLogin();
         if (!self::isPrestador()) {
-            header('Location: /chamaservico/acesso-negado');
+            header('Location: acesso-negado');
             exit;
         }
     }
@@ -221,14 +228,14 @@ class Session {
      */
     public static function requireAdminLogin() {
         if (!self::isAdminLoggedIn()) {
-            header('Location: /chamaservico/admin/login');
+            header('Location: admin/login');
             exit;
         }
         
         $lastActivity = $_SESSION['admin_last_activity'] ?? 0;
         if (time() - $lastActivity > self::$adminTimeout) {
             self::destroyAdminSession();
-            header('Location: /chamaservico/admin/login?timeout=1');
+            header('Location: admin/login?timeout=1');
             exit;
         }
         
@@ -310,6 +317,52 @@ class Session {
         $_SESSION['admin_email'] = $adminData['email'];
         $_SESSION['admin_level'] = $adminData['nivel'];
         $_SESSION['admin_last_activity'] = time();
+    }
+
+    /**
+     * Método para login de administrador
+     */
+    public static function loginAdmin($id, $nome, $email, $nivel) {
+        if (!self::isStarted()) {
+            self::start();
+        }
+        
+        $_SESSION['admin_id'] = $id;
+        $_SESSION['admin_name'] = $nome;
+        $_SESSION['admin_email'] = $email;
+        $_SESSION['admin_level'] = $nivel;
+        $_SESSION['is_admin'] = true;
+        $_SESSION['login_time'] = time();
+        
+        session_regenerate_id(true);
+    }
+
+    /**
+     * Verificar se é admin
+     */
+    public static function isAdmin() {
+        return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
+    }
+
+    /**
+     * Obter ID do admin
+     */
+    public static function getAdminId() {
+        return $_SESSION['admin_id'] ?? null;
+    }
+
+    /**
+     * Obter nome do admin
+     */
+    public static function getAdminName() {
+        return $_SESSION['admin_name'] ?? null;
+    }
+
+    /**
+     * Obter nível do admin
+     */
+    public static function getAdminLevel() {
+        return $_SESSION['admin_level'] ?? null;
     }
 
     /**
@@ -413,7 +466,7 @@ class Session {
         
         error_log("Acesso negado - User: $userId, Type: $userType, URI: $requestedUri");
         
-        header('Location: /chamaservico/acesso-negado');
+        header('Location: acesso-negado');
         exit;
     }
 

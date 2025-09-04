@@ -12,7 +12,7 @@ class ConfiguracoesAdminController extends BaseAdminController {
     
     public function salvar() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/admin/configuracoes');
+            header('Location: admin/configuracoes');
             exit;
         }
         
@@ -54,14 +54,14 @@ class ConfiguracoesAdminController extends BaseAdminController {
         } else {
             $this->setFlash('error', 'Erro ao salvar configurações!');
         }
-        
-        header('Location: /chamaservico/admin/configuracoes');
+
+        header('Location: admin/configuracoes');
         exit;
     }
     
     public function testarEmail() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/admin/configuracoes');
+            header('Location: admin/configuracoes');
             exit;
         }
         
@@ -78,7 +78,7 @@ class ConfiguracoesAdminController extends BaseAdminController {
     
     public function backup() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/admin/configuracoes');
+            header('Location: configuracoes');
             exit;
         }
         
@@ -90,8 +90,8 @@ class ConfiguracoesAdminController extends BaseAdminController {
         } else {
             $this->setFlash('error', 'Erro ao criar backup!');
         }
-        
-        header('Location: /chamaservico/admin/configuracoes');
+
+        header('Location: admin/configuracoes');
         exit;
     }
     

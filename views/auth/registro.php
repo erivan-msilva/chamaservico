@@ -4,7 +4,7 @@ Session::start();
 
 // Redirecionar usuários logados para evitar acesso à página de registro
 if (Session::isLoggedIn()) {
-    header('Location: /chamaservico/');
+    header('Location: /');
     exit;
 }
 
@@ -91,11 +91,11 @@ ob_start();
     <div class="card card-registro mx-auto">
         <div class="card-body">
             <div class="text-center mb-4">
-                <img src="/chamaservico/assets/img/logo_branca_sem-fundo.png" alt="Logo ChamaServiço" class="logo-chama">
+                <img src="/assets/img/logochama.png" alt="Logo ChamaServiço" class="logo-chama">
                 <h4 class="fw-bold mb-1">Criar Conta</h4>
                 <p class="text-muted mb-3">Preencha os dados para se cadastrar</p>
             </div>
-            <form method="POST" action="/chamaservico/registro">
+            <form method="POST" action="registro">
                 <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                 <div class="mb-3">
                     <label for="nome" class="form-label fw-semibold">Nome Completo</label>
@@ -147,12 +147,12 @@ ob_start();
                 <span class="text-muted">Já tem conta?</span>
             </div>
             <div class="d-grid mb-2">
-                <a href="/chamaservico/login" class="btn btn-outline-warning btn-lg fw-semibold" style="border-radius:24px;">
+                <a href="login" class="btn btn-outline-warning btn-lg fw-semibold" style="border-radius:24px;">
                     <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
                 </a>
             </div>
             <div class="text-center mt-2">
-                <a href="/chamaservico/" class="link-registro small"><i class="bi bi-arrow-left me-1"></i>Voltar para a Home</a>
+                <a href="/" class="link-registro small"><i class="bi bi-arrow-left me-1"></i>Voltar para a Home</a>
             </div>
         </div>
     </div>

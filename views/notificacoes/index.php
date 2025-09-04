@@ -15,7 +15,7 @@ ob_start();
         </div>
         <div class="d-flex gap-2">
             <?php if ($estatisticas['nao_lidas'] > 0): ?>
-                <form method="POST" action="/chamaservico/notificacoes/marcar-todas-lidas" style="display: inline;">
+                <form method="POST" action="notificacoes/marcar-todas-lidas" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <button type="submit" class="btn btn-outline-success btn-sm">
                         <i class="bi bi-check-all me-1"></i>
@@ -94,7 +94,7 @@ ob_start();
                         <i class="bi bi-funnel me-1"></i>
                         Filtrar
                     </button>
-                    <a href="/chamaservico/notificacoes" class="btn btn-outline-secondary">
+                    <a href="notificacoes" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-clockwise me-1"></i>
                         Limpar
                     </a>
@@ -188,12 +188,12 @@ ob_start();
 </div>
 
 <!-- Formulários ocultos para ações -->
-<form id="formMarcarLida" method="POST" action="/chamaservico/notificacoes/marcar-lida" style="display: none;">
+<form id="formMarcarLida" method="POST" action="notificacoes/marcar-lida" style="display: none;">
     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
     <input type="hidden" name="notificacao_id" id="notificacao_id_lida">
 </form>
 
-<form id="formDeletarNotificacao" method="POST" action="/chamaservico/notificacoes/deletar" style="display: none;">
+<form id="formDeletarNotificacao" method="POST" action="notificacoes/deletar" style="display: none;">
     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
     <input type="hidden" name="notificacao_id" id="notificacao_id_deletar">
 </form>
@@ -203,8 +203,8 @@ async function marcarComoLida(notificacaoId) {
     try {
         const formData = new FormData();
         formData.append('notificacao_id', notificacaoId);
-        
-        const response = await fetch('/chamaservico/notificacoes/marcar-lida', {
+
+        const response = await fetch('notificacoes/marcar-lida', {
             method: 'POST',
             body: formData
         });

@@ -13,7 +13,7 @@ class ClientePropostaController
 
         // Verificar se é cliente
         if (!Session::isCliente()) {
-            header('Location: /chamaservico/acesso-negado');
+            header('Location: acesso-negado');
             exit;
         }
     }
@@ -50,7 +50,7 @@ class ClientePropostaController
 
         if (!$solicitacaoId) {
             Session::setFlash('error', 'Solicitação não informada!', 'danger');
-            header('Location: /chamaservico/cliente/propostas/recebidas');
+            header('Location: cliente/propostas/recebidas');
             exit;
         }
 
@@ -59,7 +59,7 @@ class ClientePropostaController
 
             if (empty($propostas)) {
                 Session::setFlash('error', 'Nenhuma proposta encontrada para esta solicitação!', 'warning');
-                header('Location: /chamaservico/cliente/propostas/recebidas');
+                header('Location: cliente/propostas/recebidas');
                 exit;
             }
 
@@ -70,7 +70,7 @@ class ClientePropostaController
         } catch (Exception $e) {
             error_log("Erro ao comparar propostas: " . $e->getMessage());
             Session::setFlash('error', 'Erro ao carregar dados para comparação!', 'danger');
-            header('Location: /chamaservico/cliente/propostas/recebidas');
+            header('Location: cliente/propostas/recebidas');
             exit;
         }
 
@@ -84,7 +84,7 @@ class ClientePropostaController
 
         if (!$propostaId) {
             Session::setFlash('error', 'Proposta não informada!', 'danger');
-            header('Location: /chamaservico/cliente/propostas/recebidas');
+            header('Location: cliente/propostas/recebidas');
             exit;
         }
 
@@ -94,7 +94,7 @@ class ClientePropostaController
 
             if (!$proposta) {
                 Session::setFlash('error', 'Proposta não encontrada ou você não tem permissão para visualizá-la!', 'danger');
-                header('Location: /chamaservico/cliente/propostas/recebidas');
+                header('Location: cliente/propostas/recebidas');
                 exit;
             }
 
@@ -106,7 +106,7 @@ class ClientePropostaController
         } catch (Exception $e) {
             error_log("Erro ao buscar detalhes da proposta: " . $e->getMessage());
             Session::setFlash('error', 'Erro ao carregar detalhes da proposta!', 'danger');
-            header('Location: /chamaservico/cliente/propostas/recebidas');
+            header('Location: cliente/propostas/recebidas');
             exit;
         }
 
@@ -118,7 +118,7 @@ class ClientePropostaController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/cliente/propostas/recebidas');
+                header('Location: cliente/propostas/recebidas');
                 exit;
             }
 
@@ -154,7 +154,7 @@ class ClientePropostaController
             }
         }
 
-        header('Location: /chamaservico/cliente/propostas/recebidas');
+        header('Location: cliente/propostas/recebidas');
         exit;
     }
 
@@ -163,7 +163,7 @@ class ClientePropostaController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/cliente/propostas/recebidas');
+                header('Location: cliente/propostas/recebidas');
                 exit;
             }
 
@@ -205,7 +205,7 @@ class ClientePropostaController
             }
         }
 
-        header('Location: /chamaservico/cliente/propostas/recebidas');
+        header('Location: cliente/propostas/recebidas');
         exit;
     }
 }

@@ -61,7 +61,7 @@ class PropostaController
 
         if (!$propostaId) {
             Session::setFlash('error', 'Proposta não informada!', 'danger');
-            header('Location: /chamaservico/prestador/propostas');
+            header('Location: prestador/propostas');
             exit;
         }
 
@@ -70,21 +70,21 @@ class PropostaController
 
             if (!$proposta) {
                 Session::setFlash('error', 'Proposta não encontrada ou acesso negado!', 'danger');
-                header('Location: /chamaservico/prestador/propostas');
+                header('Location: prestador/propostas');
                 exit;
             }
 
             // Verificar se o usuário tem permissão (é o prestador da proposta)
             if ($proposta['prestador_id'] != $prestadorId) {
                 Session::setFlash('error', 'Acesso negado!', 'danger');
-                header('Location: /chamaservico/prestador/propostas');
+                header('Location: prestador/propostas');
                 exit;
             }
 
         } catch (Exception $e) {
             error_log("Erro ao buscar detalhes da proposta: " . $e->getMessage());
             Session::setFlash('error', 'Erro ao carregar detalhes!', 'danger');
-            header('Location: /chamaservico/prestador/propostas');
+            header('Location: prestador/propostas');
             exit;
         }
 
@@ -98,13 +98,13 @@ class PropostaController
     public function cancelar()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/prestador/propostas');
+            header('Location: prestador/propostas');
             exit;
         }
 
         if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
             Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/prestador/propostas');
+            header('Location: prestador/propostas');
             exit;
         }
 
@@ -122,7 +122,7 @@ class PropostaController
             Session::setFlash('error', 'Erro interno ao cancelar proposta!', 'danger');
         }
 
-        header('Location: /chamaservico/prestador/propostas');
+        header('Location:prestador/propostas');
         exit;
     }
 

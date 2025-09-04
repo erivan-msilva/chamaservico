@@ -106,14 +106,23 @@ ob_start();
     <div class="col-md-10">
         <!-- Cabeçalho da Página -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-file-earmark-text me-2"></i>Detalhes da Proposta</h2>
             <div>
-                <button class="btn btn-outline-warning me-2" onclick="toggleFavorito(<?= $proposta['prestador_id'] ?? 0 ?>)">
-                    <i class="bi bi-star" id="favoritoIcon"></i>
-                    <span id="favoritoText">Favoritar Prestador</span>
-                </button>
-                <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i>Voltar às Propostas
+                <h2 class="mb-1">
+                    <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                    Detalhes da Proposta
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="<?= url('cliente/dashboard') ?>">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="<?= url('cliente/propostas/recebidas') ?>">Propostas</a></li>
+                        <li class="breadcrumb-item active">Detalhes</li>
+                    </ol>
+                </nav>
+            </div>
+            <div>
+                <a href="<?= url('cliente/propostas/recebidas') ?>" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar
                 </a>
             </div>
         </div>
@@ -186,7 +195,7 @@ ob_start();
                                 $fotoPrestador = $proposta['prestador_foto'] ?? null;
                                 if ($fotoPrestador && file_exists("uploads/perfil/" . basename($fotoPrestador))):
                                 ?>
-                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
+                                    <img src="uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
                                         class="rounded-circle mb-2" width="100" height="100" 
                                         style="object-fit: cover; border: 3px solid #007bff;" alt="Foto do prestador">
                                 <?php else: ?>
@@ -338,11 +347,11 @@ ob_start();
                                             </div>
                                             <hr>
                                             <div class="text-center">
-                                                <a href="/chamaservico/cliente/propostas/comparar?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>" 
+                                                <a href="cliente/propostas/comparar?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>" 
                                                    class="btn btn-outline-primary me-2">
                                                     <i class="bi bi-bar-chart me-1"></i>Comparar Propostas
                                                 </a>
-                                                <a href="/chamaservico/cliente/propostas/recebidas?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>" 
+                                                <a href="cliente/propostas/recebidas?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>" 
                                                    class="btn btn-outline-secondary">
                                                     <i class="bi bi-list me-1"></i>Ver Todas as Propostas
                                                 </a>
@@ -405,7 +414,7 @@ ob_start();
                                     <h6><i class="bi bi-images me-2"></i>Imagens da Solicitação</h6>
                                     <div class="image-gallery">
                                         <?php foreach($proposta['imagens_solicitacao'] as $imagem): ?>
-                                            <img src="/chamaservico/uploads/solicitacoes/<?= htmlspecialchars($imagem) ?>" 
+                                            <img src="uploads/solicitacoes/<?= htmlspecialchars($imagem) ?>" 
                                                  alt="Imagem da solicitação" 
                                                  data-bs-toggle="modal" 
                                                  data-bs-target="#modalImagem"
@@ -496,7 +505,7 @@ ob_start();
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/aceitar">
+            <form method="POST" action="cliente/propostas/aceitar">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?>">
@@ -507,7 +516,7 @@ ob_start();
                             <div class="row align-items-center">
                                 <div class="col-md-3 text-center">
                                     <?php if ($fotoPrestador && file_exists("uploads/perfil/" . basename($fotoPrestador))): ?>
-                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
+                                        <img src="uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
                                             class="rounded-circle" width="80" height="80" 
                                             style="object-fit: cover; border: 3px solid #28a745;" alt="Foto do prestador">
                                     <?php else: ?>
@@ -587,7 +596,7 @@ ob_start();
                 <h5 class="modal-title">Recusar Proposta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/recusar">
+            <form method="POST" action="<?= url('cliente/propostas/recusar') ?>">
                 <div class="modal-body">
                     <div class="text-center mb-3">
                         <i class="bi bi-x-circle text-danger" style="font-size: 3rem;"></i>
@@ -600,12 +609,15 @@ ob_start();
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?? 0 ?>">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-circle me-1"></i>Confirmar Recusa
-                    </button>
+                    <form method="POST" action="<?= url('cliente/propostas/recusar') ?>" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                        <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?>">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Confirmar Recusa
+                        </button>
+                    </form>
                 </div>
             </form>
         </div>
@@ -672,7 +684,7 @@ const enderecoCompleto = ' . json_encode([
 
 // Função para mostrar imagem no modal
 function mostrarImagem(nomeImagem) {
-    document.getElementById("imagemModal").src = "/chamaservico/uploads/solicitacoes/" + nomeImagem;
+    document.getElementById("imagemModal").src = "uploads/solicitacoes/" + nomeImagem;
 }
 
 // FUNÇÃO CORRIGIDA: abrirMapa() com URL e lógica melhoradas
@@ -762,13 +774,13 @@ function abrirMapa() {
 
 // Função para favoritar prestador
 function toggleFavorito(prestadorId) {
-    fetch("/chamaservico/api/favoritar-prestador", {
+    fetch("api/favoritar-prestador", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({prestador_id: prestadorId})
     })
     .then(response => response.json())
-    .then(data => {
+    .then data => {
         const icon = document.getElementById("favoritoIcon");
         const text = document.getElementById("favoritoText");
         

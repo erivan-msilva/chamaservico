@@ -48,7 +48,7 @@ ob_start();
                         <hr class="my-3">
                         <p class="mb-0">
                             Lembrou da senha? 
-                            <a href="/chamaservico/login" class="text-decoration-none fw-bold">
+                            <a href="login" class="text-decoration-none fw-bold">
                                 Fazer Login
                             </a>
                         </p>

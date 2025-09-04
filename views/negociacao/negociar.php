@@ -17,7 +17,7 @@ ob_start();
     <div class="col-md-10">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-chat-square-dots me-2"></i>Negociar Proposta</h2>
-            <a href="<?= $isCliente ? '/chamaservico/cliente/propostas/recebidas' : '/chamaservico/prestador/propostas' ?>"
+            <a href="<?= $isCliente ? 'cliente/propostas/recebidas' : 'prestador/propostas' ?>"
                 class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Voltar
             </a>

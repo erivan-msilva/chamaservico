@@ -467,7 +467,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom fixed-top" id="navbar">
         <div class="container">
-            <a class="navbar-brand" href="/chamaservico">
+            <a class="navbar-brand" href="/">
                 <i class="bi bi-tools me-2"></i>Chama Serviço
             </a>
 
@@ -501,38 +501,38 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <?php if (Session::isCliente()): ?>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/dashboard">
+                                    <li><a class="dropdown-item" href="cliente/dashboard">
                                         <i class="bi bi-speedometer2 me-2"></i>Dashboard Cliente
                                     </a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/cliente/solicitacoes/criar">
+                                    <li><a class="dropdown-item" href="cliente/solicitacoes/criar">
                                         <i class="bi bi-plus-circle me-2"></i>Nova Solicitação
                                     </a></li>
                                 <?php endif; ?>
                                 
                                 <?php if (Session::isPrestador()): ?>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/dashboard">
+                                    <li><a class="dropdown-item" href="prestador/dashboard">
                                         <i class="bi bi-tools me-2"></i>Dashboard Prestador
                                     </a></li>
-                                    <li><a class="dropdown-item" href="/chamaservico/prestador/solicitacoes">
+                                    <li><a class="dropdown-item" href="prestador/solicitacoes">
                                         <i class="bi bi-search me-2"></i>Buscar Trabalhos
                                     </a></li>
                                 <?php endif; ?>
                                 
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/chamaservico/perfil">
+                                <li><a class="dropdown-item" href="perfil">
                                     <i class="bi bi-person-gear me-2"></i>Meu Perfil
                                 </a></li>
-                                <li><a class="dropdown-item text-danger" href="/chamaservico/logout">
+                                <li><a class="dropdown-item text-danger" href="logout">
                                     <i class="bi bi-box-arrow-right me-2"></i>Sair
                                 </a></li>
                             </ul>
                         </div>
                     <?php else: ?>
                         <!-- Menu para usuários não logados -->
-                        <a href="/chamaservico/login" class="btn btn-outline-primary">
+                        <a href="login" class="btn btn-outline-primary">
                             <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
                         </a>
-                        <a href="/chamaservico/registro" class="btn btn-primary">
+                        <a href="registro" class="btn btn-primary">
                             <i class="bi bi-person-plus me-1"></i>Criar Conta
                         </a>
                     <?php endif; ?>
@@ -558,33 +558,33 @@
                         <?php if (Session::isLoggedIn()): ?>
                             <!-- Botões para usuários logados -->
                             <?php if (Session::isCliente()): ?>
-                                <a href="/chamaservico/cliente/solicitacoes/criar" class="btn-hero btn-hero-primary">
+                                <a href="cliente/solicitacoes/criar" class="btn-hero btn-hero-primary">
                                     <i class="bi bi-plus-circle"></i>
                                     Criar Nova Solicitação
                                 </a>
-                                <a href="/chamaservico/cliente/dashboard" class="btn-hero btn-hero-secondary">
+                                <a href="cliente/dashboard" class="btn-hero btn-hero-secondary">
                                     <i class="bi bi-speedometer2"></i>
                                     Meu Dashboard
                                 </a>
                             <?php endif; ?>
                             
                             <?php if (Session::isPrestador()): ?>
-                                <a href="/chamaservico/prestador/solicitacoes" class="btn-hero btn-hero-primary">
+                                <a href="prestador/solicitacoes" class="btn-hero btn-hero-primary">
                                     <i class="bi bi-search"></i>
                                     Buscar Trabalhos
                                 </a>
-                                <a href="/chamaservico/prestador/dashboard" class="btn-hero btn-hero-secondary">
+                                <a href="prestador/dashboard" class="btn-hero btn-hero-secondary">
                                     <i class="bi bi-tools"></i>
                                     Meu Dashboard
                                 </a>
                             <?php endif; ?>
                         <?php else: ?>
                             <!-- Botões para usuários não logados -->
-                            <a href="/chamaservico/registro?tipo=cliente" class="btn-hero btn-hero-primary">
+                            <a href="registro?tipo=cliente" class="btn-hero btn-hero-primary">
                                 <i class="bi bi-search"></i>
                                 Encontrar Profissionais
                             </a>
-                            <a href="/chamaservico/registro?tipo=prestador" class="btn-hero btn-hero-secondary">
+                            <a href="registro?tipo=prestador" class="btn-hero btn-hero-secondary">
                                 <i class="bi bi-briefcase"></i>
                                 Oferecer Serviços
                             </a>
@@ -821,30 +821,30 @@
                     <?php if (Session::isLoggedIn()): ?>
                         <!-- CTAs para usuários logados -->
                         <?php if (Session::isCliente()): ?>
-                            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
+                            <a href="cliente/solicitacoes/criar" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
                                 <i class="bi bi-plus-circle"></i>
                                 Criar Primeira Solicitação
                             </a>
                         <?php endif; ?>
                         
                         <?php if (Session::isPrestador()): ?>
-                            <a href="/chamaservico/prestador/solicitacoes" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
+                            <a href="prestador/solicitacoes" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
                                 <i class="bi bi-search"></i>
                                 Buscar Primeiros Trabalhos
                             </a>
                         <?php endif; ?>
                         
-                        <a href="/chamaservico/perfil" class="btn-hero" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
+                        <a href="perfil" class="btn-hero" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
                             <i class="bi bi-person-gear"></i>
                             Completar Perfil
                         </a>
                     <?php else: ?>
                         <!-- CTAs para usuários não logados -->
-                        <a href="/chamaservico/registro" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
+                        <a href="registro" class="btn-hero btn-hero-secondary" style="background: white; color: var(--primary-blue);">
                             <i class="bi bi-person-plus"></i>
                             Cadastrar Gratuitamente
                         </a>
-                        <a href="/chamaservico/login" class="btn-hero" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
+                        <a href="login" class="btn-hero" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;">
                             <i class="bi bi-box-arrow-in-right"></i>
                             Já Tenho Conta
                         </a>

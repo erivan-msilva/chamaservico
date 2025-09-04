@@ -24,10 +24,10 @@ $stats = [
                     <i class="bi bi-person-badge me-2"></i>Meu Perfil Prestador
                 </h2>
                 <div class="d-flex gap-2">
-                    <a href="/chamaservico/prestador/perfil/editar" class="btn btn-success">
+                    <a href="prestador/perfil/editar" class="btn btn-success">
                         <i class="bi bi-pencil me-1"></i>Editar Perfil
                     </a>
-                    <a href="/chamaservico/prestador/dashboard" class="btn btn-outline-primary">
+                    <a href="prestador/dashboard" class="btn btn-outline-primary">
                         <i class="bi bi-speedometer2 me-1"></i>Dashboard
                     </a>
                 </div>
@@ -47,7 +47,7 @@ $stats = [
                                     $fotoExiste = $fotoNome && file_exists("uploads/perfil/" . $fotoNome);
                                     ?>
                                     <?php if ($fotoExiste): ?>
-                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoNome) ?>"
+                                        <img src="uploads/perfil/<?= htmlspecialchars($fotoNome) ?>"
                                              class="rounded-circle border border-3 border-primary" 
                                              style="width: 120px; height: 120px; object-fit: cover;"
                                              alt="Foto do prestador">
@@ -142,7 +142,7 @@ $stats = [
                             <h5 class="mb-0 text-primary">
                                 <i class="bi bi-clock-history me-2"></i>Atividade Recente
                             </h5>
-                            <a href="/chamaservico/prestador/propostas" class="btn btn-sm btn-outline-primary">
+                            <a href="prestador/propostas" class="btn btn-sm btn-outline-primary">
                                 Ver Todas
                             </a>
                         </div>
@@ -155,7 +155,7 @@ $stats = [
                                     <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
                                     <h6 class="text-muted mt-2">Nenhuma proposta enviada ainda</h6>
                                     <p class="text-muted">Comece a buscar serviços disponíveis para enviar propostas</p>
-                                    <a href="/chamaservico/prestador/solicitacoes" class="btn btn-primary">
+                                    <a href="prestador/solicitacoes" class="btn btn-primary">
                                         <i class="bi bi-search me-1"></i>Buscar Serviços
                                     </a>
                                 </div>
@@ -249,7 +249,7 @@ $stats = [
                             </div>
                             <h6 class="mb-3">Perfil <?= $completude >= 80 ? 'Completo' : 'Incompleto' ?></h6>
                             <?php if ($completude < 100): ?>
-                                <a href="/chamaservico/prestador/perfil/editar" class="btn btn-primary btn-sm">
+                                <a href="prestador/perfil/editar" class="btn btn-primary btn-sm">
                                     <i class="bi bi-pencil me-1"></i>Completar Perfil
                                 </a>
                             <?php endif; ?>
@@ -265,16 +265,16 @@ $stats = [
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="/chamaservico/prestador/solicitacoes" class="btn btn-success">
+                                <a href="prestador/solicitacoes" class="btn btn-success">
                                     <i class="bi bi-search me-2"></i>Buscar Serviços
                                 </a>
-                                <a href="/chamaservico/prestador/propostas" class="btn btn-outline-primary">
+                                <a href="prestador/propostas" class="btn btn-outline-primary">
                                     <i class="bi bi-file-earmark-text me-2"></i>Minhas Propostas
                                 </a>
-                                <a href="/chamaservico/prestador/servicos/andamento" class="btn btn-outline-info">
+                                <a href="prestador/servicos/andamento" class="btn btn-outline-info">
                                     <i class="bi bi-tools me-2"></i>Serviços em Andamento
                                 </a>
-                                <a href="/chamaservico/prestador/perfil/enderecos" class="btn btn-outline-secondary">
+                                <a href="prestador/perfil/enderecos" class="btn btn-outline-secondary">
                                     <i class="bi bi-geo-alt me-2"></i>Meus Endereços
                                 </a>
                             </div>

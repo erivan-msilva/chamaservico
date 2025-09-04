@@ -105,7 +105,7 @@ class NotificacaoController
 
         if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
             Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/notificacoes');
+            header('Location: notificacoes');
             exit;
         }
 
@@ -122,7 +122,7 @@ class NotificacaoController
             Session::setFlash('error', 'Erro interno!', 'danger');
         }
 
-        header('Location: /chamaservico/notificacoes');
+        header('Location: notificacoes');
         exit;
     }
 
@@ -138,7 +138,7 @@ class NotificacaoController
 
         if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
             Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/notificacoes');
+            header('Location: notificacoes');
             exit;
         }
 
@@ -156,7 +156,7 @@ class NotificacaoController
             Session::setFlash('error', 'Erro interno!', 'danger');
         }
 
-        header('Location: /chamaservico/notificacoes');
+        header('Location: notificacoes');
         exit;
     }
 }

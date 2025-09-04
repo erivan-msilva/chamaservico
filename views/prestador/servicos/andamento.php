@@ -13,12 +13,12 @@ ob_start();
             </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/chamaservico/prestador/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="prestador/dashboard">Dashboard</a></li>
                     <li class="breadcrumb-item active">Serviços em Andamento</li>
                 </ol>
             </nav>
         </div>
-        <a href="/chamaservico/prestador/dashboard" class="btn btn-outline-primary">
+        <a href="prestador/dashboard" class="btn btn-outline-primary">
             <i class="bi bi-arrow-left me-2"></i>
             Voltar ao Dashboard
         </a>
@@ -76,7 +76,7 @@ ob_start();
             <p class="text-muted mb-4">
                 Quando você tiver propostas aceitas pelos clientes, elas aparecerão aqui.
             </p>
-            <a href="/chamaservico/prestador/solicitacoes" class="btn btn-primary">
+            <a href="prestador/solicitacoes" class="btn btn-primary">
                 <i class="bi bi-search me-2"></i>
                 Buscar Novas Solicitações
             </a>
@@ -206,7 +206,7 @@ ob_start();
                         <!-- Footer do Card -->
                         <div class="card-footer bg-transparent border-0">
                             <div class="d-grid gap-2">
-                                <a href="/chamaservico/prestador/servicos/detalhes?id=<?= $servico['id'] ?>" 
+                                <a href="prestador/servicos/detalhes?id=<?= $servico['id'] ?>" 
                                    class="btn btn-primary">
                                     <i class="bi bi-eye me-2"></i>
                                     Ver Detalhes
@@ -288,7 +288,7 @@ ob_start();
                 <h5 class="modal-title">Atualizar Status</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/prestador/servicos/atualizar-status">
+            <form method="POST" action="prestador/servicos/atualizar-status">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="rapidoPropostaId">

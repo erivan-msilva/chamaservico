@@ -38,16 +38,16 @@ ob_start();
                                     <p class="small mb-3">Volte para sua área principal</p>
                                     <?php if (Session::isLoggedIn()): ?>
                                         <?php if (Session::isPrestador() && !Session::isCliente()): ?>
-                                            <a href="/chamaservico/prestador/dashboard" class="btn btn-light btn-sm">
+                                            <a href="prestador/dashboard" class="btn btn-light btn-sm">
                                                 <i class="bi bi-speedometer2 me-1"></i>Dashboard Prestador
                                             </a>
                                         <?php elseif (Session::isCliente()): ?>
-                                            <a href="/chamaservico/cliente/dashboard" class="btn btn-light btn-sm">
+                                            <a href="cliente/dashboard" class="btn btn-light btn-sm">
                                                 <i class="bi bi-speedometer2 me-1"></i>Dashboard Cliente
                                             </a>
                                         <?php endif; ?>
                                     <?php else: ?>
-                                        <a href="/chamaservico/login" class="btn btn-light btn-sm">
+                                        <a href="login" class="btn btn-light btn-sm">
                                             <i class="bi bi-box-arrow-in-right me-1"></i>Fazer Login
                                         </a>
                                     <?php endif; ?>
@@ -62,11 +62,11 @@ ob_start();
                                     <h6>Meu Perfil</h6>
                                     <p class="small mb-3">Verifique seu tipo de conta</p>
                                     <?php if (Session::isLoggedIn()): ?>
-                                        <a href="/chamaservico/perfil" class="btn btn-light btn-sm">
+                                        <a href="perfil" class="btn btn-light btn-sm">
                                             <i class="bi bi-person me-1"></i>Ver Perfil
                                         </a>
                                     <?php else: ?>
-                                        <a href="/chamaservico/registro" class="btn btn-light btn-sm">
+                                        <a href="registro" class="btn btn-light btn-sm">
                                             <i class="bi bi-person-plus me-1"></i>Criar Conta
                                         </a>
                                     <?php endif; ?>

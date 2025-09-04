@@ -52,7 +52,7 @@ class SolicitacaoController
             // Valide antes de salvar
             if (!$tipoServicoId || !$enderecoId || !$titulo || !$descricao) {
                 Session::setFlash('error', 'Preencha todos os campos obrigatórios!', 'danger');
-                header('Location: /chamaservico/cliente/solicitacoes/criar');
+                header('Location: cliente/solicitacoes/criar');
                 exit;
             }
 
@@ -79,7 +79,7 @@ class SolicitacaoController
                     Session::setFlash('success', 'Solicitação criada, mas houve problemas no upload de algumas imagens.', 'warning');
                 }
 
-                header('Location: /chamaservico/cliente/solicitacoes');
+                header('Location: cliente/solicitacoes');
                 exit;
             } else {
                 Session::setFlash('error', 'Erro ao criar solicitação!', 'danger');
@@ -155,7 +155,7 @@ class SolicitacaoController
         $solicitacao = $this->model->buscarPorId($id, $userId);
         if (!$solicitacao) {
             Session::setFlash('error', 'Solicitação não encontrada!', 'danger');
-            header('Location: /chamaservico/cliente/solicitacoes');
+            header('Location: cliente/solicitacoes');
             exit;
         }
 
@@ -165,7 +165,7 @@ class SolicitacaoController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/cliente/solicitacoes/editar?id=' . $id);
+                header('Location: cliente/solicitacoes/editar?id=' . $id);
                 exit;
             }
 
@@ -202,7 +202,7 @@ class SolicitacaoController
 
         if ($this->model->atualizar($id, $dados, $userId)) {
             Session::setFlash('success', 'Solicitação atualizada com sucesso!', 'success');
-            header('Location: /chamaservico/cliente/solicitacoes');
+            header('Location: cliente/solicitacoes');
             exit;
         } else {
             Session::setFlash('error', 'Erro ao atualizar solicitação!', 'danger');
@@ -219,7 +219,7 @@ class SolicitacaoController
             Session::setFlash('error', 'Erro ao remover imagem!', 'danger');
         }
 
-        header('Location: /chamaservico/cliente/solicitacoes/editar?id=' . $solicitacaoId);
+        header('Location: cliente/solicitacoes/editar?id=' . $solicitacaoId);
         exit;
     }
 
@@ -233,7 +233,7 @@ class SolicitacaoController
             Session::setFlash('error', 'Erro ao adicionar algumas imagens!', 'danger');
         }
 
-        header('Location: /chamaservico/cliente/solicitacoes/editar?id=' . $solicitacaoId);
+        header('Location: cliente/solicitacoes/editar?id=' . $solicitacaoId);
         exit;
     }
 
@@ -245,7 +245,7 @@ class SolicitacaoController
         $solicitacao = $this->model->buscarPorId($id, $userId);
         if (!$solicitacao) {
             Session::setFlash('error', 'Solicitação não encontrada!', 'danger');
-            header('Location: /chamaservico/cliente/solicitacoes');
+            header('Location: cliente/solicitacoes');
             exit;
         }
 
@@ -260,7 +260,7 @@ class SolicitacaoController
 
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/cliente/solicitacoes');
+                header('Location: cliente/solicitacoes');
                 exit;
             }
 
@@ -271,16 +271,22 @@ class SolicitacaoController
             }
         }
 
-        header('Location: /chamaservico/cliente/solicitacoes');
+        header('Location: cliente/solicitacoes');
         exit;
     }
 
-    // Novo: Redirecionamento para rotas específicas do cliente
+    // CORREÇÃO: Redirecionar usando BASE_URL
     public function redirectToClient()
     {
         $currentPath = $_SERVER['REQUEST_URI'];
-        $newPath = str_replace('/chamaservico/solicitacoes', '/chamaservico/cliente/solicitacoes', $currentPath);
-        header("Location: $newPath", true, 301); // Redirect permanente
+        $newPath = str_replace('/solicitacoes', '/cliente/solicitacoes', $currentPath);
+        
+        // CORREÇÃO: Garantir que use BASE_URL
+        if (strpos($newPath, BASE_URL) !== 0) {
+            $newPath = BASE_URL . $newPath;
+        }
+        
+        header("Location: $newPath", true, 301);
         exit;
     }
 
@@ -355,3 +361,4 @@ class SolicitacaoController
         exit;
     }
 }
+?>

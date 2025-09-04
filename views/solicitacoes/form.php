@@ -318,7 +318,7 @@ ob_start();
                                 <i class="bi bi-send me-2"></i>
                                 <?= isset($solicitacao) ? 'Salvar Alterações' : 'Publicar Solicitação' ?>
                             </button>
-                            <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-secondary">
+                            <a href="solicitacoes" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-2"></i>
                                 Voltar à Lista
                             </a>
@@ -668,7 +668,7 @@ document.addEventListener("DOMContentLoaded", function() {
             btnBuscarCepModal.innerHTML = \'<i class="spinner-border spinner-border-sm"></i>\';
             
             // Fazer requisição para API
-            fetch(`/chamaservico/cliente/perfil/api/buscar-cep?cep=${cep}`)
+            fetch(`perfil/api/buscar-cep?cep=${cep}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.endereco) {
@@ -786,7 +786,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // Log para debug
             console.log("Enviando dados do endereço:", Object.fromEntries(formData));
             
-            fetch("/chamaservico/cliente/perfil/enderecos", {
+            fetch("perfil/enderecos", {
                 method: "POST",
                 body: formData
             })

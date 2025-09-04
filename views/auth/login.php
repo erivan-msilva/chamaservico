@@ -86,7 +86,7 @@ ob_start();
                 <h4 class="fw-bold mb-1">Bem-vindo!</h4>
                 <p class="text-muted mb-3">Acesse sua conta para usar o sistema</p>
             </div>
-            <form method="POST" action="/chamaservico/login">
+            <form method="POST" action="login">
                 <div class="mb-3">
                     <label for="email" class="form-label fw-semibold">E-mail</label>
                     <div class="input-group">
@@ -105,7 +105,7 @@ ob_start();
                     </div>
                 </div>
                 <div class="mb-2 text-end">
-                    <a href="/chamaservico/redefinir-senha" class="link-login small">Esqueceu a senha?</a>
+                    <a href="redefinir-senha" class="link-login small">Esqueceu a senha?</a>
                 </div>
                 <div class="d-grid mb-3">
                     <button type="submit" class="btn btn-login btn-lg">Entrar</button>
@@ -116,12 +116,12 @@ ob_start();
                 <span class="text-muted">ou</span>
             </div>
             <div class="d-grid mb-2">
-                <a href="/chamaservico/registro" class="btn btn-outline-warning btn-lg fw-semibold" style="border-radius:24px;">
+                <a href="registro" class="btn btn-outline-warning btn-lg fw-semibold" style="border-radius:24px;">
                     <i class="bi bi-person-plus me-1"></i>Criar uma conta
                 </a>
             </div>
             <div class="text-center mt-2">
-                <a href="/chamaservico/" class="link-login small"><i class="bi bi-arrow-left me-1"></i>Voltar para a Home</a>
+                <a href="/" class="link-login small"><i class="bi bi-arrow-left me-1"></i>Voltar para a Home</a>
             </div>
         </div>
     </div>

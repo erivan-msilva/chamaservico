@@ -5,7 +5,7 @@ ob_start();
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-file-earmark-text me-2"></i>Minhas Propostas</h2>
-    <a href="/chamaservico/prestador/solicitacoes" class="btn btn-success">
+    <a href="prestador/solicitacoes" class="btn btn-success">
         <i class="bi bi-search me-1"></i>Buscar Mais Serviços
     </a>
 </div>
@@ -36,7 +36,7 @@ ob_start();
             <div class="col-md-3">
                 <label class="form-label">&nbsp;</label>
                 <div class="d-grid">
-                    <a href="/chamaservico/prestador/propostas" class="btn btn-outline-secondary">
+                    <a href="prestador/propostas" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle me-1"></i>Limpar
                     </a>
                 </div>
@@ -75,7 +75,7 @@ ob_start();
         <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
         <h4 class="text-muted mt-3">Nenhuma proposta encontrada</h4>
         <p class="text-muted">Você ainda não enviou propostas para solicitações.</p>
-        <a href="/chamaservico/prestador/solicitacoes" class="btn btn-success">
+        <a href="prestador/solicitacoes" class="btn btn-success">
             <i class="bi bi-search me-1"></i>Buscar Serviços Disponíveis
         </a>
     </div>
@@ -122,7 +122,7 @@ ob_start();
                         </div>
                         <div class="card-footer">
                             <div class="d-flex gap-2">
-                                <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                <a href="prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
                                    class="btn btn-outline-success btn-sm flex-fill">
                                     <i class="bi bi-eye me-1"></i>Ver Solicitação
                                 </a>
@@ -188,7 +188,7 @@ ob_start();
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                        <a href="prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
                                            class="btn btn-outline-success" title="Ver detalhes">
                                             <i class="bi bi-eye"></i>
                                         </a>
@@ -264,7 +264,7 @@ ob_start();
                                 </div>
                                 
                                 <div class="d-flex gap-2 mt-3">
-                                    <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                    <a href="prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
                                        class="btn btn-outline-success btn-sm">
                                         <i class="bi bi-eye me-1"></i>Ver Solicitação
                                     </a>
@@ -300,7 +300,7 @@ ob_start();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
-                <form method="POST" action="/chamaservico/prestador/propostas/cancelar" style="display: inline;">
+                <form method="POST" action="prestador/propostas/cancelar" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaIdCancelar">
                     <button type="submit" class="btn btn-danger">Confirmar Cancelamento</button>

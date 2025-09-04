@@ -8,12 +8,12 @@ ob_start();
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="/chamaservico/prestador/dashboard" class="text-decoration-none">
+                <a href="prestador/dashboard" class="text-decoration-none">
                     <i class="bi bi-house me-1"></i>Dashboard
                 </a>
             </li>
             <li class="breadcrumb-item">
-                <a href="/chamaservico/prestador/propostas" class="text-decoration-none">Propostas</a>
+                <a href="prestador/propostas" class="text-decoration-none">Propostas</a>
             </li>
             <li class="breadcrumb-item active">Detalhes</li>
         </ol>
@@ -175,7 +175,7 @@ ob_start();
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         <?php if ($proposta['status'] === 'aceita'): ?>
-                            <a href="/chamaservico/prestador/servicos/detalhes?id=<?= $proposta['id'] ?>" 
+                            <a href="prestador/servicos/detalhes?id=<?= $proposta['id'] ?>" 
                                class="btn btn-success">
                                 <i class="bi bi-tools me-2"></i>
                                 Gerenciar Serviço
@@ -197,7 +197,7 @@ ob_start();
                                 Aguardando resposta do cliente. Você será notificado quando houver uma atualização.
                             </div>
                         <?php elseif ($proposta['status'] === 'recusada'): ?>
-                            <a href="/chamaservico/prestador/solicitacoes" class="btn btn-primary">
+                            <a href="prestador/solicitacoes" class="btn btn-primary">
                                 <i class="bi bi-search me-2"></i>
                                 Buscar Novos Serviços
                             </a>
@@ -207,7 +207,7 @@ ob_start();
                                 Esta proposta foi recusada pelo cliente. Você pode buscar outros serviços disponíveis.
                             </div>
                         <?php else: ?>
-                            <a href="/chamaservico/prestador/propostas" class="btn btn-outline-secondary">
+                            <a href="prestador/propostas" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-2"></i>
                                 Voltar às Propostas
                             </a>
@@ -313,7 +313,7 @@ ob_start();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não, manter</button>
-                <form method="POST" action="/chamaservico/prestador/propostas/cancelar" style="display: inline;">
+                <form method="POST" action="prestador/propostas/cancelar" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="proposta_id_cancelar" value="">
                     <button type="submit" class="btn btn-danger">Sim, cancelar</button>

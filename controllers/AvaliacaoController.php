@@ -16,16 +16,17 @@ class AvaliacaoController {
         
         // Verificar se pode avaliar
         $servico = $this->model->buscarServicoParaAvaliacao($solicitacaoId, $userId);
-        if (!$servico) {
+
+        if (!$servico || $servico['status_id'] != 5) { // Verificar se o status é "Concluído" (5)
             Session::setFlash('error', 'Serviço não encontrado ou não pode ser avaliado!', 'danger');
-            header('Location: /chamaservico/solicitacoes');
+            header('Location: solicitacoes');
             exit;
         }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/avaliacao/avaliar?solicitacao_id=' . $solicitacaoId);
+                header('Location: avaliacao/avaliar?solicitacao_id=' . $solicitacaoId);
                 exit;
             }
             
@@ -39,7 +40,7 @@ class AvaliacaoController {
             
             if ($this->model->criarAvaliacao($dados)) {
                 Session::setFlash('success', 'Avaliação enviada com sucesso!', 'success');
-                header('Location: /chamaservico/solicitacoes');
+                header('Location: solicitacoes');
                 exit;
             } else {
                 Session::setFlash('error', 'Erro ao enviar avaliação!', 'danger');

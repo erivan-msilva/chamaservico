@@ -10,17 +10,17 @@ class AuthAdminController {
     
     public function index() {
         if ($this->isAdminLoggedIn()) {
-            header('Location: /chamaservico/admin/dashboard');
+            header('Location: admin/dashboard');
             exit;
         }
         
-        header('Location: /chamaservico/admin/login');
+        header('Location:admin/login');
         exit;
     }
     
     public function login() {
         if ($this->isAdminLoggedIn()) {
-            header('Location: /chamaservico/admin/dashboard');
+            header('Location: admin/dashboard');
             exit;
         }
         
@@ -29,7 +29,7 @@ class AuthAdminController {
     
     public function authenticate() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/admin/login');
+            header('Location: admin/login');
             exit;
         }
         
@@ -54,7 +54,7 @@ class AuthAdminController {
                 // Atualizar último acesso
                 $this->updateLastAccess($admin['id']);
                 
-                header('Location: /chamaservico/admin/dashboard');
+                header('Location: admin/dashboard');
                 exit;
             } else {
                 $erro = 'Email ou senha incorretos!';
@@ -78,7 +78,7 @@ class AuthAdminController {
         unset($_SESSION['admin_nivel']);
         unset($_SESSION['admin_login_time']);
         
-        header('Location: /chamaservico/admin/login?logout=1');
+        header('Location: /admin/login?logout=1');
         exit;
     }
     

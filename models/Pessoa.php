@@ -24,13 +24,36 @@ class Pessoa {
         }
     }
 
-    public function verificarTokenRedefinicao($token)
-    {
+    /**
+     * Verificar se email existe
+     */
+    public function emailExiste($email) {
+        $sql = "SELECT COUNT(*) FROM tb_pessoa WHERE email = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$email]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * Criar token de redefinição de senha
+     */
+    public function criarTokenRedefinicao($email, $token, $expiracao) {
         try {
-            $sql = "SELECT * FROM tb_pessoa 
-                    WHERE token_redefinicao = ? 
-                    AND token_expiracao > NOW() 
-                    AND ativo = 1";
+            $sql = "UPDATE tb_pessoa SET token_redefinicao = ?, token_expiracao = ? WHERE email = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$token, $expiracao, $email]);
+        } catch (Exception $e) {
+            error_log("Erro ao criar token: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Verificar token de redefinição
+     */
+    public function verificarTokenRedefinicao($token) {
+        try {
+            $sql = "SELECT * FROM tb_pessoa WHERE token_redefinicao = ? AND token_expiracao > NOW() AND ativo = 1";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$token]);
             return $stmt->fetch();
@@ -40,13 +63,15 @@ class Pessoa {
         }
     }
 
-    public function redefinirSenhaComToken($token, $novaSenha)
-    {
+    /**
+     * Atualizar senha com token
+     */
+    public function atualizarSenhaComToken($token, $novaSenha) {
         try {
             $this->db->getConnection()->beginTransaction();
             
-            // Verificar token
-            $usuario = $this->buscarPorTokenRedefinicao($token);
+            // Verificar token novamente
+            $usuario = $this->verificarTokenRedefinicao($token);
             if (!$usuario) {
                 $this->db->getConnection()->rollBack();
                 return false;
@@ -54,24 +79,21 @@ class Pessoa {
             
             // Atualizar senha e limpar token
             $senhaHash = password_hash($novaSenha, PASSWORD_DEFAULT);
-            $sql = "UPDATE tb_pessoa 
-                    SET senha = ?, token_redefinicao = NULL, token_expiracao = NULL 
-                    WHERE id = ?";
+            $sql = "UPDATE tb_pessoa SET senha = ?, token_redefinicao = NULL, token_expiracao = NULL WHERE id = ?";
             $stmt = $this->db->prepare($sql);
-            $resultado = $stmt->execute([$senhaHash, $usuario['id']]);
+            $result = $stmt->execute([$senhaHash, $usuario['id']]);
             
-            if ($resultado) {
+            if ($result) {
                 $this->db->getConnection()->commit();
                 return true;
             } else {
                 $this->db->getConnection()->rollBack();
                 return false;
             }
+            
         } catch (Exception $e) {
-            if ($this->db->getConnection()->inTransaction()) {
-                $this->db->getConnection()->rollBack();
-            }
-            error_log("Erro ao redefinir senha: " . $e->getMessage());
+            $this->db->getConnection()->rollBack();
+            error_log("Erro ao atualizar senha: " . $e->getMessage());
             return false;
         }
     }
@@ -154,22 +176,20 @@ class Pessoa {
         return $stmt->execute([$id]);
     }
 
-    public function emailExiste($email) {
-        $sql = "SELECT COUNT(*) FROM tb_pessoa WHERE email = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$email]);
-        return $stmt->fetchColumn() > 0;
-    }
-
     public function criar($dados) {
         $sql = "INSERT INTO tb_pessoa (nome, email, senha, tipo) VALUES (?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
+        $result = $stmt->execute([
             $dados['nome'],
             $dados['email'],
             password_hash($dados['senha'], PASSWORD_DEFAULT),
             $dados['tipo']
         ]);
+        
+        if ($result) {
+            return $this->db->lastInsertId();
+        }
+        return false;
     }
 
     public function atualizarUltimoAcesso($id) {

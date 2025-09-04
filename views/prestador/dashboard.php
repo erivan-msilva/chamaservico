@@ -14,10 +14,10 @@ ob_start();
             <p class="text-muted mb-0">Visão geral das suas atividades como prestador de serviços</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="/chamaservico/prestador/solicitacoes" class="btn btn-primary">
+            <a href="prestador/solicitacoes" class="btn btn-primary">
                 <i class="bi bi-search me-2"></i>Buscar Serviços
             </a>
-            <a href="/chamaservico/prestador/propostas" class="btn btn-outline-warning">
+            <a href="prestador/propostas" class="btn btn-outline-warning">
                 <i class="bi bi-file-earmark-text me-2"></i>Minhas Propostas
             </a>
         </div>
@@ -132,23 +132,23 @@ ob_start();
                     </h5>
                     <div class="d-grid gap-3">
                         <!-- Ação Primária - Mais Destaque -->
-                        <a href="/chamaservico/prestador/solicitacoes" class="btn btn-primary btn-lg">
+                        <a href="prestador/solicitacoes" class="btn btn-primary btn-lg">
                             <i class="bi bi-search me-2"></i>
                             Buscar Novos Serviços
                         </a>
                         
                         <!-- Ações Secundárias -->
-                        <a href="/chamaservico/prestador/propostas" class="btn btn-outline-secondary">
+                        <a href="prestador/propostas" class="btn btn-outline-secondary">
                             <i class="bi bi-file-earmark-text me-2"></i>
                             Ver Minhas Propostas
                         </a>
                         
-                        <a href="/chamaservico/prestador/servicos/andamento" class="btn btn-outline-secondary">
+                        <a href="prestador/servicos/andamento" class="btn btn-outline-secondary">
                             <i class="bi bi-tools me-2"></i>
                             Serviços em Andamento
                         </a>
                         
-                        <a href="/chamaservico/prestador/perfil/editar" class="btn btn-outline-secondary">
+                        <a href="prestador/perfil/editar" class="btn btn-outline-secondary">
                             <i class="bi bi-person-gear me-2"></i>
                             Editar Perfil
                         </a>
@@ -175,7 +175,7 @@ ob_start();
                                 Suas atividades aparecerão aqui<br>
                                 Envie propostas e acompanhe seus serviços
                             </p>
-                            <a href="/chamaservico/prestador/solicitacoes" class="btn btn-primary btn-sm">
+                            <a href="prestador/solicitacoes" class="btn btn-primary btn-sm">
                                 <i class="bi bi-plus-circle me-1"></i>
                                 Começar Agora
                             </a>
@@ -207,7 +207,7 @@ ob_start();
                         </div>
                         
                         <div class="text-center mt-3">
-                            <a href="/chamaservico/prestador/propostas" class="btn btn-outline-primary btn-sm">
+                            <a href="prestador/propostas" class="btn btn-outline-primary btn-sm">
                                 Ver Todas as Propostas
                             </a>
                         </div>

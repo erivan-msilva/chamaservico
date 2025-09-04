@@ -21,16 +21,16 @@ class PerfilController
 
         if (!$usuario) {
             Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: /chamaservico/logout');
+            header('Location: logout');
             exit;
         }
 
         // Redirecionar baseado no tipo de usuário
         if (Session::isPrestador() && !Session::isCliente()) {
-            header('Location: /chamaservico/prestador/perfil');
+            header('Location: prestador/perfil');
             exit;
         } else {
-            header('Location: /chamaservico/cliente/perfil');
+            header('Location: cliente/perfil');
             exit;
         }
     }
@@ -42,14 +42,14 @@ class PerfilController
 
         if (!$usuario) {
             Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: /chamaservico/logout');
+            header('Location: logout');
             exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/perfil/editar');
+                header('Location: perfil/editar');
                 exit;
             }
 
@@ -69,7 +69,7 @@ class PerfilController
                     Session::setFlash('error', 'Ação inválida!', 'danger');
             }
 
-            header('Location: /chamaservico/perfil/editar');
+            header('Location: perfil/editar');
             exit;
         }
 
@@ -139,7 +139,8 @@ class PerfilController
         }
 
         // Alterar senha
-        if ($this->model->alterarSenha($userId, $novaSenha)) {
+        $dados = ['senha' => password_hash($novaSenha, PASSWORD_DEFAULT)];
+        if ($this->model->atualizar($userId, $dados)) {
             Session::setFlash('success', 'Senha alterada com sucesso!', 'success');
         } else {
             Session::setFlash('error', 'Erro ao alterar senha!', 'danger');
@@ -219,7 +220,7 @@ class PerfilController
                     exit;
                 }
 
-                header('Location: /chamaservico/perfil/enderecos');
+                header('Location: perfil/enderecos');
                 exit;
             }
 
@@ -329,7 +330,7 @@ class PerfilController
 
         // Para requisições normais, redirecionar
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/perfil/enderecos');
+            header('Location: perfil/enderecos');
             exit;
         }
     }
@@ -380,7 +381,7 @@ class PerfilController
 
         // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/perfil/enderecos');
+            header('Location: perfil/enderecos');
             exit;
         }
     }
@@ -415,7 +416,7 @@ class PerfilController
 
         // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/perfil/enderecos');
+            header('Location: perfil/enderecos');
             exit;
         }
     }
@@ -455,8 +456,9 @@ class PerfilController
 
         // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/perfil/enderecos');
+            header('Location: perfil/enderecos');
             exit;
         }
     }
 }
+?>

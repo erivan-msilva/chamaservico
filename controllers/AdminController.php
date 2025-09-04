@@ -19,8 +19,13 @@ require_once 'controllers/admin/UsuariosAdminController.php';
 require_once 'controllers/admin/SolicitacoesAdminController.php';
 require_once 'controllers/admin/ConfiguracoesAdminController.php';
 require_once 'controllers/admin/TiposServicoAdminController.php';
+require_once 'config/session.php';
 
 class AdminController {
+    
+    public function __construct() {
+        Session::requireAdminLogin();
+    }
     
     public function index() {
         $authController = new AuthAdminController();
@@ -43,13 +48,82 @@ class AdminController {
     }
     
     public function dashboard() {
-        $dashboardController = new DashboardAdminController();
-        $dashboardController->index();
+        $title = 'Admin Dashboard - ChamaServiço';
+        
+        // Estatísticas básicas
+        $stats = $this->getStatistics();
+        
+        include 'views/admin/dashboard.php';
+    }
+    
+    private function getStatistics() {
+        try {
+            require_once 'core/Database.php';
+            $db = Database::getInstance();
+            
+            // Total de usuários
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM tb_pessoa WHERE ativo = 1");
+            $stmt->execute();
+            $totalUsuarios = $stmt->fetch()['total'];
+            
+            // Total de solicitações
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM tb_solicita_servico");
+            $stmt->execute();
+            $totalSolicitacoes = $stmt->fetch()['total'];
+            
+            // Total de propostas
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM tb_proposta");
+            $stmt->execute();
+            $totalPropostas = $stmt->fetch()['total'];
+            
+            // Serviços concluídos
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM tb_solicita_servico WHERE status_id = 5");
+            $stmt->execute();
+            $servicosConcluidos = $stmt->fetch()['total'];
+            
+            return [
+                'total_usuarios' => $totalUsuarios,
+                'total_solicitacoes' => $totalSolicitacoes,
+                'total_propostas' => $totalPropostas,
+                'servicos_concluidos' => $servicosConcluidos
+            ];
+            
+        } catch (Exception $e) {
+            error_log("Erro ao obter estatísticas: " . $e->getMessage());
+            return [
+                'total_usuarios' => 0,
+                'total_solicitacoes' => 0,
+                'total_propostas' => 0,
+                'servicos_concluidos' => 0
+            ];
+        }
     }
     
     public function usuarios() {
-        $usuariosController = new UsuariosAdminController();
-        $usuariosController->index();
+        try {
+            require_once 'core/Database.php';
+            $db = Database::getInstance();
+            
+            $sql = "SELECT p.*, 
+                           COUNT(DISTINCT s.id) as total_solicitacoes,
+                           COUNT(DISTINCT pr.id) as total_propostas
+                    FROM tb_pessoa p
+                    LEFT JOIN tb_solicita_servico s ON p.id = s.cliente_id
+                    LEFT JOIN tb_proposta pr ON p.id = pr.prestador_id
+                    GROUP BY p.id
+                    ORDER BY p.data_cadastro DESC";
+            
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            $usuarios = $stmt->fetchAll();
+            
+        } catch (Exception $e) {
+            error_log("Erro ao buscar usuários: " . $e->getMessage());
+            $usuarios = [];
+        }
+        
+        $title = 'Gerenciar Usuários - Admin';
+        include 'views/admin/usuarios.php';
     }
     
     public function usuarioVisualizar() {
@@ -68,8 +142,8 @@ class AdminController {
     }
     
     public function solicitacoes() {
-        $solicitacoesController = new SolicitacoesAdminController();
-        $solicitacoesController->index();
+        $title = 'Gerenciar Solicitações - Admin';
+        include 'views/admin/solicitacoes.php';
     }
     
     public function solicitacaoVisualizar() {
@@ -227,7 +301,7 @@ class AdminController {
     
     public function configuracaoBackup() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/admin/configuracoes');
+            header('Location: admin/configuracoes');
             exit;
         }
         
@@ -237,7 +311,7 @@ class AdminController {
         }
         
         if (!isset($_SESSION['admin_id'])) {
-            header('Location: /chamaservico/admin/login');
+            header('Location:admin/login');
             exit;
         }
         
@@ -247,7 +321,7 @@ class AdminController {
                 'type' => 'error',
                 'message' => 'Token de segurança inválido!'
             ];
-            header('Location: /chamaservico/admin/configuracoes');
+            header('Location: admin/configuracoes');
             exit;
         }
         
@@ -286,7 +360,7 @@ class AdminController {
             ];
         }
         
-        header('Location: /chamaservico/admin/configuracoes');
+        header('Location:admin/configuracoes');
         exit;
     }
     
@@ -657,7 +731,7 @@ class AdminController {
         }
         
         if (!isset($_SESSION['admin_id'])) {
-            header('Location: /chamaservico/admin/login');
+            header('Location: admin/login');
             exit;
         }
         
@@ -681,10 +755,10 @@ class AdminController {
                                 <p class='text-muted'>Esta funcionalidade está em desenvolvimento.</p>
                                 <p><small>Em breve estará disponível com uma interface completa.</small></p>
                                 <div class='d-flex gap-2 justify-content-center'>
-                                    <a href='/chamaservico/admin/dashboard' class='btn btn-primary'>
+                                    <a href='admin/dashboard' class='btn btn-primary'>
                                         <i class='bi bi-speedometer2 me-1'></i>Dashboard
                                     </a>
-                                    <a href='/chamaservico/admin/usuarios' class='btn btn-outline-secondary'>
+                                    <a href='admin/usuarios' class='btn btn-outline-secondary'>
                                         <i class='bi bi-people me-1'></i>Usuários
                                     </a>
                                 </div>
@@ -716,7 +790,7 @@ class AdminController {
             $controller = new TiposServicoAdminController();
             $controller->criar();
         } else {
-            header('Location: /chamaservico/admin/tipos-servico');
+            header('Location: admin/tipos-servico');
             exit;
         }
     }
@@ -728,7 +802,7 @@ class AdminController {
             $controller = new TiposServicoAdminController();
             $controller->editar();
         } else {
-            header('Location: /chamaservico/admin/tipos-servico');
+            header('Location: admin/tipos-servico');
             exit;
         }
     }
@@ -740,7 +814,7 @@ class AdminController {
             $controller = new TiposServicoAdminController();
             $controller->alterarStatus();
         } else {
-            header('Location: /chamaservico/admin/tipos-servico');
+            header('Location: admin/tipos-servico');
             exit;
         }
     }
@@ -752,7 +826,7 @@ class AdminController {
             $controller = new TiposServicoAdminController();
             $controller->excluir();
         } else {
-            header('Location: /chamaservico/admin/tipos-servico');
+            header('Location: admin/tipos-servico');
             exit;
         }
     }
@@ -776,7 +850,7 @@ class AdminController {
         }
         
         if (!isset($_SESSION['admin_id'])) {
-            header('Location: /chamaservico/admin/login');
+            header('Location: admin/login');
             exit;
         }
         
@@ -792,7 +866,7 @@ class AdminController {
         }
         
         if (!isset($_SESSION['admin_id'])) {
-            header('Location: /chamaservico/admin/login');
+            header('Location: admin/login');
             exit;
         }
         
@@ -846,37 +920,37 @@ class AdminController {
                             
                             <ul class='nav flex-column'>
                                 <li class='nav-item'>
-                                    <a class='nav-link' href='/chamaservico/admin/dashboard'>
+                                    <a class='nav-link' href='admin/dashboard'>
                                         <i class='bi bi-speedometer2 me-2'></i>
                                         Dashboard
                                     </a>
                                 </li>
                                 <li class='nav-item'>
-                                    <a class='nav-link' href='/chamaservico/admin/usuarios'>
+                                    <a class='nav-link' href='admin/usuarios'>
                                         <i class='bi bi-people me-2'></i>
                                         Usuários
                                     </a>
                                 </li>
                                 <li class='nav-item'>
-                                    <a class='nav-link' href='/chamaservico/admin/solicitacoes'>
+                                    <a class='nav-link' href='admin/solicitacoes'>
                                         <i class='bi bi-list-task me-2'></i>
                                         Solicitações
                                     </a>
                                 </li>
                                 <li class='nav-item'>
-                                    <a class='nav-link active' href='/chamaservico/admin/tipos-servico'>
+                                    <a class='nav-link active' href='admin/tipos-servico'>
                                         <i class='bi bi-tools me-2'></i>
                                         Tipos de Serviços
                                     </a>
                                 </li>
                                 <li class='nav-item'>
-                                    <a class='nav-link' href='/chamaservico/admin/relatorios'>
+                                    <a class='nav-link' href='admin/relatorios'>
                                         <i class='bi bi-graph-up me-2'></i>
                                         Relatórios
                                     </a>
                                 </li>
                                 <li class='nav-item'>
-                                    <a class='nav-link' href='/chamaservico/admin/configuracoes'>
+                                    <a class='nav-link' href='admin/configuracoes'>
                                         <i class='bi bi-gear me-2'></i>
                                         Configurações
                                     </a>
@@ -891,7 +965,7 @@ class AdminController {
                                     <div class='text-white fw-bold small'>
                                         " . htmlspecialchars($_SESSION['admin_nome'] ?? 'Admin Sistema') . "
                                     </div>
-                                    <a href='/chamaservico/admin/logout' class='btn btn-outline-light btn-sm mt-2'>
+                                    <a href='admin/logout' class='btn btn-outline-light btn-sm mt-2'>
                                         <i class='bi bi-box-arrow-right me-1'></i>
                                         Sair
                                     </a>
@@ -930,11 +1004,11 @@ class AdminController {
                                         </div>
                                         
                                         <div class='d-flex gap-2 justify-content-center'>
-                                            <a href='/chamaservico/admin/dashboard' class='btn btn-primary'>
+                                            <a href='admin/dashboard' class='btn btn-primary'>
                                                 <i class='bi bi-speedometer2 me-1'></i>
                                                 Voltar ao Dashboard
                                             </a>
-                                            <a href='/chamaservico/admin/solicitacoes' class='btn btn-success'>
+                                            <a href='admin/solicitacoes' class='btn btn-success'>
                                                 <i class='bi bi-list-task me-1'></i>
                                                 Ver Solicitações
                                             </a>

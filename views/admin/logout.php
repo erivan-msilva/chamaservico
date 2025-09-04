@@ -11,7 +11,7 @@ session_regenerate_id(true);
 session_destroy();
 
 // Redirecionar para a página de login com indicação de logout
-header('Location: /chamaservico/admin/login?logout=1');
+header('Location: admin/login?logout=1');
 exit;
 
 session_destroy();

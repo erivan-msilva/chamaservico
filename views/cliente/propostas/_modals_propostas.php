@@ -8,7 +8,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/aceitar">
+            <form method="POST" action="cliente/propostas/aceitar">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaIdAceitar">
@@ -61,7 +61,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/chamaservico/cliente/propostas/recusar">
+            <form method="POST" action="cliente/propostas/recusar">
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaIdRecusar">

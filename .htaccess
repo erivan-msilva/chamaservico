@@ -1,19 +1,35 @@
 RewriteEngine On
 
-# Permitir acesso direto aos arquivos de upload
-RewriteCond %{REQUEST_URI} ^/chamaservico/uploads/
-RewriteRule ^(.*)$ - [L]
+# Detectar automaticamente a base path
+RewriteBase /
 
-# Permitir acesso a arquivos estáticos existentes
+# Permitir acesso ao arquivo debug.php temporariamente
+RewriteRule ^debug\.php$ debug.php [L]
+
+# Forçar HTTPS em produção (opcional)
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} !^localhost
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Permitir acesso direto a arquivos estáticos
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^(.*)$ - [L]
 
-# Permitir acesso a diretórios existentes
+# Permitir acesso a diretórios
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^(.*)$ - [L]
 
-# Redirecionar todas as requisições para index.php
+# Permitir acesso direto aos uploads e assets
+RewriteRule ^(uploads|assets)/(.*)$ $1/$2 [L]
+
+# Redirecionar tudo para index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.php [L]
+RewriteRule ^(.*)$ index.php [QSA,L]
 
+# Configurações PHP
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value max_execution_time 300
+php_value memory_limit 256M

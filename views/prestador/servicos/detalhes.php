@@ -13,13 +13,13 @@ ob_start();
             </h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/chamaservico/prestador/dashboard">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="/chamaservico/prestador/servicos/andamento">Serviços em Andamento</a></li>
+                    <li class="breadcrumb-item"><a href="prestador/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="prestador/servicos/andamento">Serviços em Andamento</a></li>
                     <li class="breadcrumb-item active">Detalhes</li>
                 </ol>
             </nav>
         </div>
-        <a href="/chamaservico/prestador/servicos/andamento" class="btn btn-outline-secondary">
+        <a href="prestador/servicos/andamento" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-2"></i>
             Voltar aos Serviços
         </a>
@@ -118,12 +118,12 @@ ob_start();
                                 <?php foreach ($servico['imagens'] as $imagem): ?>
                                     <div class="col-md-4">
                                         <div class="position-relative">
-                                            <img src="/chamaservico/uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>" 
+                                            <img src="uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>" 
                                                  class="img-fluid rounded" 
                                                  style="height: 150px; width: 100%; object-fit: cover;"
                                                  data-bs-toggle="modal" 
                                                  data-bs-target="#modalImagem"
-                                                 data-src="/chamaservico/uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>">
+                                                 data-src="uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>">
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -208,7 +208,7 @@ ob_start();
                         </h6>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="/chamaservico/prestador/servicos/atualizar-status" id="formStatus">
+                        <form method="POST" action="prestador/servicos/atualizar-status" id="formStatus">
                             <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                             <input type="hidden" name="proposta_id" value="<?= $servico['id'] ?>">
 

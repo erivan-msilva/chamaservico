@@ -11,7 +11,7 @@ ob_start();
                 <h2 class="text-primary fw-bold">
                     <i class="bi bi-person-gear me-2"></i>Editar Perfil Prestador
                 </h2>
-                <a href="/chamaservico/prestador/perfil" class="btn btn-outline-secondary">
+                <a href="prestador/perfil" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Voltar
                 </a>
             </div>
@@ -32,7 +32,7 @@ ob_start();
                                 ?>
                                 <div class="position-relative d-inline-block">
                                     <?php if ($fotoPerfil && $arquivoExiste): ?>
-                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
+                                        <img src="uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
                                             class="rounded-circle border border-3 border-primary" 
                                             style="width: 120px; height: 120px; object-fit: cover;" 
                                             alt="Foto do perfil">
@@ -65,7 +65,7 @@ ob_start();
                            data-bs-toggle="list">
                             <i class="bi bi-shield-lock me-2"></i>Segurança
                         </a>
-                        <a href="/chamaservico/prestador/perfil/enderecos" class="list-group-item list-group-item-action">
+                        <a href="prestador/perfil/enderecos" class="list-group-item list-group-item-action">
                             <i class="bi bi-geo-alt me-2"></i>Endereços
                         </a>
                     </div>
@@ -82,7 +82,7 @@ ob_start();
                                         <i class="bi bi-person me-2"></i>Dados Pessoais
                                     </h4>
                                     
-                                    <form method="POST" action="/chamaservico/prestador/perfil/editar" id="formDadosPessoais">
+                                    <form method="POST" action="prestador/perfil/editar" id="formDadosPessoais">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="dados_pessoais">
                                         
@@ -156,7 +156,7 @@ ob_start();
                                         <i class="bi bi-shield-lock me-2"></i>Alterar Senha
                                     </h4>
                                     
-                                    <form method="POST" action="/chamaservico/prestador/perfil/editar" id="formSenha">
+                                    <form method="POST" action="prestador/perfil/editar" id="formSenha">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="alterar_senha">
                                         
@@ -225,7 +225,7 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="/chamaservico/prestador/perfil/editar" enctype="multipart/form-data" id="formFoto">
+                <form method="POST" action="prestador/perfil/editar" enctype="multipart/form-data" id="formFoto">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="acao" value="upload_foto">
                     

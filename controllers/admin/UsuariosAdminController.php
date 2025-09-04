@@ -33,7 +33,7 @@ class UsuariosAdminController extends BaseAdminController {
         
         if (!$usuario) {
             $this->setFlash('error', 'Usuário não encontrado!');
-            header('Location: /chamaservico/admin/usuarios');
+            header('Location: admin/usuarios');
             exit;
         }
         
@@ -53,7 +53,7 @@ class UsuariosAdminController extends BaseAdminController {
             $this->setFlash('error', 'Erro ao ativar usuário!');
         }
         
-        header('Location: /chamaservico/admin/usuarios');
+        header('Location: admin/usuarios');
         exit;
     }
     
@@ -66,7 +66,7 @@ class UsuariosAdminController extends BaseAdminController {
             $this->setFlash('error', 'Erro ao desativar usuário!');
         }
         
-        header('Location: /chamaservico/admin/usuarios');
+        header('Location: admin/usuarios');
         exit;
     }
     

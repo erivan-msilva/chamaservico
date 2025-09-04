@@ -17,7 +17,7 @@ $enderecos = $enderecoModel->buscarPorPessoa($prestadorId);
             <p class="text-muted">Gerencie os locais onde você pode prestar serviços</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="/chamaservico/prestador/perfil/editar" class="btn btn-outline-secondary">
+            <a href="prestador/perfil/editar" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Voltar para Editar Perfil
             </a>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEndereco">
@@ -292,7 +292,7 @@ document.getElementById("formEndereco").addEventListener("submit", function(e) {
     btnSalvar.disabled = true;
     btnSalvar.innerHTML = "<i class=\\"bi bi-hourglass-split me-1\\"></i>Salvando...";
     
-    fetch("/chamaservico/prestador/perfil/enderecos", {
+    fetch("prestador/perfil/enderecos", {
         method: "POST",
         body: formData,
         headers: {
@@ -331,7 +331,7 @@ document.getElementById("formDefinirPrincipal").addEventListener("submit", funct
     
     const formData = new FormData(this);
     
-    fetch("/chamaservico/prestador/perfil/enderecos", {
+    fetch("prestador/perfil/enderecos", {
         method: "POST",
         body: formData,
         headers: {
@@ -363,7 +363,7 @@ document.getElementById("formExcluirEndereco").addEventListener("submit", functi
     
     const formData = new FormData(this);
     
-    fetch("/chamaservico/prestador/perfil/enderecos", {
+    fetch("prestador/perfil/enderecos", {
         method: "POST",
         body: formData,
         headers: {

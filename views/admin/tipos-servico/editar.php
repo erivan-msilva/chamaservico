@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Verificar se está logado como admin
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: /chamaservico/admin/login');
+    header('Location: admin/login');
     exit;
 }
 ?>

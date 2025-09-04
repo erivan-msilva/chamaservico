@@ -13,7 +13,7 @@ class BaseAdminController {
     
     protected function verificarAutenticacao() {
         if (!isset($_SESSION['admin_id'])) {
-            header('Location: /chamaservico/admin/login');
+            header('Location: admin/login');
             exit;
         }
         
@@ -31,7 +31,7 @@ class BaseAdminController {
     }
     
     protected function redirect($url) {
-        header("Location: /chamaservico{$url}");
+        header("Location: {$url}");
         exit;
     }
     
@@ -59,7 +59,7 @@ class BaseAdminController {
                             <h1 class='display-4 text-danger'>404</h1>
                             <h3>View não encontrada</h3>
                             <p>A view <code>{$view}.php</code> não foi encontrada.</p>
-                            <a href='/chamaservico/admin/dashboard' class='btn btn-primary'>Voltar ao Dashboard</a>
+                            <a href='admin/dashboard' class='btn btn-primary'>Voltar ao Dashboard</a>
                         </div>
                     </div>
                 </div>
@@ -79,7 +79,7 @@ class BaseAdminController {
     private function logout() {
         session_unset();
         session_destroy();
-        header('Location: /chamaservico/admin/login');
+        header('Location: admin/login');
         exit;
     }
 }

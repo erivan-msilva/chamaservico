@@ -10,7 +10,7 @@ class ClientePerfilController {
         Session::requireClientLogin();
         
         if (!Session::isCliente()) {
-            header('Location: /chamaservico/acesso-negado');
+            header('Location: /acesso-negado');
             exit;
         }
     }
@@ -22,7 +22,7 @@ class ClientePerfilController {
         
         if (!$usuario) {
             Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: /chamaservico/logout');
+            header('Location: logout');
             exit;
         }
         
@@ -35,14 +35,14 @@ class ClientePerfilController {
         
         if (!$usuario) {
             Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: /chamaservico/logout');
+            header('Location: logout');
             exit;
         }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/cliente/perfil/editar');
+                header('Location: cliente/perfil/editar');
                 exit;
             }
             
@@ -62,7 +62,7 @@ class ClientePerfilController {
                     Session::setFlash('error', 'Ação inválida!', 'danger');
             }
             
-            header('Location: /chamaservico/cliente/perfil/editar');
+            header('Location: cliente/perfil/editar');
             exit;
         }
         
@@ -118,7 +118,7 @@ class ClientePerfilController {
             } else {
                 Session::setFlash('error', 'Erro ao cadastrar endereço!', 'danger');
             }
-            header('Location: /chamaservico/cliente/perfil/enderecos');
+            header('Location: cliente/perfil/enderecos');
             exit;
         }
 
@@ -148,7 +148,7 @@ class ClientePerfilController {
                     exit;
                 }
                 Session::setFlash('error', $msg, 'danger');
-                header('Location: /chamaservico/cliente/perfil/enderecos');
+                header('Location: cliente/perfil/enderecos');
                 exit;
             }
 
@@ -167,7 +167,7 @@ class ClientePerfilController {
             } else {
                 Session::setFlash('error', 'Erro ao excluir endereço!', 'danger');
             }
-            header('Location: /chamaservico/cliente/perfil/enderecos');
+            header('Location: cliente/perfil/enderecos');
             exit;
         }
 
@@ -244,7 +244,7 @@ class ClientePerfilController {
                 exit;
             }
             Session::setFlash('erro', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/cliente/perfil/enderecos');
+            header('Location: /cliente/perfil/enderecos');
             exit;
         }
         
@@ -355,7 +355,7 @@ class ClientePerfilController {
             Session::setFlash('erro', $e->getMessage(), 'danger');
         }
         
-        header('Location: /chamaservico/cliente/perfil/enderecos');
+        header('Location: cliente/perfil/enderecos');
         exit;
     }
     
@@ -413,7 +413,7 @@ class ClientePerfilController {
             return;
         }
         
-        if ($this->model->alterarSenha($userId, $novaSenha)) {
+        if ($this->model->atualizarSenha($userId, $novaSenha)) {
             Session::setFlash('success', 'Senha alterada com sucesso!', 'success');
         } else {
             Session::setFlash('error', 'Erro ao alterar senha!', 'danger');
@@ -539,7 +539,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/cliente/perfil/enderecos');
+            header('Location: cliente/perfil/enderecos');
             exit;
         }
     }
@@ -586,7 +586,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/cliente/perfil/enderecos');
+            header('Location: cliente/perfil/enderecos');
             exit;
         }
     }
@@ -617,7 +617,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/cliente/perfil/enderecos');
+            header('Location: cliente/perfil/enderecos');
             exit;
         }
     }
@@ -653,7 +653,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: /chamaservico/cliente/perfil/enderecos');
+            header('Location: cliente/perfil/enderecos');
             exit;
         }
     }

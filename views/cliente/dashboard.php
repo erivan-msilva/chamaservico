@@ -12,7 +12,7 @@ ob_start();
             <p class="text-muted">Bem-vindo ao seu painel de controle, <?= htmlspecialchars(Session::getUserName()) ?>! Acompanhe suas solicitações, propostas e serviços em andamento.</p>
         </div>
         <div class="col-md-4 text-end">
-            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+            <a href="solicitacoes/criar" class="btn </a>btn-primary">
                 <i class="bi bi-plus-circle me-2"></i>Nova Solicitação
             </a>
         </div>
@@ -91,21 +91,21 @@ ob_start();
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Últimas Solicitações</h5>
-                    <a href="/chamaservico/cliente/solicitacoes" class="btn btn-sm btn-outline-primary">Ver Todas</a>
+                    <a href="solicitacoes" class="btn btn-sm btn-outline-primary">Ver Todas</a>
                 </div>
                 <div class="card-body p-0">
                     <?php if (empty($solicitacoesRecentes)): ?>
                         <div class="text-center p-4">
                             <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
                             <p class="mt-2 mb-0 text-muted">Você ainda não tem solicitações</p>
-                            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-sm btn-primary mt-2">
+                            <a href="solicitacoes/cria</a>r" class="btn btn-sm btn-primary mt-2">
                                 Criar Primeira Solicitação
                             </a>
                         </div>
                     <?php else: ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($solicitacoesRecentes as $solicitacao): ?>
-                                <a href="/chamaservico/cliente/solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
+                                <a href="solicitacoes/visualizar?id=<?= $solicitacao['id'] ?>"
                                     class="list-group-item list-group-item-action py-3">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?= htmlspecialchars($solicitacao['titulo']) ?></h6>
@@ -132,21 +132,21 @@ ob_start();
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="mb-0"><i class="bi bi-inbox me-2"></i>Propostas Recentes</h5>
-                    <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-sm btn-outline-primary">Ver Todas</a>
+                    <a href="propostas/recebidas" class="btn btn-sm btn-outline-primary">Ver Todas</a>
                 </div>
                 <div class="card-body p-0">
                     <?php if (empty($propostasRecentes)): ?>
                         <div class="text-center p-4">
                             <i class="bi bi-envelope text-muted" style="font-size: 2rem;"></i>
                             <p class="mt-2 mb-0 text-muted">Você ainda não recebeu propostas</p>
-                            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-sm btn-primary mt-2">
+                            <a href="solicitacoes/criar" class="btn btn-sm btn-primary mt-2">
                                 Criar Solicitação
                             </a>
                         </div>
                     <?php else: ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($propostasRecentes as $proposta): ?>
-                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>"
+                                <a href="propostas/detalhes?id=<?= $proposta['id'] ?>"
                                     class="list-group-item list-group-item-action py-3">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></h6>
@@ -187,7 +187,7 @@ ob_start();
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                     <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Notificações Recentes</h5>
-                    <a href="/chamaservico/notificacoes" class="btn btn-sm btn-outline-primary">Ver Todas</a>
+                    <a href="notificacoes" class="btn btn-sm btn-outline-primary">Ver Todas</a>
                 </div>
                 <div class="card-body p-0">
                     <?php if (empty($notificacoesRecentes)): ?>
@@ -198,7 +198,7 @@ ob_start();
                     <?php else: ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($notificacoesRecentes as $notificacao): ?>
-                                <a href="/chamaservico/notificacoes"
+                                <a href="notificacoes"
                                     class="list-group-item list-group-item-action py-3 <?= $notificacao['lida'] ? '' : 'bg-light' ?>">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1"><?= htmlspecialchars($notificacao['titulo']) ?></h6>
@@ -227,25 +227,25 @@ ob_start();
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-outline-primary w-100 p-3">
+                            <a href="solicitacoes/criar" class="btn btn-outline-primary w-100 p-3">
                                 <i class="bi bi-plus-circle mb-2" style="font-size: 1.5rem;"></i>
                                 <div>Nova Solicitação</div>
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-outline-success w-100 p-3">
+                            <a href="propostas/recebidas" class="btn btn-outline-success w-100 p-3">
                                 <i class="bi bi-envelope mb-2" style="font-size: 1.5rem;"></i>
                                 <div>Ver Propostas</div>
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="/chamaservico/cliente/solicitacoes" class="btn btn-outline-info w-100 p-3">
+                            <a href="solicitacoes" class="btn btn-outline-info w-100 p-3">
                                 <i class="bi bi-list-check mb-2" style="font-size: 1.5rem;"></i>
                                 <div>Minhas Solicitações</div>
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="/chamaservico/cliente/perfil/editar" class="btn btn-outline-secondary w-100 p-3">
+                            <a href="perfil/editar" class="btn btn-outline-secondary w-100 p-3">
                                 <i class="bi bi-person-gear mb-2" style="font-size: 1.5rem;"></i>
                                 <div>Editar Perfil</div>
                             </a>

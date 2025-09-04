@@ -168,7 +168,7 @@ ob_start();
         </button>
         
         <!-- Nova Solicitação -->
-        <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+        <a href="cliente/solicitacoes/criar" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>Nova Solicitação
         </a>
     </div>
@@ -240,7 +240,7 @@ ob_start();
                     <button type="submit" class="btn btn-outline-primary">
                         <i class="bi bi-funnel me-1"></i>Filtrar
                     </button>
-                    <a href="/chamaservico/cliente/propostas/recebidas" class="btn btn-outline-secondary">
+                    <a href="cliente/propostas/recebidas" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-clockwise me-1"></i>Limpar
                     </a>
                 </div>
@@ -263,7 +263,7 @@ ob_start();
                         Você ainda não recebeu propostas para suas solicitações.
                     <?php endif; ?>
                 </p>
-                <a href="/chamaservico/cliente/solicitacoes/criar" class="btn btn-primary">
+                <a href="cliente/solicitacoes/criar" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-1"></i>Criar Nova Solicitação
                 </a>
             </div>
@@ -292,7 +292,7 @@ ob_start();
                             <div class="prestador-destaque">
                                 <div class="d-flex align-items-center">
                                     <?php if (!empty($proposta['prestador_foto'])): ?>
-                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($proposta['prestador_foto']) ?>" 
+                                        <img src="uploads/perfil/<?= htmlspecialchars($proposta['prestador_foto']) ?>" 
                                              class="prestador-avatar me-3" alt="Foto do prestador">
                                     <?php else: ?>
                                         <div class="prestador-avatar-placeholder bg-primary text-white me-3">
@@ -379,56 +379,32 @@ ob_start();
                         <div class="card-footer bg-transparent">
                             <!-- Botão Principal: Ver Detalhes -->
                             <div class="d-grid gap-2 mb-2">
-                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
-                                   class="btn btn-primary">
-                                    <i class="bi bi-eye me-1"></i>Ver Detalhes Completos
+                                <a href="<?= url('cliente/propostas/detalhes?id=' . $proposta['id']) ?>" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>
+                                    Ver Detalhes
                                 </a>
+                                
+                                <?php if ($proposta['status'] === 'pendente'): ?>
+                                    <button type="button" 
+                                            class="btn btn-success btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalAceitar"
+                                            onclick="setPropostaId(<?= $proposta['id'] ?>)">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Aceitar
+                                    </button>
+                                    
+                                    <button type="button" 
+                                            class="btn btn-outline-danger btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalRecusar"
+                                            onclick="setPropostaId(<?= $proposta['id'] ?>)">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Recusar
+                                    </button>
+                                <?php endif; ?>
                             </div>
-                            
-                            <!-- Ações Secundárias (Dropdown) -->
-                            <?php if ($proposta['status'] == 'pendente'): ?>
-                                <div class="d-flex gap-2">
-                                    <div class="dropdown flex-grow-1">
-                                        <button class="btn btn-outline-success dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-gear me-1"></i>Ações Rápidas
-                                        </button>
-                                        <ul class="dropdown-menu w-100">
-                                            <li>
-                                                <button class="dropdown-item text-success" 
-                                                        onclick="abrirModalAceitar(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>', '<?= number_format($proposta['valor'], 2, ',', '.') ?>', '<?= $proposta['prazo_execucao'] ?>')">
-                                                    <i class="bi bi-check-circle me-1"></i>Aceitar Proposta
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button class="dropdown-item text-danger" 
-                                                        onclick="abrirModalRecusar(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>', '<?= htmlspecialchars($proposta['solicitacao_titulo']) ?>')">
-                                                    <i class="bi bi-x-circle me-1"></i>Recusar Proposta
-                                                </button>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a class="dropdown-item text-info" 
-                                                   href="/chamaservico/cliente/propostas/comparar?solicitacao_id=<?= $proposta['solicitacao_id'] ?>">
-                                                    <i class="bi bi-bar-chart me-1"></i>Comparar com Outras
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            <?php elseif ($proposta['status'] == 'aceita'): ?>
-                                <div class="d-flex gap-2">
-                                    <a href="tel:<?= htmlspecialchars($proposta['prestador_telefone'] ?? '') ?>" 
-                                       class="btn btn-success flex-fill">
-                                        <i class="bi bi-telephone me-1"></i>Contatar
-                                    </a>
-                                </div>
-                            <?php else: ?>
-                                <div class="text-center">
-                                    <span class="text-muted">
-                                        <i class="bi bi-info-circle me-1"></i>Proposta <?= $proposta['status'] ?>
-                                    </span>
-                                </div>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -471,7 +447,7 @@ ob_start();
                                 <td><?= date('d/m/Y', strtotime($proposta['data_proposta'])) ?></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                        <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
                                            class="btn btn-outline-primary">
                                             <i class="bi bi-eye"></i>
                                         </a>
@@ -515,7 +491,7 @@ ob_start();
                                 <?= $proposta['status'] === 'pendente' ? 'Aguardando' : ucfirst($proposta['status']) ?>
                             </span>
                             <div class="btn-group btn-group-sm">
-                                <a href="/chamaservico/cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
                                    class="btn btn-outline-primary btn-sm">Ver</a>
                                 <?php if ($proposta['status'] === 'pendente'): ?>
                                     <button class="btn btn-success btn-sm" 
@@ -661,7 +637,7 @@ function compararSelecionadas() {
         return;
     }
     
-    fetch("/chamaservico/api/comparar-propostas", {
+    fetch("api/comparar-propostas", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({propostas: propostasSelecionadas})
@@ -686,7 +662,7 @@ function aceitarSelecionadas() {
     if (propostasSelecionadas.length === 0) return;
     
     if (confirm(`Aceitar ${propostasSelecionadas.length} proposta(s) selecionada(s)?`)) {
-        fetch("/chamaservico/api/propostas/aceitar-lote", {
+        fetch("api/propostas/aceitar-lote", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({propostas: propostasSelecionadas})
@@ -712,7 +688,7 @@ function recusarSelecionadas() {
     
     const motivo = prompt("Motivo da recusa (opcional):");
     
-    fetch("/chamaservico/api/propostas/recusar-lote", {
+    fetch("api/propostas/recusar-lote", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -745,7 +721,7 @@ function atualizarPropostasAjax() {
     
     params.append("ajax", "1"); // Indicar que é requisição AJAX
     
-    fetch(`/chamaservico/cliente/propostas/recebidas?${params.toString()}`)
+    fetch(`cliente/propostas/recebidas?${params.toString()}`)
     .then(response => response.json())
     .then(data => {
         if (data.success && data.html) {
@@ -802,8 +778,8 @@ function exportarComparacao() {
     const params = new URLSearchParams();
     params.append("propostas", propostasSelecionadas.join(","));
     params.append("formato", "pdf");
-    
-    window.open(`/chamaservico/api/comparar-propostas/export?${params.toString()}`, "_blank");
+
+    window.open(`api/comparar-propostas/export?${params.toString()}`, "_blank");
 }
 
 // Inicialização quando a página carrega
@@ -829,4 +805,3 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 ';
 ?>
-   
