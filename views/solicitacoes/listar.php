@@ -71,7 +71,7 @@ ob_start();
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center py-2">
-                        <small class="text-muted">
+                        <small class="text-with">
                             <i class="bi bi-calendar me-1"></i>
                             <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?>
                         </small>

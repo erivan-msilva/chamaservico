@@ -10,7 +10,7 @@ ob_start();
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="mb-0"><?= htmlspecialchars($solicitacao['titulo']) ?></h4>
-                    <small class="text-muted">
+                    <small class="text-with">
                         Solicitado em <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?>
                     </small>
                 </div>
@@ -41,7 +41,7 @@ ob_start();
                                             <div class="position-relative">
                                                 <?php
                                                 // CORREÇÃO: Caminho correto para imagens anexadas
-                                                $imagemPath = "uploads/solicitacoes/" . basename($imagem['caminho_imagem']);
+                                                $imagemPath = "/uploads/solicitacoes/" . basename($imagem['caminho_imagem']);
                                                 ?>
                                                 <a href="<?= $imagemPath ?>" target="_blank">
                                                     <img src="<?= $imagemPath ?>"

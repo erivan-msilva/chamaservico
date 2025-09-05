@@ -12,10 +12,10 @@ ob_start();
                     <i class="bi bi-person-gear me-2"></i>Editar Perfil Cliente
                 </h2>
                 <div class="d-flex gap-2">
-                    <a href="/chamaservico/cliente/perfil" class="btn btn-outline-secondary">
+                    <a href="<?= url('cliente/perfil') ?>" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i>Voltar ao Perfil
                     </a>
-                    <a href="/chamaservico/cliente/perfil/enderecos" class="btn btn-outline-primary">
+                    <a href="<?= url('cliente/perfil/enderecos') ?>" class="btn btn-outline-primary">
                         <i class="bi bi-geo-alt me-1"></i>Gerenciar Endereços
                     </a>
                 </div>
@@ -37,7 +37,7 @@ ob_start();
                                 ?>
                                 <div class="position-relative d-inline-block">
                                     <?php if ($fotoPerfil && $arquivoExiste): ?>
-                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars($fotoPerfil) ?>"
+                                        <img src="<?= url('uploads/perfil/' . htmlspecialchars($fotoPerfil)) ?>"
                                             class="rounded-circle border border-3 border-primary"
                                             style="width: 120px; height: 120px; object-fit: cover;"
                                             alt="Foto do perfil">
@@ -70,7 +70,7 @@ ob_start();
                             data-bs-toggle="list">
                             <i class="bi bi-shield-lock me-2"></i>Segurança
                         </a>
-                        <a href="/chamaservico/cliente/perfil/enderecos" class="list-group-item list-group-item-action">
+                        <a href="<?= url('cliente/perfil/enderecos') ?>" class="list-group-item list-group-item-action">
                             <i class="bi bi-geo-alt me-2"></i>Meus Endereços
                         </a>
                     </div>
@@ -87,7 +87,7 @@ ob_start();
                                         <i class="bi bi-person me-2"></i>Dados Pessoais do Cliente
                                     </h4>
 
-                                    <form method="POST" action="/chamaservico/cliente/perfil/editar" id="formDadosPessoais">
+                                    <form method="POST" action="<?= url('cliente/perfil/editar') ?>" id="formDadosPessoais">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="dados_pessoais">
 
@@ -162,7 +162,7 @@ ob_start();
                                                 <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                                                 <i class="bi bi-check-lg me-1"></i>Salvar Alterações
                                             </button>
-                                            <a href="/chamaservico/cliente/perfil" class="btn btn-outline-secondary">
+                                            <a href="<?= url('cliente/perfil') ?>" class="btn btn-outline-secondary">
                                                 <i class="bi bi-x-lg me-1"></i>Cancelar
                                             </a>
                                         </div>
@@ -175,7 +175,7 @@ ob_start();
                                         <i class="bi bi-shield-lock me-2"></i>Alterar Senha
                                     </h4>
 
-                                    <form method="POST" action="/chamaservico/cliente/perfil/editar" id="formSenha">
+                                    <form method="POST" action="<?= url('cliente/perfil/editar') ?>" id="formSenha">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="alterar_senha">
 
@@ -246,7 +246,7 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="/chamaservico/cliente/perfil/editar" enctype="multipart/form-data" id="formFoto">
+                <form method="POST" action="<?= url('cliente/perfil/editar') ?>" enctype="multipart/form-data" id="formFoto">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="acao" value="upload_foto">
 
