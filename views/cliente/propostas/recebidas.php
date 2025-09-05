@@ -168,7 +168,7 @@ ob_start();
         </button>
         
         <!-- Nova Solicitação -->
-        <a href="cliente/solicitacoes/criar" class="btn btn-primary">
+        <a href="<?= url('cliente/solicitacoes/criar') ?>" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>Nova Solicitação
         </a>
     </div>
@@ -240,7 +240,7 @@ ob_start();
                     <button type="submit" class="btn btn-outline-primary">
                         <i class="bi bi-funnel me-1"></i>Filtrar
                     </button>
-                    <a href="cliente/propostas/recebidas" class="btn btn-outline-secondary">
+                    <a href="<?= url('cliente/propostas/recebidas') ?>" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-clockwise me-1"></i>Limpar
                     </a>
                 </div>
@@ -263,7 +263,7 @@ ob_start();
                         Você ainda não recebeu propostas para suas solicitações.
                     <?php endif; ?>
                 </p>
-                <a href="cliente/solicitacoes/criar" class="btn btn-primary">
+                <a href="<?= url('cliente/solicitacoes/criar') ?>" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-1"></i>Criar Nova Solicitação
                 </a>
             </div>
@@ -292,7 +292,7 @@ ob_start();
                             <div class="prestador-destaque">
                                 <div class="d-flex align-items-center">
                                     <?php if (!empty($proposta['prestador_foto'])): ?>
-                                        <img src="uploads/perfil/<?= htmlspecialchars($proposta['prestador_foto']) ?>" 
+                                        <img src="<?= url('uploads/perfil/' . htmlspecialchars($proposta['prestador_foto'])) ?>" 
                                              class="prestador-avatar me-3" alt="Foto do prestador">
                                     <?php else: ?>
                                         <div class="prestador-avatar-placeholder bg-primary text-white me-3">
@@ -418,6 +418,9 @@ ob_start();
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th class="checkbox-comparacao d-none">
+                                    <input type="checkbox" class="form-check-input" id="select-all" onchange="toggleSelectAll(this)">
+                                </th>
                                 <th>Solicitação</th>
                                 <th>Prestador</th>
                                 <th>Valor</th>
@@ -429,7 +432,10 @@ ob_start();
                         </thead>
                         <tbody>
                             <?php foreach ($propostas as $proposta): ?>
-                            <tr>
+                            <tr data-proposta-id="<?= $proposta['id'] ?>">
+                                <td class="checkbox-comparacao d-none">
+                                    <input type="checkbox" class="form-check-input proposta-checkbox" value="<?= $proposta['id'] ?>" onchange="toggleSelecao(this)">
+                                </td>
                                 <td>
                                     <div>
                                         <strong><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></strong>
@@ -447,17 +453,21 @@ ob_start();
                                 <td><?= date('d/m/Y', strtotime($proposta['data_proposta'])) ?></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                        <a href="<?= url('cliente/propostas/detalhes?id=' . $proposta['id']) ?>" 
                                            class="btn btn-outline-primary">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         <?php if ($proposta['status'] === 'pendente'): ?>
                                             <button class="btn btn-success" 
-                                                    onclick="aceitarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalAceitar"
+                                                    onclick="setPropostaModalData(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>', '<?= htmlspecialchars($proposta['solicitacao_titulo']) ?>', '<?= number_format($proposta['valor'], 2, ',', '.') ?>', '<?= $proposta['prazo_execucao'] ?>')">
                                                 <i class="bi bi-check"></i>
                                             </button>
                                             <button class="btn btn-outline-danger" 
-                                                    onclick="recusarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalRecusar"
+                                                    onclick="setPropostaModalData(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>', '<?= htmlspecialchars($proposta['solicitacao_titulo']) ?>')">
                                                 <i class="bi bi-x"></i>
                                             </button>
                                         <?php endif; ?>
@@ -474,7 +484,12 @@ ob_start();
         <!-- Visualização em Timeline -->
         <div id="view-timeline" class="d-none timeline-view">
             <?php foreach ($propostas as $proposta): ?>
-            <div class="card status-<?= $proposta['status'] ?>">
+            <div class="card status-<?= $proposta['status'] ?> position-relative" data-proposta-id="<?= $proposta['id'] ?>">
+                <!-- Checkbox para Timeline -->
+                <div class="checkbox-comparacao d-none position-absolute" style="top: 10px; left: 10px; z-index: 10;">
+                    <input type="checkbox" class="form-check-input proposta-checkbox" value="<?= $proposta['id'] ?>" onchange="toggleSelecao(this)">
+                </div>
+                
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h6 class="mb-0"><?= htmlspecialchars($proposta['solicitacao_titulo']) ?></h6>
@@ -491,11 +506,13 @@ ob_start();
                                 <?= $proposta['status'] === 'pendente' ? 'Aguardando' : ucfirst($proposta['status']) ?>
                             </span>
                             <div class="btn-group btn-group-sm">
-                                <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" 
+                                <a href="<?= url('cliente/propostas/detalhes?id=' . $proposta['id']) ?>" 
                                    class="btn btn-outline-primary btn-sm">Ver</a>
                                 <?php if ($proposta['status'] === 'pendente'): ?>
                                     <button class="btn btn-success btn-sm" 
-                                            onclick="aceitarProposta(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>')">
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalAceitar"
+                                            onclick="setPropostaModalData(<?= $proposta['id'] ?>, '<?= htmlspecialchars($proposta['prestador_nome']) ?>', '<?= htmlspecialchars($proposta['solicitacao_titulo']) ?>', '<?= number_format($proposta['valor'], 2, ',', '.') ?>', '<?= $proposta['prazo_execucao'] ?>')">
                                         Aceitar
                                     </button>
                                 <?php endif; ?>
@@ -509,8 +526,119 @@ ob_start();
     <?php endif; ?>
 </div>
 
-<!-- Incluir Modais Centralizados -->
-<?php include __DIR__ . '/_modals_propostas.php'; ?>
+<!-- Modal Aceitar Proposta -->
+<div class="modal fade" id="modalAceitar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle me-2"></i>Aceitar Proposta
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="<?= url('cliente/propostas/aceitar') ?>">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                    <input type="hidden" name="proposta_id" id="propostaIdAceitar">
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle me-2"></i>Confirmar Aceitação</h6>
+                        <p class="mb-2">Você está prestes a aceitar a proposta de:</p>
+                        <ul class="mb-0">
+                            <li><strong>Prestador:</strong> <span id="prestadorNomeAceitar"></span></li>
+                            <li><strong>Serviço:</strong> <span id="solicitacaoTituloAceitar"></span></li>
+                            <li><strong>Valor:</strong> R$ <span id="valorPropostaAceitar"></span></li>
+                            <li><strong>Prazo:</strong> <span id="prazoPropostaAceitar"></span> dia(s)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações (opcional)</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="3" 
+                                  placeholder="Deixe observações específicas sobre o serviço..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Aceitar Proposta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Recusar Proposta -->
+<div class="modal fade" id="modalRecusar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-x-circle me-2"></i>Recusar Proposta
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="<?= url('cliente/propostas/recusar') ?>">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                    <input type="hidden" name="proposta_id" id="propostaIdRecusar">
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle me-2"></i>Confirmar Recusa</h6>
+                        <p class="mb-2">Você está prestes a recusar a proposta de:</p>
+                        <ul class="mb-0">
+                            <li><strong>Prestador:</strong> <span id="prestadorNomeRecusar"></span></li>
+                            <li><strong>Serviço:</strong> <span id="solicitacaoTituloRecusar"></span></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="motivo_recusa" class="form-label">Motivo da recusa (opcional)</label>
+                        <textarea class="form-control" id="motivo_recusa" name="motivo_recusa" rows="3" 
+                                  placeholder="Explique o motivo da recusa para ajudar o prestador..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i>Recusar Proposta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Comparar Propostas -->
+<div class="modal fade" id="modalComparar" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-bar-chart me-2"></i>Comparar Propostas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="tabelaComparacao">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="mt-2">Carregando comparação...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" onclick="exportarComparacao()">
+                    <i class="bi bi-download me-1"></i>Exportar PDF
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php
 $content = ob_get_clean();
@@ -525,8 +653,29 @@ let modoComparacao = false;
 let propostasSelecionadas = [];
 let visualizacaoAtual = "cards";
 
-// Função para alternar visualizações
+// CORREÇÃO: Função para definir dados no modal
+function setPropostaModalData(propostaId, prestadorNome, solicitacaoTitulo, valor = "", prazo = "") {
+    // Modal Aceitar
+    if (document.getElementById("propostaIdAceitar")) {
+        document.getElementById("propostaIdAceitar").value = propostaId;
+        document.getElementById("prestadorNomeAceitar").textContent = prestadorNome;
+        document.getElementById("solicitacaoTituloAceitar").textContent = solicitacaoTitulo;
+        if (valor) document.getElementById("valorPropostaAceitar").textContent = valor;
+        if (prazo) document.getElementById("prazoPropostaAceitar").textContent = prazo;
+    }
+    
+    // Modal Recusar
+    if (document.getElementById("propostaIdRecusar")) {
+        document.getElementById("propostaIdRecusar").value = propostaId;
+        document.getElementById("prestadorNomeRecusar").textContent = prestadorNome;
+        document.getElementById("solicitacaoTituloRecusar").textContent = solicitacaoTitulo;
+    }
+}
+
+// CORREÇÃO: Função para alternar visualizações
 function alterarVisualizacao(tipo) {
+    console.log("Alterando visualização para:", tipo);
+    
     // Ocultar todas as visualizações
     document.querySelectorAll("#view-cards, #view-lista, #view-timeline").forEach(el => {
         el.classList.add("d-none");
@@ -538,21 +687,43 @@ function alterarVisualizacao(tipo) {
     });
     
     // Mostrar visualização selecionada
-    document.getElementById("view-" + tipo).classList.remove("d-none");
-    document.getElementById("btn-" + tipo).classList.add("active");
+    const viewElement = document.getElementById("view-" + tipo);
+    const btnElement = document.getElementById("btn-" + tipo);
     
-    visualizacaoAtual = tipo;
-    localStorage.setItem("visualizacao-propostas", tipo);
+    if (viewElement && btnElement) {
+        viewElement.classList.remove("d-none");
+        btnElement.classList.add("active");
+        
+        // Atualizar checkboxes se modo comparação estiver ativo
+        if (modoComparacao) {
+            const checkboxes = viewElement.querySelectorAll(".checkbox-comparacao");
+            checkboxes.forEach(cb => cb.classList.remove("d-none"));
+        }
+        
+        visualizacaoAtual = tipo;
+        localStorage.setItem("visualizacao-propostas", tipo);
+        console.log("Visualização alterada com sucesso para:", tipo);
+    } else {
+        console.error("Elementos não encontrados para visualização:", tipo);
+    }
 }
 
-// Função para ativar/desativar modo comparação
+// CORREÇÃO: Função para ativar/desativar modo comparação
 function toggleModoComparacao() {
     modoComparacao = !modoComparacao;
-    const checkboxes = document.querySelectorAll(".checkbox-comparacao");
     const btnComparacao = document.getElementById("btn-comparacao");
     const containerPropostas = document.getElementById("container-propostas");
     
-    checkboxes.forEach(cb => {
+    // Buscar checkboxes em todas as visualizações
+    const checkboxesCards = document.querySelectorAll("#view-cards .checkbox-comparacao");
+    const checkboxesLista = document.querySelectorAll("#view-lista .checkbox-comparacao");
+    const checkboxesTimeline = document.querySelectorAll("#view-timeline .checkbox-comparacao");
+    
+    const todosCheckboxes = [...checkboxesCards, ...checkboxesLista, ...checkboxesTimeline];
+    
+    console.log("Modo comparação:", modoComparacao, "Checkboxes encontrados:", todosCheckboxes.length);
+    
+    todosCheckboxes.forEach(cb => {
         cb.classList.toggle("d-none", !modoComparacao);
     });
     
@@ -568,22 +739,49 @@ function toggleModoComparacao() {
         containerPropostas.classList.remove("modo-comparacao");
         limparSelecao();
     }
-}
-
-// Função para selecionar/deselecionar proposta
-function toggleSelecao(checkbox) {
-    const propostaId = parseInt(checkbox.value);
-    const card = checkbox.closest(".card-proposta");
-    
-    if (checkbox.checked) {
-        propostasSelecionadas.push(propostaId);
-        card.classList.add("selecionado");
-    } else {
-        propostasSelecionadas = propostasSelecionadas.filter(id => id !== propostaId);
-        card.classList.remove("selecionado");
-    }
     
     atualizarAcoesLote();
+}
+
+// CORREÇÃO: Função para selecionar/deselecionar proposta
+function toggleSelecao(checkbox) {
+    const propostaId = parseInt(checkbox.value);
+    
+    if (checkbox.checked) {
+        if (!propostasSelecionadas.includes(propostaId)) {
+            propostasSelecionadas.push(propostaId);
+        }
+    } else {
+        propostasSelecionadas = propostasSelecionadas.filter(id => id !== propostaId);
+    }
+    
+    // Marcar/desmarcar elementos relacionados em todas as visualizações
+    const elementos = document.querySelectorAll(`[data-proposta-id="${propostaId}"]`);
+    elementos.forEach(el => {
+        el.classList.toggle("selecionado", checkbox.checked);
+    });
+    
+    // Sincronizar checkboxes em outras visualizações
+    const outrosCheckboxes = document.querySelectorAll(`input[value="${propostaId}"]`);
+    outrosCheckboxes.forEach(cb => {
+        if (cb !== checkbox) {
+            cb.checked = checkbox.checked;
+        }
+    });
+    
+    console.log("Propostas selecionadas:", propostasSelecionadas);
+    atualizarAcoesLote();
+}
+
+// Função para selecionar/deselecionar todas
+function toggleSelectAll(checkbox) {
+    const visualizacaoAtiva = document.getElementById("view-" + visualizacaoAtual);
+    const checkboxesAtivos = visualizacaoAtiva.querySelectorAll(".proposta-checkbox");
+    
+    checkboxesAtivos.forEach(cb => {
+        cb.checked = checkbox.checked;
+        toggleSelecao(cb);
+    });
 }
 
 // Atualizar interface de ações em lote
@@ -602,170 +800,96 @@ function atualizarAcoesLote() {
 // Limpar seleção
 function limparSelecao() {
     propostasSelecionadas = [];
-    document.querySelectorAll(".checkbox-comparacao input").forEach(input => {
-        input.checked = false;
+    
+    // Limpar todos os checkboxes
+    document.querySelectorAll(".proposta-checkbox, #select-all").forEach(cb => {
+        cb.checked = false;
     });
-    document.querySelectorAll(".card-proposta").forEach(card => {
-        card.classList.remove("selecionado");
+    
+    // Remover classe selecionado
+    document.querySelectorAll("[data-proposta-id]").forEach(el => {
+        el.classList.remove("selecionado");
     });
+    
     atualizarAcoesLote();
 }
 
-// Abrir modal aceitar com dados
-function abrirModalAceitar(propostaId, prestadorNome, valor, prazo) {
-    document.getElementById("propostaIdAceitar").value = propostaId;
-    document.getElementById("prestadorNomeAceitar").textContent = prestadorNome;
-    document.getElementById("valorPropostaAceitar").textContent = valor;
-    document.getElementById("prazoPropostaAceitar").textContent = prazo;
-    
-    new bootstrap.Modal(document.getElementById("modalAceitar")).show();
-}
-
-// Abrir modal recusar com dados
-function abrirModalRecusar(propostaId, prestadorNome, solicitacaoTitulo) {
-    document.getElementById("propostaIdRecusar").value = propostaId;
-    document.getElementById("prestadorNomeRecusar").textContent = prestadorNome;
-    document.getElementById("solicitacaoTituloRecusar").textContent = solicitacaoTitulo;
-    
-    new bootstrap.Modal(document.getElementById("modalRecusar")).show();
-}
-
-// Comparar propostas selecionadas
+// CORREÇÃO: Comparar propostas selecionadas
 function compararSelecionadas() {
     if (propostasSelecionadas.length < 2) {
         alert("Selecione pelo menos 2 propostas para comparar");
         return;
     }
     
-    fetch("api/comparar-propostas", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({propostas: propostasSelecionadas})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById("tabelaComparacao").innerHTML = data.html;
-            new bootstrap.Modal(document.getElementById("modalComparar")).show();
-        } else {
-            alert("Erro ao carregar comparação: " + (data.message || "Erro desconhecido"));
-        }
-    })
-    .catch(error => {
-        console.error("Erro ao comparar propostas:", error);
-        alert("Erro ao carregar comparação. Tente novamente.");
-    });
-}
-
-// Aceitar propostas selecionadas
-function aceitarSelecionadas() {
-    if (propostasSelecionadas.length === 0) return;
+    console.log("Comparando propostas:", propostasSelecionadas);
     
-    if (confirm(`Aceitar ${propostasSelecionadas.length} proposta(s) selecionada(s)?`)) {
-        fetch("api/propostas/aceitar-lote", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({propostas: propostasSelecionadas})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert("Erro ao aceitar propostas: " + (data.message || "Erro desconhecido"));
-            }
-        })
-        .catch(error => {
-            console.error("Erro:", error);
-            alert("Erro ao processar solicitação");
-        });
-    }
-}
-
-// Recusar propostas selecionadas
-function recusarSelecionadas() {
-    if (propostasSelecionadas.length === 0) return;
+    // Criar tabela de comparação simples
+    const modal = new bootstrap.Modal(document.getElementById("modalComparar"));
+    const tabelaDiv = document.getElementById("tabelaComparacao");
     
-    const motivo = prompt("Motivo da recusa (opcional):");
-    
-    fetch("api/propostas/recusar-lote", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            propostas: propostasSelecionadas,
-            motivo: motivo
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert("Erro ao recusar propostas: " + (data.message || "Erro desconhecido"));
-        }
-    })
-    .catch(error => {
-        console.error("Erro:", error);
-        alert("Erro ao processar solicitação");
-    });
-}
-
-// NOVA FUNCIONALIDADE: Atualização automática via AJAX
-function atualizarPropostasAjax() {
-    const formData = new FormData(document.getElementById("form-filtros"));
-    const params = new URLSearchParams();
-    
-    for (let [key, value] of formData.entries()) {
-        if (value) params.append(key, value);
-    }
-    
-    params.append("ajax", "1"); // Indicar que é requisição AJAX
-    
-    fetch(`cliente/propostas/recebidas?${params.toString()}`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && data.html) {
-            // Atualizar apenas o container das propostas
-            const container = document.getElementById("container-propostas");
-            container.innerHTML = data.html;
+    // Buscar dados das propostas selecionadas
+    const dadosPropostas = [];
+    propostasSelecionadas.forEach(id => {
+        const card = document.querySelector(`[data-proposta-id="${id}"]`);
+        if (card) {
+            // Extrair dados do card/linha
+            const prestadorNome = card.querySelector(".prestador-nome")?.textContent || 
+                                 card.textContent.match(/Prestador:\s*([^\\n]+)/)?.[1] || "N/A";
+            const valor = card.textContent.match(/R\$\s*([\d.,]+)/)?.[1] || "N/A";
+            const prazo = card.textContent.match(/(\d+)\s*dia/)?.[1] || "N/A";
+            const solicitacao = card.textContent.match(/Solicitação:\s*([^\\n]+)/)?.[1] || 
+                              card.querySelector("h6, strong")?.textContent || "N/A";
             
-            // Manter estado do modo comparação se estava ativo
-            if (modoComparacao) {
-                const checkboxes = container.querySelectorAll(".checkbox-comparacao");
-                checkboxes.forEach(cb => cb.classList.remove("d-none"));
-                container.classList.add("modo-comparacao");
-            }
-            
-            // Exibir notificação se houver novas propostas
-            if (data.novas_propostas > 0) {
-                mostrarNotificacao(`${data.novas_propostas} nova(s) proposta(s) recebida(s)!`, "success");
-            }
+            dadosPropostas.push({
+                id: id,
+                prestador: prestadorNome.trim(),
+                valor: valor,
+                prazo: prazo,
+                solicitacao: solicitacao.trim()
+            });
         }
-    })
-    .catch(error => {
-        console.error("Erro ao atualizar propostas:", error);
     });
-}
-
-// Mostrar notificação toast
-function mostrarNotificacao(mensagem, tipo = "info") {
-    // Criar elemento de notificação
-    const toast = document.createElement("div");
-    toast.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
-    toast.style.cssText = "top: 20px; right: 20px; z-index: 9999; min-width: 300px;";
-    toast.innerHTML = `
-        ${mensagem}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    
+    // Gerar HTML da tabela
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Critério</th>
+                        ${dadosPropostas.map((p, i) => `<th>Proposta ${i + 1}</th>`).join("")}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Prestador</strong></td>
+                        ${dadosPropostas.map(p => `<td>${p.prestador}</td>`).join("")}
+                    </tr>
+                    <tr>
+                        <td><strong>Valor</strong></td>
+                        ${dadosPropostas.map(p => `<td class="text-success fw-bold">R$ ${p.valor}</td>`).join("")}
+                    </tr>
+                    <tr>
+                        <td><strong>Prazo</strong></td>
+                        ${dadosPropostas.map(p => `<td>${p.prazo} dia(s)</td>`).join("")}
+                    </tr>
+                    <tr>
+                        <td><strong>Ações</strong></td>
+                        ${dadosPropostas.map(p => `
+                            <td>
+                                <a href="<?= url("cliente/propostas/detalhes?id=") ?>${p.id}" class="btn btn-sm btn-primary">
+                                    Ver Detalhes
+                                </a>
+                            </td>
+                        `).join("")}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     `;
     
-    document.body.appendChild(toast);
-    
-    // Remover após 5 segundos
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
-    }, 5000);
+    tabelaDiv.innerHTML = html;
+    modal.show();
 }
 
 // Exportar comparação para PDF
@@ -779,7 +903,7 @@ function exportarComparacao() {
     params.append("propostas", propostasSelecionadas.join(","));
     params.append("formato", "pdf");
 
-    window.open(`api/comparar-propostas/export?${params.toString()}`, "_blank");
+    window.open(`<?= url("api/comparar-propostas/export") ?>?${params.toString()}`, "_blank");
 }
 
 // Inicialização quando a página carrega
@@ -797,10 +921,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
     
-    // Configurar atualização automática via AJAX (a cada 30 segundos)
-    setInterval(atualizarPropostasAjax, 30000);
-    
     console.log("Sistema de propostas inicializado com sucesso!");
+    console.log("Propostas encontradas:", document.querySelectorAll("[data-proposta-id]").length);
 });
 </script>
 ';

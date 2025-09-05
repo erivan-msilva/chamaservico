@@ -20,110 +20,168 @@ ob_start();
                 </p>
             </div>
 
+            <!-- Barra de Progresso do Wizard -->
+            <div class="wizard-progress mb-5">
+                <div class="progress-container">
+                    <div class="progress-line" id="progressLine"></div>
+                    <div class="step-item active" data-step="1">
+                        <div class="step-circle">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <div class="step-label">Detalhes</div>
+                    </div>
+                    <div class="step-item" data-step="2">
+                        <div class="step-circle">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <div class="step-label">Localização</div>
+                    </div>
+                    <div class="step-item" data-step="3">
+                        <div class="step-circle">
+                            <i class="bi bi-camera"></i>
+                        </div>
+                        <div class="step-label">Fotos</div>
+                    </div>
+                    <div class="step-item" data-step="4">
+                        <div class="step-circle">
+                            <i class="bi bi-check2-square"></i>
+                        </div>
+                        <div class="step-label">Finalizar</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Formulário Principal -->
             <form method="POST" enctype="multipart/form-data" id="formSolicitacao" class="needs-validation" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                 <?php if (isset($solicitacao)): ?>
                     <input type="hidden" name="id" value="<?= htmlspecialchars($solicitacao['id']) ?>">
                 <?php endif; ?>
+                <input type="hidden" name="urgencia" id="urgenciaHidden" value="<?= htmlspecialchars($solicitacao['urgencia'] ?? 'media') ?>">
 
                 <div class="row g-4">
-                    <!-- Coluna Principal -->
+                    <!-- Área Principal do Wizard -->
                     <div class="col-lg-8">
-                        <!-- Card 1: Informações Básicas -->
-                        <div class="card shadow-sm border-0 mb-4">
-                            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Informações Básicas
-                                </h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <!-- Tipo de Serviço -->
-                                <div class="mb-4">
-                                    <label for="tipo_servico_id" class="form-label fw-bold">
-                                        <i class="bi bi-tools text-primary me-2"></i>
-                                        Tipo de Serviço *
-                                    </label>
-                                    <select class="form-select form-select-lg" id="tipo_servico_id" name="tipo_servico_id" required>
-                                        <option value="" disabled <?= !isset($solicitacao) ? 'selected' : '' ?>>
-                                            🔍 Selecione o tipo de serviço que você precisa
-                                        </option>
-                                        <?php foreach ($tiposServico as $tipo): ?>
-                                            <option value="<?= $tipo['id'] ?>"
-                                                <?= isset($solicitacao) && $solicitacao['tipo_servico_id'] == $tipo['id'] ? 'selected' : '' ?>>
-                                                <?= htmlspecialchars($tipo['nome']) ?>
+                        <!-- Etapa 1: Informações Básicas -->
+                        <div class="wizard-step active" id="step1">
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Passo 1: Informações Básicas
+                                    </h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <!-- Tipo de Serviço -->
+                                    <div class="mb-4">
+                                        <label for="tipo_servico_id" class="form-label fw-bold">
+                                            <i class="bi bi-tools text-primary me-2"></i>
+                                            Tipo de Serviço *
+                                        </label>
+                                        <select class="form-select form-select-lg" id="tipo_servico_id" name="tipo_servico_id" required>
+                                            <option value="" disabled <?= !isset($solicitacao) ? 'selected' : '' ?>>
+                                                🔍 Selecione o tipo de serviço que você precisa
                                             </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <div class="form-text">
-                                        <i class="bi bi-lightbulb text-warning"></i>
-                                        Escolha a categoria que melhor descreve seu serviço
+                                            <?php foreach ($tiposServico as $tipo): ?>
+                                                <option value="<?= $tipo['id'] ?>"
+                                                    <?= isset($solicitacao) && $solicitacao['tipo_servico_id'] == $tipo['id'] ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($tipo['nome']) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <div class="form-text">
+                                            <i class="bi bi-lightbulb text-warning"></i>
+                                            Escolha a categoria que melhor descreve seu serviço
+                                        </div>
                                     </div>
-                                </div>
 
-                                <!-- Título -->
-                                <div class="mb-4">
-                                    <label for="titulo" class="form-label fw-bold">
-                                        <i class="bi bi-card-text text-primary me-2"></i>
-                                        Título da Solicitação *
-                                    </label>
-                                    <input type="text"
-                                        class="form-control form-control-lg"
-                                        id="titulo"
-                                        name="titulo"
-                                        placeholder="Ex.: Instalação de chuveiro elétrico na suíte"
-                                        value="<?= htmlspecialchars($solicitacao['titulo'] ?? '') ?>"
-                                        maxlength="100"
-                                        required>
-                                    <div class="form-text">
-                                        <i class="bi bi-info-circle text-info"></i>
-                                        Seja específico e claro. Um bom título atrai mais prestadores!
+                                    <!-- Título -->
+                                    <div class="mb-4">
+                                        <label for="titulo" class="form-label fw-bold">
+                                            <i class="bi bi-card-text text-primary me-2"></i>
+                                            Título da Solicitação *
+                                        </label>
+                                        <input type="text"
+                                            class="form-control form-control-lg"
+                                            id="titulo"
+                                            name="titulo"
+                                            placeholder="Ex.: Instalação de chuveiro elétrico na suíte"
+                                            value="<?= htmlspecialchars($solicitacao['titulo'] ?? '') ?>"
+                                            maxlength="100"
+                                            required>
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle text-info"></i>
+                                            Seja específico e claro. Um bom título atrai mais prestadores!
+                                        </div>
+                                        <div class="char-counter text-end">
+                                            <small class="text-muted">
+                                                <span id="titulo-count">0</span>/100 caracteres
+                                            </small>
+                                        </div>
                                     </div>
-                                    <div class="char-counter text-end">
-                                        <small class="text-muted">
-                                            <span id="titulo-count">0</span>/100 caracteres
-                                        </small>
-                                    </div>
-                                </div>
 
-                                <!-- Descrição -->
-                                <div class="mb-3">
-                                    <label for="descricao" class="form-label fw-bold">
-                                        <i class="bi bi-chat-text text-primary me-2"></i>
-                                        Descrição Detalhada *
-                                    </label>
-                                    <textarea class="form-control"
-                                        id="descricao"
-                                        name="descricao"
-                                        rows="5"
-                                        maxlength="1000"
-                                        required><?= htmlspecialchars($solicitacao['descricao'] ?? '') ?></textarea>
-                                    <div class="form-text">
-                                        <i class="bi bi-check-circle text-success"></i>
-                                        Quanto mais detalhes, melhores serão as propostas recebidas
+                                    <!-- Descrição -->
+                                    <div class="mb-3">
+                                        <label for="descricao" class="form-label fw-bold">
+                                            <i class="bi bi-chat-text text-primary me-2"></i>
+                                            Descrição Detalhada *
+                                        </label>
+                                        <textarea class="form-control"
+                                            id="descricao"
+                                            name="descricao"
+                                            rows="5"
+                                            maxlength="1000"
+                                            placeholder="Descreva detalhadamente o que você precisa. Quanto mais informações, melhores propostas você receberá..."
+                                            required><?= htmlspecialchars($solicitacao['descricao'] ?? '') ?></textarea>
+                                        <div class="form-text">
+                                            <i class="bi bi-check-circle text-success"></i>
+                                            Quanto mais detalhes, melhores serão as propostas recebidas
+                                        </div>
+                                        <div class="char-counter text-end">
+                                            <small class="text-muted">
+                                                <span id="descricao-count">0</span>/1000 caracteres
+                                            </small>
+                                        </div>
                                     </div>
-                                    <div class="char-counter text-end">
-                                        <small class="text-muted">
-                                            <span id="descricao-count">0</span>/1000 caracteres
-                                        </small>
+
+                                    <!-- Orçamento Estimado -->
+                                    <div class="mb-3">
+                                        <label for="orcamento_estimado" class="form-label fw-bold">
+                                            <i class="bi bi-currency-dollar text-primary me-2"></i>
+                                            Valor Estimado (R$)
+                                        </label>
+                                        <div class="input-group input-group-lg">
+                                            <span class="input-group-text">R$</span>
+                                            <input type="number"
+                                                class="form-control"
+                                                id="orcamento_estimado"
+                                                name="orcamento_estimado"
+                                                placeholder="0,00"
+                                                step="0.01"
+                                                min="0"
+                                                value="<?= htmlspecialchars($solicitacao['orcamento_estimado'] ?? '') ?>">
+                                        </div>
+                                        <div class="form-text">
+                                            <i class="bi bi-lightbulb text-warning"></i>
+                                            Opcional. Ajuda os prestadores a entenderem suas expectativas
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Card 2: Localização e Urgência -->
-                        <div class="card shadow-sm border-0 mb-4">
-                            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-geo-alt me-2"></i>
-                                    Localização e Urgência
-                                </h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row">
+                        <!-- Etapa 2: Localização e Urgência -->
+                        <div class="wizard-step" id="step2">
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-geo-alt me-2"></i>
+                                        Passo 2: Localização e Urgência
+                                    </h5>
+                                </div>
+                                <div class="card-body p-4">
                                     <!-- Endereço -->
-                                    <div class="col-md-8 mb-3">
+                                    <div class="mb-4">
                                         <label for="endereco_id" class="form-label fw-bold">
                                             <i class="bi bi-house-door text-primary me-2"></i>
                                             Endereço do Serviço *
@@ -148,26 +206,32 @@ ob_start();
                                         </div>
                                     </div>
 
-                                    <!-- Urgência -->
-                                    <div class="mb-3">
-                                        <label for="urgencia" class="form-label fw-bold">
+                                    <!-- Urgência - Botões Interativos -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">
                                             <i class="bi bi-clock text-primary me-2"></i>
-                                            Urgência *
+                                            Nível de Urgência *
                                         </label>
-                                        <select class="form-select form-select-lg" id="urgencia" name="urgencia" required>
-                                            <option value="baixa" <?= isset($solicitacao) && $solicitacao['urgencia'] == 'baixa' ? 'selected' : '' ?>>
-                                                🟢 Baixa - Tenho tempo
-                                            </option>
-                                            <option value="media" <?= isset($solicitacao) && $solicitacao['urgencia'] == 'media' ? 'selected' : (!isset($solicitacao) ? 'selected' : '') ?>>
-                                                🟡 Média - Em alguns dias
-                                            </option>
-                                            <option value="alta" <?= isset($solicitacao) && $solicitacao['urgencia'] == 'alta' ? 'selected' : '' ?>>
-                                                🔴 Alta - É urgente!
-                                            </option>
-                                        </select>
+                                        <div class="urgency-selector">
+                                            <div class="urgency-option" data-value="baixa">
+                                                <div class="urgency-icon">🟢</div>
+                                                <div class="urgency-title">Baixa</div>
+                                                <div class="urgency-desc">Tenho tempo</div>
+                                            </div>
+                                            <div class="urgency-option active" data-value="media">
+                                                <div class="urgency-icon">🟡</div>
+                                                <div class="urgency-title">Média</div>
+                                                <div class="urgency-desc">Em alguns dias</div>
+                                            </div>
+                                            <div class="urgency-option" data-value="alta">
+                                                <div class="urgency-icon">🔴</div>
+                                                <div class="urgency-title">Alta</div>
+                                                <div class="urgency-desc">É urgente!</div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <!-- NOVO: Data e Horário da Visita -->
+                                    <!-- Data e Horário da Visita -->
                                     <div class="mb-3">
                                         <label for="data_atendimento" class="form-label fw-bold">
                                             <i class="bi bi-calendar-check text-primary me-2"></i>
@@ -188,93 +252,101 @@ ob_start();
                             </div>
                         </div>
 
-                        <!-- Card 3: Fotos e Anexos -->
-                        <div class="card shadow-sm border-0 mb-4">
-                            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-camera me-2"></i>
-                                    Fotos e Anexos
-                                </h5>
+                        <!-- Etapa 3: Fotos e Anexos -->
+                        <div class="wizard-step" id="step3">
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-camera me-2"></i>
+                                        Passo 3: Fotos e Anexos
+                                    </h5>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="upload-area" id="uploadArea">
+                                        <div class="text-center py-5">
+                                            <i class="bi bi-cloud-upload text-primary mb-3" style="font-size: 3rem;"></i>
+                                            <h6 class="fw-bold">Adicione fotos do local ou problema</h6>
+                                            <p class="text-muted mb-3">
+                                                Arrastar e soltar ou clique para selecionar
+                                            </p>
+                                            <input type="file"
+                                                class="d-none"
+                                                id="imagens"
+                                                name="imagens[]"
+                                                multiple
+                                                accept="image/*">
+                                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imagens').click()">
+                                                <i class="bi bi-plus-circle me-2"></i>
+                                                Selecionar Fotos
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Alertas de Upload -->
+                                    <div id="uploadAlerts" class="mt-3"></div>
+                                    
+                                    <div class="form-text mt-2">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                        Máximo 5 fotos • Formatos: JPG, PNG, GIF • Até 5MB cada
+                                    </div>
+                                    <div id="preview-container" class="row mt-3 g-2" style="display: none;"></div>
+                                </div>
                             </div>
-                            <div class="card-body p-4">
-                                <div class="upload-area" id="uploadArea">
-                                    <div class="text-center py-5">
-                                        <i class="bi bi-cloud-upload text-primary mb-3" style="font-size: 3rem;"></i>
-                                        <h6 class="fw-bold">Adicione fotos do local ou problema</h6>
-                                        <p class="text-muted mb-3">
-                                            Arrastar e soltar ou clique para selecionar
-                                        </p>
-                                        <input type="file"
-                                            class="d-none"
-                                            id="imagens"
-                                            name="imagens[]"
-                                            multiple
-                                            accept="image/*">
-                                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imagens').click()">
-                                            <i class="bi bi-plus-circle me-2"></i>
-                                            Selecionar Fotos
-                                        </button>
+                        </div>
+
+                        <!-- Etapa 4: Finalizar -->
+                        <div class="wizard-step" id="step4">
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-check2-square me-2"></i>
+                                        Passo 4: Revisão e Finalização
+                                    </h5>
+                                </div>
+                                <div class="card-body p-4 text-center">
+                                    <div class="mb-4">
+                                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                                        <h4 class="mt-3 mb-2">Quase pronto!</h4>
+                                        <p class="text-muted">Revise suas informações no resumo ao lado e publique sua solicitação.</p>
+                                    </div>
+                                    
+                                    <div class="alert alert-info border-0">
+                                        <h6 class="fw-bold mb-2">
+                                            <i class="bi bi-lightbulb me-2"></i>
+                                            O que acontece agora?
+                                        </h6>
+                                        <ul class="mb-0 text-start small">
+                                            <li>Sua solicitação será publicada na plataforma</li>
+                                            <li>Prestadores qualificados verão seu pedido</li>
+                                            <li>Você receberá propostas e poderá escolher a melhor</li>
+                                            <li>Mantenha-se disponível para contato</li>
+                                        </ul>
                                     </div>
                                 </div>
-                                <div class="form-text mt-2">
-                                    <i class="bi bi-info-circle text-info"></i>
-                                    Máximo 5 fotos • Formatos: JPG, PNG, GIF • Até 5MB cada
-                                </div>
-                                <div id="preview-container" class="row mt-3 g-2" style="display: none;"></div>
                             </div>
+                        </div>
+
+                        <!-- Navegação do Wizard -->
+                        <div class="wizard-navigation d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary btn-lg" id="btnVoltar" style="display: none;">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Voltar
+                            </button>
+                            <div></div>
+                            <button type="button" class="btn btn-primary btn-lg" id="btnAvancar">
+                                Avançar
+                                <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg" id="btnFinalizar" style="display: none;">
+                                <i class="bi bi-send me-2"></i>
+                                <?= isset($solicitacao) ? 'Salvar Alterações' : 'Publicar Solicitação' ?>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Sidebar -->
+                    <!-- Sidebar - Resumo Dinâmico -->
                     <div class="col-lg-4">
-                        <!-- Card: Orçamento -->
-                        <div class="card shadow-sm border-0 mb-4">
-                            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-currency-dollar me-2"></i>
-                                    Orçamento
-                                </h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="mb-3">
-                                    <label for="orcamento_estimado" class="form-label fw-bold">
-                                        Valor Estimado (R$)
-                                    </label>
-                                    <div class="input-group input-group-lg">
-                                        <span class="input-group-text">R$</span>
-                                        <input type="number"
-                                            class="form-control"
-                                            id="orcamento_estimado"
-                                            name="orcamento_estimado"
-                                            placeholder="0,00"
-                                            step="0.01"
-                                            min="0"
-                                            value="<?= htmlspecialchars($solicitacao['orcamento_estimado'] ?? '') ?>">
-                                    </div>
-                                    <div class="form-text">
-                                        <i class="bi bi-lightbulb text-warning"></i>
-                                        Opcional. Ajuda os prestadores a entenderem suas expectativas
-                                    </div>
-                                </div>
-
-                                <!-- Dicas de Orçamento -->
-                                <div class="alert alert-info border-0 bg-light">
-                                    <h6 class="fw-bold mb-2">
-                                        <i class="bi bi-question-circle me-2"></i>
-                                        Dicas de Orçamento
-                                    </h6>
-                                    <ul class="mb-0 small">
-                                        <li>Pesquise preços na internet</li>
-                                        <li>Considere materiais e mão de obra</li>
-                                        <li>Deixe margem para negociação</li>
-                                        <li>Valores justos atraem melhores profissionais</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Card: Resumo -->
-                        <div class="card shadow-sm border-0 mb-4">
+                        <div class="card shadow-sm border-0 mb-4 sticky-top" style="top: 20px;">
                             <div class="card-header bg-dark text-white">
                                 <h5 class="mb-0">
                                     <i class="bi bi-check2-square me-2"></i>
@@ -283,41 +355,64 @@ ob_start();
                             </div>
                             <div class="card-body p-4">
                                 <div class="summary-item mb-3">
-                                    <strong>Tipo:</strong>
-                                    <span id="summary-tipo" class="text-muted">Não selecionado</span>
+                                    <div class="summary-label">Tipo de Serviço:</div>
+                                    <div class="summary-value" id="summary-tipo">
+                                        <i class="bi bi-circle text-muted me-2"></i>
+                                        <span>Não selecionado</span>
+                                    </div>
                                 </div>
+                                
                                 <div class="summary-item mb-3">
-                                    <strong>Urgência:</strong>
-                                    <span id="summary-urgencia" class="badge bg-secondary">Média</span>
+                                    <div class="summary-label">Título:</div>
+                                    <div class="summary-value" id="summary-titulo">
+                                        <i class="bi bi-circle text-muted me-2"></i>
+                                        <span>Não informado</span>
+                                    </div>
                                 </div>
+                                
                                 <div class="summary-item mb-3">
-                                    <strong>Endereço:</strong>
-                                    <span id="summary-endereco" class="text-muted">Não selecionado</span>
+                                    <div class="summary-label">Urgência:</div>
+                                    <div class="summary-value" id="summary-urgencia">
+                                        <span class="badge bg-warning">🟡 Média</span>
+                                    </div>
                                 </div>
+                                
                                 <div class="summary-item mb-3">
-                                    <strong>Orçamento:</strong>
-                                    <span id="summary-orcamento" class="text-success">A combinar</span>
+                                    <div class="summary-label">Endereço:</div>
+                                    <div class="summary-value" id="summary-endereco">
+                                        <i class="bi bi-circle text-muted me-2"></i>
+                                        <span>Não selecionado</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-item mb-3">
+                                    <div class="summary-label">Orçamento:</div>
+                                    <div class="summary-value" id="summary-orcamento">
+                                        <i class="bi bi-circle text-muted me-2"></i>
+                                        <span>A combinar</span>
+                                    </div>
                                 </div>
 
-                                <!-- NOVO: Resumo da Data -->
                                 <div class="summary-item mb-3">
-                                    <strong>Data Preferencial:</strong>
-                                    <span id="summary-data" class="text-info">Não informada</span>
+                                    <div class="summary-label">Data Preferencial:</div>
+                                    <div class="summary-value" id="summary-data">
+                                        <i class="bi bi-circle text-muted me-2"></i>
+                                        <span>Não informada</span>
+                                    </div>
                                 </div>
 
                                 <div class="summary-item">
-                                    <strong>Fotos:</strong>
-                                    <span id="summary-fotos" class="text-muted">0 anexadas</span>
+                                    <div class="summary-label">Fotos:</div>
+                                    <div class="summary-value" id="summary-fotos">
+                                        <i class="bi bi-circle text-muted me-2"></i>
+                                        <span>0 anexadas</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Ações -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-send me-2"></i>
-                                <?= isset($solicitacao) ? 'Salvar Alterações' : 'Publicar Solicitação' ?>
-                            </button>
+                        <!-- Link para voltar à lista -->
+                        <div class="text-center">
                             <a href="<?= url('solicitacoes') ?>" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-2"></i>
                                 Voltar à Lista
@@ -417,6 +512,185 @@ ob_start();
 </div>
 
 <style>
+    /* Estilos do Wizard */
+    .wizard-progress {
+        position: relative;
+        margin-bottom: 3rem;
+    }
+
+    .progress-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .progress-line {
+        position: absolute;
+        top: 25px;
+        left: 50px;
+        right: 50px;
+        height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        z-index: 1;
+    }
+
+    .progress-line::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+        width: 0%;
+    }
+
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 2;
+        position: relative;
+    }
+
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        border: 3px solid #e9ecef;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+
+    .step-item.active .step-circle,
+    .step-item.completed .step-circle {
+        background: #007bff;
+        border-color: #007bff;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+    }
+
+    .step-item.completed .step-circle {
+        background: #28a745;
+        border-color: #28a745;
+        box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.25);
+    }
+
+    .step-label {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+
+    .step-item.active .step-label,
+    .step-item.completed .step-label {
+        color: #007bff;
+    }
+
+    .step-item.completed .step-label {
+        color: #28a745;
+    }
+
+    /* Etapas do Wizard */
+    .wizard-step {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .wizard-step.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Seletor de Urgência */
+    .urgency-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .urgency-option {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .urgency-option:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    }
+
+    .urgency-option.active {
+        border-color: #007bff;
+        background: #f8f9ff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .urgency-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .urgency-title {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+
+    .urgency-desc {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    /* Resumo Lateral */
+    .summary-item {
+        margin-bottom: 1rem;
+    }
+
+    .summary-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .summary-value {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+    }
+
+    .summary-value i.bi-check-circle-fill {
+        color: #28a745;
+    }
+
+    .summary-value i.bi-circle {
+        color: #dee2e6;
+    }
+
+    /* Upload melhorado */
     .upload-area {
         border: 2px dashed #007bff;
         border-radius: 10px;
@@ -434,53 +708,124 @@ ob_start();
         background-color: #d4edda;
     }
 
-    .char-counter {
-        font-size: 0.875rem;
-    }
-
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
     .preview-image {
         position: relative;
         border-radius: 8px;
         overflow: hidden;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
     }
 
     .preview-image img {
         width: 100%;
-        height: 80px;
+        height: 100px;
         object-fit: cover;
     }
 
-    .preview-image .remove-btn {
+    .preview-info {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+        color: #6c757d;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .preview-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        word-break: break-all;
+    }
+
+    .preview-size {
+        color: #868e96;
+    }
+
+    .remove-btn {
         position: absolute;
         top: 5px;
         right: 5px;
-        background: rgba(220, 53, 69, 0.8);
+        background: rgba(220, 53, 69, 0.9);
         color: white;
         border: none;
         border-radius: 50%;
-        width: 25px;
-        height: 25px;
-        font-size: 12px;
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
     }
 
-    .card-header.bg-gradient {
-        border: none;
+    .remove-btn:hover {
+        background: #dc3545;
     }
 
+    /* Navegação do Wizard */
+    .wizard-navigation {
+        border-top: 1px solid #dee2e6;
+        padding-top: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    /* Upload Alerts */
+    .upload-alert {
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+    }
+
+    .upload-alert.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .upload-alert.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    /* Responsividade */
     @media (max-width: 768px) {
-        .container-fluid {
-            padding: 15px;
+        .progress-container {
+            max-width: 100%;
+            padding: 0 1rem;
         }
+        
+        .step-label {
+            font-size: 0.75rem;
+        }
+        
+        .urgency-selector {
+            grid-template-columns: 1fr;
+        }
+        
+        .wizard-navigation {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .wizard-navigation button {
+            width: 100%;
+        }
+    }
 
-        .card-body {
-            padding: 20px !important;
+    @media (max-width: 576px) {
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+        
+        .progress-line {
+            left: 40px;
+            right: 40px;
+            top: 20px;
         }
     }
 </style>
@@ -489,6 +834,15 @@ ob_start();
 $scripts = '
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    let currentStep = 1;
+    const totalSteps = 4;
+    
+    // Elementos do wizard
+    const progressLine = document.getElementById("progressLine");
+    const btnVoltar = document.getElementById("btnVoltar");
+    const btnAvancar = document.getElementById("btnAvancar");
+    const btnFinalizar = document.getElementById("btnFinalizar");
+    
     // Contadores de caracteres
     const tituloInput = document.getElementById("titulo");
     const descricaoInput = document.getElementById("descricao");
@@ -503,6 +857,7 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             counter.parentElement.classList.remove("text-warning");
         }
+        updateSummary();
     }
     
     tituloInput.addEventListener("input", () => updateCharCount(tituloInput, tituloCount));
@@ -512,34 +867,145 @@ document.addEventListener("DOMContentLoaded", function() {
     updateCharCount(tituloInput, tituloCount);
     updateCharCount(descricaoInput, descricaoCount);
     
+    // Funcionalidade do wizard
+    function updateWizardProgress() {
+        // Atualizar barra de progresso
+        const progressPercent = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        progressLine.style.setProperty("--progress", progressPercent + "%");
+        progressLine.querySelector("::before") && (progressLine.style.background = `linear-gradient(90deg, #007bff ${progressPercent}%, #e9ecef ${progressPercent}%)`);
+        
+        // Linha de progresso com pseudo-elemento
+        progressLine.style.background = `linear-gradient(90deg, #007bff ${progressPercent}%, #e9ecef ${progressPercent}%)`;
+        
+        // Atualizar indicadores das etapas
+        document.querySelectorAll(".step-item").forEach((step, index) => {
+            const stepNum = index + 1;
+            step.classList.remove("active", "completed");
+            
+            if (stepNum < currentStep) {
+                step.classList.add("completed");
+                step.querySelector(".step-circle i").className = "bi bi-check";
+            } else if (stepNum === currentStep) {
+                step.classList.add("active");
+            }
+        });
+        
+        // Mostrar/esconder etapas
+        document.querySelectorAll(".wizard-step").forEach((step, index) => {
+            step.classList.toggle("active", index + 1 === currentStep);
+        });
+        
+        // Atualizar botões de navegação
+        btnVoltar.style.display = currentStep > 1 ? "block" : "none";
+        btnAvancar.style.display = currentStep < totalSteps ? "block" : "none";
+        btnFinalizar.style.display = currentStep === totalSteps ? "block" : "none";
+    }
+    
+    function validateCurrentStep() {
+        const currentStepElement = document.getElementById(`step${currentStep}`);
+        const requiredFields = currentStepElement.querySelectorAll("[required]");
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            field.classList.remove("is-invalid");
+            if (!field.value.trim()) {
+                field.classList.add("is-invalid");
+                isValid = false;
+            }
+        });
+        
+        // Validação específica para urgência (se estivermos na etapa 2)
+        if (currentStep === 2) {
+            const urgenciaSelected = document.querySelector(".urgency-option.active");
+            if (!urgenciaSelected) {
+                showAlert("error", "Por favor, selecione o nível de urgência.");
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Navegação do wizard
+    btnAvancar.addEventListener("click", function() {
+        if (validateCurrentStep()) {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateWizardProgress();
+                updateSummary();
+                // Scroll para o topo
+                window.scrollTo({top: 0, behavior: "smooth"});
+            }
+        }
+    });
+    
+    btnVoltar.addEventListener("click", function() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateWizardProgress();
+            window.scrollTo({top: 0, behavior: "smooth"});
+        }
+    });
+    
+    // Seletor de urgência
+    document.querySelectorAll(".urgency-option").forEach(option => {
+        option.addEventListener("click", function() {
+            // Remover seleção anterior
+            document.querySelectorAll(".urgency-option").forEach(opt => opt.classList.remove("active"));
+            
+            // Adicionar seleção atual
+            this.classList.add("active");
+            
+            // Atualizar campo hidden
+            document.getElementById("urgenciaHidden").value = this.dataset.value;
+            
+            updateSummary();
+        });
+    });
+    
     // Resumo dinâmico
     function updateSummary() {
-        const tipoSelect = document.getElementById("tipo_servico");
-        const urgenciaSelect = document.getElementById("urgencia");
-        const enderecoSelect = document.getElementById("endereco");
-        const orcamentoInput = document.getElementById("orcamento");
+        const tipoSelect = document.getElementById("tipo_servico_id");
+        const tituloInput = document.getElementById("titulo");
+        const urgenciaSelected = document.querySelector(".urgency-option.active");
+        const enderecoSelect = document.getElementById("endereco_id");
+        const orcamentoInput = document.getElementById("orcamento_estimado");
         const dataInput = document.getElementById("data_atendimento");
         
         // Tipo
-        const summaryTipo = document.getElementById("summary-tipo");
-        summaryTipo.textContent = tipoSelect.value ? tipoSelect.options[tipoSelect.selectedIndex].text : "Não selecionado";
+        updateSummaryItem("summary-tipo", tipoSelect.value, 
+            tipoSelect.options[tipoSelect.selectedIndex]?.text || "Não selecionado");
+        
+        // Título
+        updateSummaryItem("summary-titulo", tituloInput.value, 
+            tituloInput.value || "Não informado");
         
         // Urgência
-        const summaryUrgencia = document.getElementById("summary-urgencia");
-        const urgenciaText = urgenciaSelect.options[urgenciaSelect.selectedIndex].text;
-        summaryUrgencia.textContent = urgenciaText.split(" - ")[0];
-        summaryUrgencia.className = "badge " + (urgenciaSelect.value === "alta" ? "bg-danger" : urgenciaSelect.value === "media" ? "bg-warning" : "bg-success");
+        if (urgenciaSelected) {
+            const urgenciaTexts = {
+                baixa: "🟢 Baixa",
+                media: "🟡 Média", 
+                alta: "🔴 Alta"
+            };
+            const urgenciaColors = {
+                baixa: "bg-success",
+                media: "bg-warning",
+                alta: "bg-danger"
+            };
+            const urgenciaValue = urgenciaSelected.dataset.value;
+            document.getElementById("summary-urgencia").innerHTML = 
+                `<span class="badge ${urgenciaColors[urgenciaValue]}">${urgenciaTexts[urgenciaValue]}</span>`;
+        }
         
         // Endereço
-        const summaryEndereco = document.getElementById("summary-endereco");
-        summaryEndereco.textContent = enderecoSelect.value ? enderecoSelect.options[enderecoSelect.selectedIndex].text.substring(0, 30) + "..." : "Não selecionado";
+        updateSummaryItem("summary-endereco", enderecoSelect.value,
+            enderecoSelect.value ? enderecoSelect.options[enderecoSelect.selectedIndex].text.substring(0, 30) + "..." : "Não selecionado");
         
         // Orçamento
-        const summaryOrcamento = document.getElementById("summary-orcamento");
-        summaryOrcamento.textContent = orcamentoInput.value ? "R$ " + parseFloat(orcamentoInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2}) : "A combinar";
+        updateSummaryItem("summary-orcamento", orcamentoInput.value,
+            orcamentoInput.value ? "R$ " + parseFloat(orcamentoInput.value).toLocaleString("pt-BR", {minimumFractionDigits: 2}) : "A combinar");
         
-        // NOVO: Data Preferencial
-        const summaryData = document.getElementById("summary-data");
+        // Data
         if (dataInput.value) {
             const dataFormatada = new Date(dataInput.value).toLocaleString("pt-BR", {
                 day: "2-digit",
@@ -548,24 +1014,41 @@ document.addEventListener("DOMContentLoaded", function() {
                 hour: "2-digit",
                 minute: "2-digit"
             });
-            summaryData.textContent = dataFormatada;
-            summaryData.className = "text-success";
+            updateSummaryItem("summary-data", dataInput.value, dataFormatada, true);
         } else {
-            summaryData.textContent = "Não informada";
-            summaryData.className = "text-muted";
+            updateSummaryItem("summary-data", "", "Não informada");
         }
     }
     
-    document.getElementById("tipo_servico").addEventListener("change", updateSummary);
-    document.getElementById("urgencia").addEventListener("change", updateSummary);
-    document.getElementById("endereco").addEventListener("change", updateSummary);
-    document.getElementById("orcamento").addEventListener("input", updateSummary);
+    function updateSummaryItem(elementId, value, text, isCompleted = null) {
+        const element = document.getElementById(elementId);
+        const icon = element.querySelector("i");
+        const span = element.querySelector("span");
+        
+        const hasValue = isCompleted !== null ? isCompleted : (value && value.trim());
+        
+        if (hasValue) {
+            icon.className = "bi bi-check-circle-fill text-success me-2";
+            span.textContent = text;
+            span.style.color = "#212529";
+        } else {
+            icon.className = "bi bi-circle text-muted me-2";
+            span.textContent = text;
+            span.style.color = "#6c757d";
+        }
+    }
+    
+    // Eventos para atualizar resumo
+    document.getElementById("tipo_servico_id").addEventListener("change", updateSummary);
+    document.getElementById("endereco_id").addEventListener("change", updateSummary);
+    document.getElementById("orcamento_estimado").addEventListener("input", updateSummary);
     document.getElementById("data_atendimento").addEventListener("change", updateSummary);
     
-    // Upload de imagens
+    // Upload de imagens melhorado
     const uploadArea = document.getElementById("uploadArea");
     const imageInput = document.getElementById("imagens");
     const previewContainer = document.getElementById("preview-container");
+    const uploadAlerts = document.getElementById("uploadAlerts");
     let selectedFiles = [];
     
     uploadArea.addEventListener("click", () => imageInput.click());
@@ -589,20 +1072,63 @@ document.addEventListener("DOMContentLoaded", function() {
         handleFiles(e.target.files);
     });
     
+    function showAlert(type, message) {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `upload-alert ${type}`;
+        alertDiv.innerHTML = `
+            <i class="bi bi-${type === "error" ? "exclamation-triangle" : "check-circle"} me-2"></i>
+            ${message}
+        `;
+        
+        uploadAlerts.appendChild(alertDiv);
+        
+        // Remover alerta após 5 segundos
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    }
+    
     function handleFiles(files) {
+        // Limpar alertas anteriores
+        uploadAlerts.innerHTML = "";
+        
         if (files.length + selectedFiles.length > 5) {
-            alert("Máximo 5 imagens permitidas!");
+            showAlert("error", "Máximo 5 imagens permitidas!");
             return;
         }
         
+        let validFiles = 0;
+        let errorCount = 0;
+        
         Array.from(files).forEach(file => {
-            if (file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024) {
-                selectedFiles.push(file);
-                createPreview(file);
-            } else {
-                alert("Arquivo inválido: " + file.name);
+            if (!file.type.startsWith("image/")) {
+                showAlert("error", `Arquivo "${file.name}" não é uma imagem válida.`);
+                errorCount++;
+                return;
             }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert("error", `Arquivo "${file.name}" é muito grande (máximo 5MB).`);
+                errorCount++;
+                return;
+            }
+            
+            selectedFiles.push(file);
+            createPreview(file);
+            validFiles++;
         });
+        
+        if (validFiles > 0) {
+            showAlert("success", `${validFiles} imagem(ns) adicionada(s) com sucesso!`);
+        }
         
         updateFileInput();
         updatePhotosSummary();
@@ -612,13 +1138,17 @@ document.addEventListener("DOMContentLoaded", function() {
         const reader = new FileReader();
         reader.onload = (e) => {
             const col = document.createElement("div");
-            col.className = "col-3";
+            col.className = "col-md-6 col-lg-4";
             col.innerHTML = `
                 <div class="preview-image">
                     <img src="${e.target.result}" alt="Preview">
                     <button type="button" class="remove-btn" onclick="removePreview(this, \'${file.name}\')">
                         <i class="bi bi-x"></i>
                     </button>
+                    <div class="preview-info">
+                        <div class="preview-name">${file.name}</div>
+                        <div class="preview-size">${formatFileSize(file.size)}</div>
+                    </div>
                 </div>
             `;
             previewContainer.appendChild(col);
@@ -629,12 +1159,13 @@ document.addEventListener("DOMContentLoaded", function() {
     
     window.removePreview = function(btn, fileName) {
         selectedFiles = selectedFiles.filter(f => f.name !== fileName);
-        btn.closest(".col-3").remove();
+        btn.closest(".col-md-6").remove();
         if (selectedFiles.length === 0) {
             previewContainer.style.display = "none";
         }
         updateFileInput();
         updatePhotosSummary();
+        showAlert("success", "Imagem removida com sucesso!");
     };
     
     function updateFileInput() {
@@ -644,265 +1175,19 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     function updatePhotosSummary() {
-        document.getElementById("summary-fotos").textContent = selectedFiles.length + " anexada" + (selectedFiles.length !== 1 ? "s" : "");
+        updateSummaryItem("summary-fotos", selectedFiles.length > 0, 
+            selectedFiles.length + " anexada" + (selectedFiles.length !== 1 ? "s" : ""), 
+            selectedFiles.length > 0);
     }
     
-    // Buscar CEP no modal
-    const btnBuscarCepModal = document.getElementById("btnBuscarCepModal");
-    if (btnBuscarCepModal) {
-        btnBuscarCepModal.addEventListener("click", function() {
-            const cepInput = document.getElementById("cepModal");
-            const status = document.getElementById("cepStatusModal");
-            const cep = cepInput.value.replace(/\D/g, "");
-            
-            if (cep.length !== 8) {
-                status.textContent = "CEP deve ter 8 dígitos";
-                status.className = "text-danger small mt-1";
-                return;
-            }
-            
-            // Mostrar loading
-            status.textContent = "Buscando endereço...";
-            status.className = "text-primary small mt-1";
-            btnBuscarCepModal.disabled = true;
-            btnBuscarCepModal.innerHTML = \'<i class="spinner-border spinner-border-sm"></i>\';
-            
-            // Fazer requisição para API
-            fetch(`perfil/api/buscar-cep?cep=${cep}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.endereco) {
-                        // Preencher campos automaticamente
-                        document.getElementById("logradouroModal").value = data.endereco.logradouro || "";
-                        document.getElementById("bairroModal").value = data.endereco.bairro || "";
-                        document.getElementById("cidadeModal").value = data.endereco.cidade || "";
-                        document.getElementById("estadoModal").value = data.endereco.estado || "";
-                        
-                        status.textContent = "Endereço preenchido automaticamente!";
-                        status.className = "text-success small mt-1";
-                        
-                        // Focar no campo número
-                        document.getElementById("numeroModal").focus();
-                    } else {
-                        status.textContent = data.message || "CEP não encontrado";
-                        status.className = "text-warning small mt-1";
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro:", error);
-                    status.textContent = "Erro ao buscar CEP. Verifique sua conexão.";
-                    status.className = "text-danger small mt-1";
-                })
-                .finally(() => {
-                    // Restaurar botão
-                    btnBuscarCepModal.disabled = false;
-                    btnBuscarCepModal.innerHTML = \'<i class="bi bi-search"></i>\';
-                });
-        });
-        
-        // Buscar CEP ao pressionar Enter
-        document.getElementById("cepModal").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                btnBuscarCepModal.click();
-            }
-        });
-        
-        // Formatar CEP enquanto digita
-        document.getElementById("cepModal").addEventListener("input", function(e) {
-            let value = e.target.value.replace(/\D/g, "");
-            if (value.length > 5) {
-                value = value.substring(0, 5) + "-" + value.substring(5, 8);
-            }
-            e.target.value = value;
-            
-            // Limpar status se CEP for alterado
-            const status = document.getElementById("cepStatusModal");
-            status.textContent = "";
-        });
-    }
-    
-    // Processar formulário da modal via AJAX
-    const formEnderecoModal = document.getElementById("formEnderecoModal");
-    const btnSalvarEndereco = document.getElementById("btnSalvarEndereco");
-    const alertModal = document.getElementById("alertModal");
-    
-    if (formEnderecoModal) {
-        formEnderecoModal.addEventListener("submit", function(e) {
-            e.preventDefault();
-            
-            // Validar campos obrigatórios no frontend
-            const camposObrigatorios = [
-                {name: "cep", label: "CEP"},
-                {name: "logradouro", label: "Logradouro"},
-                {name: "numero", label: "Número"},
-                {name: "bairro", label: "Bairro"},
-                {name: "cidade", label: "Cidade"},
-                {name: "estado", label: "Estado"}
-            ];
-            
-            let camposVazios = [];
-            
-            camposObrigatorios.forEach(campo => {
-                const input = document.querySelector(\`#formEnderecoModal input[name="\${campo.name}"]\`);
-                if (!input || !input.value.trim()) {
-                    camposVazios.push(campo.label);
-                    if (input) input.classList.add("is-invalid");
-                } else {
-                    if (input) input.classList.remove("is-invalid");
-                }
-            });
-            
-            if (camposVazios.length > 0) {
-                showModalAlert("danger", "Preencha os campos obrigatórios: " + camposVazios.join(", "));
-                return;
-            }
-            
-            // Validar CEP
-            const cep = document.getElementById("cepModal").value.replace(/\D/g, "");
-            if (cep.length !== 8) {
-                showModalAlert("danger", "CEP deve ter 8 dígitos");
-                document.getElementById("cepModal").classList.add("is-invalid");
-                return;
-            }
-            
-            // Validar estado
-            const estado = document.getElementById("estadoModal").value.trim();
-            if (estado.length !== 2) {
-                showModalAlert("danger", "Estado deve ter 2 caracteres");
-                document.getElementById("estadoModal").classList.add("is-invalid");
-                return;
-            }
-            
-            // Mostrar loading
-            btnSalvarEndereco.disabled = true;
-            btnSalvarEndereco.innerHTML = \'<i class="spinner-border spinner-border-sm me-2"></i>Salvando...\';
-            
-            // Esconder alertas anteriores
-            alertModal.style.display = "none";
-            
-            const formData = new FormData(formEnderecoModal);
-            
-            // Log para debug
-            console.log("Enviando dados do endereço:", Object.fromEntries(formData));
-            
-            fetch("perfil/enderecos", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => {
-                console.log("Status da resposta:", response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Resposta não é JSON válido");
-                }
-                
-                return response.json();
-            })
-            .then(data => {
-                console.log("Resposta do servidor:", data);
-                
-                if (data.sucesso) {
-                    // Mostrar sucesso
-                    showModalAlert("success", data.mensagem);
-                    
-                    // Atualizar o select de endereços
-                    if (data.endereco && data.reload_select) {
-                        addEnderecoToSelect(data.endereco);
-                    }
-                    
-                    // Fechar modal após 2 segundos
-                    setTimeout(() => {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById("modalEndereco"));
-                        if (modal) {
-                            modal.hide();
-                        }
-                        formEnderecoModal.reset();
-                        alertModal.style.display = "none";
-                        
-                        // Remover classes de erro
-                        document.querySelectorAll("#formEnderecoModal .is-invalid").forEach(el => {
-                            el.classList.remove("is-invalid");
-                        });
-                    }, 2000);
-                    
-                } else {
-                    showModalAlert("danger", data.mensagem || "Erro desconhecido ao salvar endereço");
-                }
-            })
-            .catch(error => {
-                console.error("Erro na requisição:", error);
-                showModalAlert("danger", "Erro ao salvar endereço: " + error.message);
-            })
-            .finally(() => {
-                // Restaurar botão
-                btnSalvarEndereco.disabled = false;
-                btnSalvarEndereco.innerHTML = \'<i class="bi bi-save me-2"></i>Salvar Endereço\';
-            });
-        });
-    }
-    
-    // Função para mostrar alertas na modal
-    function showModalAlert(type, message) {
-        alertModal.className = `alert alert-${type} alert-dismissible fade show`;
-        alertModal.innerHTML = `
-            <i class="bi bi-${type === "success" ? "check-circle" : "exclamation-triangle"} me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        alertModal.style.display = "block";
-    }
-    
-    // Função para adicionar endereço ao select
-    function addEnderecoToSelect(endereco) {
-        const enderecoSelect = document.getElementById("endereco");
-        if (enderecoSelect && endereco) {
-            const option = document.createElement("option");
-            option.value = endereco.id;
-            option.selected = true;
-            
-            const enderecoCompleto = `${endereco.logradouro}, ${endereco.numero} - ${endereco.cidade}/${endereco.estado}`;
-            if (endereco.principal) {
-                option.textContent = enderecoCompleto + " (Principal)";
-            } else {
-                option.textContent = enderecoCompleto;
-            }
-            
-            enderecoSelect.appendChild(option);
-            
-            // Atualizar resumo se existir
-            if (typeof updateSummary === "function") {
-                updateSummary();
-            }
-            
-            // Mostrar feedback visual
-            enderecoSelect.classList.add("border-success");
-            setTimeout(() => {
-                enderecoSelect.classList.remove("border-success");
-            }, 3000);
-        }
-    }
-    
-    // Limpar modal ao fechar
-    const modalEndereco = document.getElementById("modalEndereco");
-    if (modalEndereco) {
-        modalEndereco.addEventListener("hidden.bs.modal", function() {
-            formEnderecoModal.reset();
-            alertModal.style.display = "none";
-            document.getElementById("cepStatusModal").textContent = "";
-            btnSalvarEndereco.disabled = false;
-            btnSalvarEndereco.innerHTML = \'<i class="bi bi-save me-2"></i>Salvar Endereço\';
-        });
-    }
-    
-    // Inicializar resumo
+    // Inicializar
+    updateWizardProgress();
     updateSummary();
     updatePhotosSummary();
+    
+    // Definir urgência inicial baseada no valor do campo hidden
+    const urgenciaInicial = document.getElementById("urgenciaHidden").value;
+    document.querySelector(`[data-value="${urgenciaInicial}"]`).classList.add("active");
 });
 </script>
 ';

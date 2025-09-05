@@ -41,7 +41,7 @@ class SolicitacaoController
                 if ($solicitacaoId) {
                     $uploadSuccess = $this->processarUploadImagens($solicitacaoId);
                     $this->definirMensagemUpload($uploadSuccess);
-                    header('Location: cliente/solicitacoes');
+                    header('Location: ' . url('solicitacoes'));
                     exit;
                 } else {
                     Session::setFlash('error', 'Erro ao criar solicitação!', 'danger');
@@ -162,7 +162,7 @@ class SolicitacaoController
         $solicitacao = $this->model->buscarPorId($id, $userId);
         if (!$solicitacao) {
             Session::setFlash('error', 'Solicitação não encontrada!', 'danger');
-            header('Location: cliente/solicitacoes');
+            header('Location: ' . url('solicitacoes'));
             exit;
         }
 
@@ -172,7 +172,7 @@ class SolicitacaoController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: cliente/solicitacoes/editar?id=' . $id);
+                header('Location: ' . url('solicitacoes/editar?id=' . $id));
                 exit;
             }
 
@@ -209,7 +209,7 @@ class SolicitacaoController
 
         if ($this->model->atualizar($id, $dados, $userId)) {
             Session::setFlash('success', 'Solicitação atualizada com sucesso!', 'success');
-            header('Location: cliente/solicitacoes');
+            header('Location: ' . url('solicitacoes'));
             exit;
         } else {
             Session::setFlash('error', 'Erro ao atualizar solicitação!', 'danger');
@@ -226,7 +226,7 @@ class SolicitacaoController
             Session::setFlash('error', 'Erro ao remover imagem!', 'danger');
         }
 
-        header('Location: cliente/solicitacoes/editar?id=' . $solicitacaoId);
+        header('Location: ' . url('solicitacoes/editar?id=' . $solicitacaoId));
         exit;
     }
 
@@ -240,7 +240,7 @@ class SolicitacaoController
             Session::setFlash('error', 'Erro ao adicionar algumas imagens!', 'danger');
         }
 
-        header('Location: cliente/solicitacoes/editar?id=' . $solicitacaoId);
+        header('Location: ' . url('solicitacoes/editar?id=' . $solicitacaoId));
         exit;
     }
 
@@ -252,7 +252,7 @@ class SolicitacaoController
         $solicitacao = $this->model->buscarPorId($id, $userId);
         if (!$solicitacao) {
             Session::setFlash('error', 'Solicitação não encontrada!', 'danger');
-            header('Location: cliente/solicitacoes');
+            header('Location: ' . url('solicitacoes'));
             exit;
         }
 
@@ -267,7 +267,7 @@ class SolicitacaoController
 
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: cliente/solicitacoes');
+                header('Location: ' . url('solicitacoes'));
                 exit;
             }
 
@@ -278,22 +278,23 @@ class SolicitacaoController
             }
         }
 
-        header('Location: cliente/solicitacoes');
+        header('Location: ' . url('solicitacoes'));
         exit;
     }
 
-    // CORREÇÃO: Redirecionar usando BASE_URL
+    // CORREÇÃO: Redirecionar usando a função url()
     public function redirectToClient()
     {
         $currentPath = $_SERVER['REQUEST_URI'];
-        $newPath = str_replace('/solicitacoes', '/cliente/solicitacoes', $currentPath);
         
-        // CORREÇÃO: Garantir que use BASE_URL
-        if (strpos($newPath, BASE_URL) !== 0) {
-            $newPath = BASE_URL . $newPath;
-        }
+        // Remove o BASE_URL da URI atual se presente
+        $cleanPath = str_replace(BASE_URL, '', $currentPath);
         
-        header("Location: $newPath", true, 301);
+        // Remove '/solicitacoes' e substitui por '/cliente/solicitacoes' 
+        $newPath = str_replace('/solicitacoes', '/cliente/solicitacoes', $cleanPath);
+        
+        // Usar a função url() para gerar a URL correta
+        header('Location: ' . url(ltrim($newPath, '/')), true, 301);
         exit;
     }
 
