@@ -1,437 +1,485 @@
 <?php
-$title = 'Meus Endereços - Cliente - ChamaServiço';
+$title = 'Meus Endereços - ChamaServiço';
 ob_start();
-
-// CORREÇÃO: Incluir o model e buscar endereços
-require_once 'models/Endereco.php';
-$enderecoModel = new Endereco();
-$clienteId = Session::getUserId();
-$enderecos = $enderecoModel->buscarPorPessoa($clienteId);
 ?>
 
-<div class="container">
-    <!-- Cabeçalho da página -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2><i class="bi bi-geo-alt me-2"></i>Meus Endereços</h2>
-            <p class="text-muted">Gerencie os endereços onde você pode receber serviços</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="cliente/perfil/editar" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Voltar para Editar Perfil
-            </a>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEndereco">
-                <i class="bi bi-plus-circle me-1"></i>Novo Endereço
-            </button>
-        </div>
-    </div>
-
-    <!-- Container para alertas -->
-    <div id="alertContainer"></div>
-
-    <!-- Lista de endereços -->
-    <div id="enderecosList">
-        <?php if (empty($enderecos)): ?>
-            <div class="text-center py-5" id="emptyState">
-                <i class="bi bi-house" style="font-size: 4rem; color: #ccc;"></i>
-                <h4 class="text-muted mt-3">Nenhum endereço cadastrado</h4>
-                <p class="text-muted">Adicione um endereço para começar a solicitar serviços</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEndereco">
-                    <i class="bi bi-plus-circle me-1"></i>Adicionar Primeiro Endereço
-                </button>
-            </div>
-        <?php else: ?>
-            <div class="row" id="enderecosGrid">
-                <?php foreach ($enderecos as $endereco): ?>
-                    <div class="col-md-6 col-lg-4 mb-4" id="endereco-<?= $endereco['id'] ?>">
-                        <div class="card h-100 <?= $endereco['principal'] ? 'border-primary' : '' ?>">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <?php if ($endereco['principal']): ?>
-                                    <span class="badge bg-primary"><i class="bi bi-star me-1"></i>Principal</span>
-                                <?php else: ?>
-                                    <span class="badge bg-secondary">Secundário</span>
-                                <?php endif; ?>
-                                
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <button class="dropdown-item" onclick="editarEndereco(<?= htmlspecialchars(json_encode($endereco)) ?>)">
-                                                <i class="bi bi-pencil me-1"></i>Editar
-                                            </button>
-                                        </li>
-                                        <?php if (!$endereco['principal']): ?>
-                                            <li>
-                                                <button class="dropdown-item" onclick="definirPrincipal(<?= $endereco['id'] ?>)">
-                                                    <i class="bi bi-star me-1"></i>Definir como Principal
-                                                </button>
-                                            </li>
-                                        <?php endif; ?>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <button class="dropdown-item text-danger" onclick="excluirEndereco(<?= $endereco['id'] ?>)">
-                                                <i class="bi bi-trash me-1"></i>Excluir
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <address class="mb-0">
-                                    <strong><?= htmlspecialchars($endereco['logradouro']) ?>, <?= htmlspecialchars($endereco['numero']) ?></strong><br>
-                                    <?php if ($endereco['complemento']): ?>
-                                        <?= htmlspecialchars($endereco['complemento']) ?><br>
-                                    <?php endif; ?>
-                                    <?= htmlspecialchars($endereco['bairro']) ?><br>
-                                    <?= htmlspecialchars($endereco['cidade']) ?> - <?= htmlspecialchars($endereco['estado']) ?><br>
-                                    <small class="text-muted">CEP: <?= htmlspecialchars($endereco['cep']) ?></small>
-                                </address>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<!-- Modal para Adicionar/Editar Endereço -->
-<div class="modal fade" id="modalEndereco" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Novo Endereço</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="formEndereco">
-                <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="acao" id="acaoEndereco" value="adicionar">
-                    <input type="hidden" name="endereco_id" id="enderecoId" value="">
-                    
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="cep" class="form-label">CEP <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="cep" name="cep" required maxlength="10" 
-                                   placeholder="00000-000">
-                        </div>
-                        <div class="col-md-8 mb-3">
-                            <label for="logradouro" class="form-label">Logradouro <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="logradouro" name="logradouro" required 
-                                   placeholder="Rua, Avenida, etc.">
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label for="numero" class="form-label">Número <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="numero" name="numero" required 
-                                   placeholder="123">
-                        </div>
-                        <div class="col-md-9 mb-3">
-                            <label for="complemento" class="form-label">Complemento</label>
-                            <input type="text" class="form-control" id="complemento" name="complemento" 
-                                   placeholder="Apto, Casa, Bloco, etc.">
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-5 mb-3">
-                            <label for="bairro" class="form-label">Bairro <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="bairro" name="bairro" required>
-                        </div>
-                        <div class="col-md-5 mb-3">
-                            <label for="cidade" class="form-label">Cidade <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="cidade" name="cidade" required>
-                        </div>
-                        <div class="col-md-2 mb-3">
-                            <label for="estado" class="form-label">UF <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="estado" name="estado" required maxlength="2" 
-                                   style="text-transform: uppercase;">
-                        </div>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="principal" name="principal">
-                        <label class="form-check-label" for="principal">
-                            <i class="bi bi-star me-1"></i>Definir como endereço principal
-                        </label>
-                        <small class="form-text text-muted d-block">
-                            O endereço principal será usado como padrão nas suas solicitações
-                        </small>
-                    </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-geo-alt text-primary me-2"></i>
+                        Meus Endereços
+                    </h2>
+                    <p class="text-muted">Gerencie seus endereços de atendimento</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="btnSalvar">
-                        <i class="bi bi-check-lg me-1"></i>Salvar Endereço
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoEndereco">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Novo Endereço
                     </button>
                 </div>
-            </form>
+            </div>
+
+            <!-- DEBUG: Mostrar dados carregados -->
+            <?php if (defined('AMBIENTE') && AMBIENTE === 'desenvolvimento'): ?>
+                <div class="alert alert-info">
+                    <strong>DEBUG:</strong>
+                    Usuário ID: <?= Session::getUserId() ?> |
+                    Endereços encontrados: <?= count($enderecos ?? []) ?> |
+                    BASE_URL: <?= BASE_URL ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Lista de endereços -->
+            <div class="row" id="enderecosContainer">
+                <?php if (empty($enderecos)): ?>
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body text-center py-5">
+                                <i class="bi bi-geo-alt text-muted" style="font-size: 4rem;"></i>
+                                <h4 class="mt-3 text-muted">Nenhum endereço cadastrado</h4>
+                                <p class="text-muted">Adicione um endereço para começar a usar o sistema.</p>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoEndereco">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Adicionar Primeiro Endereço
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($enderecos as $endereco): ?>
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <?php if ($endereco['principal']): ?>
+                                    <div class="card-header bg-primary text-white border-0">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-star-fill me-2"></i>
+                                            <strong>Endereço Principal</strong>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="bi bi-house me-2 text-primary"></i>
+                                        <?= htmlspecialchars($endereco['logradouro']) ?>, <?= htmlspecialchars($endereco['numero']) ?>
+                                    </h6>
+
+                                    <?php if ($endereco['complemento']): ?>
+                                        <p class="text-muted mb-2">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            <?= htmlspecialchars($endereco['complemento']) ?>
+                                        </p>
+                                    <?php endif; ?>
+
+                                    <p class="text-muted mb-2">
+                                        <i class="bi bi-building me-1"></i>
+                                        <?= htmlspecialchars($endereco['bairro']) ?>
+                                    </p>
+
+                                    <p class="text-muted mb-2">
+                                        <i class="bi bi-geo me-1"></i>
+                                        <?= htmlspecialchars($endereco['cidade']) ?>/<?= htmlspecialchars($endereco['estado']) ?>
+                                    </p>
+
+                                    <p class="text-muted small">
+                                        <i class="bi bi-mailbox me-1"></i>
+                                        CEP: <?= htmlspecialchars($endereco['cep']) ?>
+                                    </p>
+                                </div>
+
+                                <div class="card-footer bg-transparent border-0 pt-0">
+                                    <div class="d-grid gap-2">
+                                        <?php if (!$endereco['principal']): ?>
+                                            <button type="button"
+                                                class="btn btn-outline-primary btn-sm"
+                                                onclick="definirPrincipal(<?= $endereco['id'] ?>)">
+                                                <i class="bi bi-star me-1"></i>
+                                                Definir como Principal
+                                            </button>
+                                        <?php endif; ?>
+
+                                        <button type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="excluirEndereco(<?= $endereco['id'] ?>)">
+                                            <i class="bi bi-trash me-1"></i>
+                                            Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal para Definir Principal -->
-<div class="modal fade" id="modalDefinirPrincipal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Definir Endereço Principal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modal Novo Endereço -->
+<div class="modal fade" id="modalNovoEndereco" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form class="modal-content" id="formNovoEndereco">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    Novo Endereço
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja definir este endereço como principal?</p>
-                <p class="text-muted small">O endereço principal atual será alterado automaticamente.</p>
+            <div class="modal-body p-4">
+                <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                <input type="hidden" name="acao" value="adicionar">
+
+                <!-- Alerta de status -->
+                <div id="alertModal" class="alert" style="display: none;"></div>
+
+                <!-- CEP -->
+                <div class="mb-3">
+                    <label for="cep" class="form-label fw-bold">
+                        <i class="bi bi-mailbox me-1"></i>
+                        CEP *
+                    </label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="cep" name="cep" required
+                            maxlength="9" pattern="\d{5}-?\d{3}" placeholder="00000-000">
+                        <button type="button" class="btn btn-outline-info" id="btnBuscarCep">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div id="cepStatus" class="form-text"></div>
+                </div>
+
+                <!-- Logradouro e Número -->
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="logradouro" class="form-label fw-bold">Logradouro *</label>
+                        <input type="text" class="form-control" id="logradouro" name="logradouro" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="numero" class="form-label fw-bold">Número *</label>
+                        <input type="text" class="form-control" id="numero" name="numero" required>
+                    </div>
+                </div>
+
+                <!-- Complemento e Bairro -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="complemento" class="form-label">Complemento</label>
+                        <input type="text" class="form-control" id="complemento" name="complemento"
+                            placeholder="Apto, casa, etc.">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="bairro" class="form-label fw-bold">Bairro *</label>
+                        <input type="text" class="form-control" id="bairro" name="bairro" required>
+                    </div>
+                </div>
+
+                <!-- Cidade e Estado -->
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="cidade" class="form-label fw-bold">Cidade *</label>
+                        <input type="text" class="form-control" id="cidade" name="cidade" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="estado" class="form-label fw-bold">Estado *</label>
+                        <input type="text" class="form-control" id="estado" name="estado"
+                            required maxlength="2" placeholder="SP">
+                    </div>
+                </div>
+
+                <!-- Principal -->
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="principal" id="principal" value="1">
+                    <label class="form-check-label fw-bold" for="principal">
+                        <i class="bi bi-star text-warning me-1"></i>
+                        Definir como endereço principal
+                    </label>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form id="formDefinirPrincipal" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="acao" value="definir_principal">
-                    <input type="hidden" name="endereco_id" id="enderecoIdPrincipal">
-                    <button type="submit" class="btn btn-primary">Confirmar</button>
-                </form>
+                <button type="submit" class="btn btn-primary" id="btnSalvar">
+                    <i class="bi bi-save me-2"></i>
+                    Salvar Endereço
+                </button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
-<!-- Modal para Excluir -->
-<div class="modal fade" id="modalExcluir" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Excluir Endereço</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja excluir este endereço?</p>
-                <p class="text-danger small">Esta ação não pode ser desfeita.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form id="formExcluirEndereco" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="acao" value="excluir">
-                    <input type="hidden" name="endereco_id" id="enderecoIdExcluir">
-                    <button type="submit" class="btn btn-danger">Excluir</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== DEBUG: Página carregada ===');
+        console.log('BASE_URL:', '<?= BASE_URL ?>');
+        console.log('User ID:', '<?= Session::getUserId() ?>');
+
+        const formNovoEndereco = document.getElementById('formNovoEndereco');
+        const btnBuscarCep = document.getElementById('btnBuscarCep');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const alertModal = document.getElementById('alertModal');
+
+        // Buscar CEP
+        btnBuscarCep.addEventListener('click', buscarCep);
+        document.getElementById('cep').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarCep();
+            }
+        });
+
+        // Formatar CEP enquanto digita
+        document.getElementById('cep').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + '-' + value.substring(5, 8);
+            }
+            e.target.value = value;
+
+            // Limpar status
+            document.getElementById('cepStatus').textContent = '';
+        });
+
+        // Submeter formulário
+        formNovoEndereco.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('=== DEBUG: Submetendo formulário ===');
+            salvarEndereco();
+        });
+
+        async function buscarCep() {
+            const cepInput = document.getElementById('cep');
+            const status = document.getElementById('cepStatus');
+            const cep = cepInput.value.replace(/\D/g, '');
+
+            if (cep.length !== 8) {
+                status.textContent = 'CEP deve ter 8 dígitos';
+                status.className = 'form-text text-danger';
+                return;
+            }
+
+            // Mostrar loading
+            status.textContent = 'Buscando endereço...';
+            status.className = 'form-text text-primary';
+            btnBuscarCep.disabled = true;
+            btnBuscarCep.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
+
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await response.json();
+
+                if (data.erro) {
+                    status.textContent = 'CEP não encontrado';
+                    status.className = 'form-text text-warning';
+                } else {
+                    // Preencher campos
+                    document.getElementById('logradouro').value = data.logradouro || '';
+                    document.getElementById('bairro').value = data.bairro || '';
+                    document.getElementById('cidade').value = data.localidade || '';
+                    document.getElementById('estado').value = data.uf || '';
+
+                    status.textContent = 'Endereço preenchido automaticamente!';
+                    status.className = 'form-text text-success';
+
+                    // Focar no campo número
+                    document.getElementById('numero').focus();
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                status.textContent = 'Erro ao buscar CEP. Verifique sua conexão.';
+                status.className = 'form-text text-danger';
+            } finally {
+                // Restaurar botão
+                btnBuscarCep.disabled = false;
+                btnBuscarCep.innerHTML = '<i class="bi bi-search"></i>';
+            }
+        }
+
+        async function salvarEndereco() {
+            console.log('=== DEBUG: Iniciando salvamento ===');
+
+            // Validar campos obrigatórios
+            const campos = ['cep', 'logradouro', 'numero', 'bairro', 'cidade', 'estado'];
+            let valid = true;
+            let camposInvalidos = [];
+
+            campos.forEach(campo => {
+                const input = document.getElementById(campo);
+                if (!input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    camposInvalidos.push(campo);
+                    valid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            if (!valid) {
+                console.log('=== DEBUG: Campos inválidos ===', camposInvalidos);
+                showAlert('danger', 'Preencha todos os campos obrigatórios: ' + camposInvalidos.join(', '));
+                return;
+            }
+
+            // Mostrar loading
+            btnSalvar.disabled = true;
+            btnSalvar.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Salvando...';
+
+            try {
+                const formData = new FormData(formNovoEndereco);
+
+                // DEBUG: Mostrar dados que estão sendo enviados
+                console.log('=== DEBUG: Dados do formulário ===');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ':', value);
+                }
+
+                const url = '<?= url("cliente/perfil/enderecos") ?>';
+                console.log('=== DEBUG: URL destino ===', url);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                console.log('=== DEBUG: Response status ===', response.status);
+                console.log('=== DEBUG: Response headers ===', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+                }
+
+                const responseText = await response.text();
+                console.log('=== DEBUG: Response text ===', responseText);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('=== DEBUG: Erro ao parsear JSON ===', parseError);
+                    console.error('=== DEBUG: Response text ===', responseText);
+                    throw new Error('Resposta do servidor não é um JSON válido');
+                }
+
+                console.log('=== DEBUG: Dados da resposta ===', data);
+
+                if (data.sucesso) {
+                    showAlert('success', data.mensagem);
+
+                    // Recarregar página após 2 segundos
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showAlert('danger', data.mensagem || 'Erro ao salvar endereço');
+                    if (data.debug) {
+                        console.log('=== DEBUG: Info adicional ===', data.debug);
+                    }
+                }
+            } catch (error) {
+                console.error('=== DEBUG: Erro na requisição ===', error);
+                showAlert('danger', 'Erro de conexão: ' + error.message);
+            } finally {
+                // Restaurar botão
+                btnSalvar.disabled = false;
+                btnSalvar.innerHTML = '<i class="bi bi-save me-2"></i>Salvar Endereço';
+            }
+        }
+
+        function showAlert(type, message) {
+            alertModal.className = `alert alert-${type}`;
+            alertModal.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+        `;
+            alertModal.style.display = 'block';
+        }
+
+        // Limpar modal ao fechar
+        const modal = document.getElementById('modalNovoEndereco');
+        modal.addEventListener('hidden.bs.modal', function() {
+            console.log('=== DEBUG: Modal fechado, limpando dados ===');
+            formNovoEndereco.reset();
+            alertModal.style.display = 'none';
+            document.getElementById('cepStatus').textContent = '';
+
+            // Remover classes de erro
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+        });
+    });
+
+    // Funções globais para ações dos endereços
+    async function definirPrincipal(enderecoId) {
+        console.log('=== DEBUG: Definindo principal ===', enderecoId);
+        if (!confirm('Definir este endereço como principal?')) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
+            formData.append('acao', 'definir_principal');
+            formData.append('endereco_id', enderecoId);
+
+            const response = await fetch('<?= url("cliente/perfil/enderecos") ?>', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.sucesso) {
+                location.reload();
+            } else {
+                alert('Erro: ' + data.mensagem);
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro de conexão. Tente novamente.');
+        }
+    }
+
+    async function excluirEndereco(enderecoId) {
+        console.log('=== DEBUG: Excluindo endereço ===', enderecoId);
+        if (!confirm('Tem certeza que deseja excluir este endereço?')) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
+            formData.append('acao', 'excluir');
+            formData.append('endereco_id', enderecoId);
+
+            const response = await fetch('<?= url("cliente/perfil/enderecos") ?>', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.sucesso) {
+                location.reload();
+            } else {
+                alert('Erro: ' + data.mensagem);
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro de conexão. Tente novamente.');
+        }
+    }
+</script>
 
 <?php
-$scripts = '
-<script>
-// Máscara para CEP
-function mascaraCEP(input) {
-    let value = input.value.replace(/\D/g, "");
-    value = value.replace(/(\d{5})(\d)/, "$1-$2");
-    input.value = value;
-}
-
-// Aplicar máscara no CEP
-document.getElementById("cep").addEventListener("input", function(e) {
-    mascaraCEP(e.target);
-});
-
-// Buscar CEP automaticamente
-document.getElementById("cep").addEventListener("blur", function() {
-    const cep = this.value.replace(/\D/g, "");
-    if (cep.length === 8) {
-        buscarCEP(cep);
-    }
-});
-
-function buscarCEP(cep) {
-    fetch(`https://viacep.com.br/ws/${cep}/json/`)
-        .then(response => response.json())
-        .then(data => {
-            if (!data.erro) {
-                document.getElementById("logradouro").value = data.logradouro || "";
-                document.getElementById("bairro").value = data.bairro || "";
-                document.getElementById("cidade").value = data.localidade || "";
-                document.getElementById("estado").value = data.uf || "";
-            } else {
-                mostrarAlerta("CEP não encontrado", "warning");
-            }
-        })
-        .catch(error => {
-            console.error("Erro ao buscar CEP:", error);
-            mostrarAlerta("Erro ao consultar CEP", "danger");
-        });
-}
-
-// Submissão do formulário principal via AJAX
-document.getElementById("formEndereco").addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const btnSalvar = document.getElementById("btnSalvar");
-    
-    // Desabilitar botão
-    btnSalvar.disabled = true;
-    btnSalvar.innerHTML = "<i class=\\"bi bi-hourglass-split me-1\\"></i>Salvando...";
-    
-    fetch("cliente/perfil/enderecos", {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-Requested-With": "XMLHttpRequest"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.sucesso) {
-            mostrarAlerta(data.mensagem, "success");
-            
-            // Fechar modal e recarregar página após delay
-            bootstrap.Modal.getInstance(document.getElementById("modalEndereco")).hide();
-            
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            mostrarAlerta(data.mensagem || "Erro ao salvar endereço", "danger");
-        }
-    })
-    .catch(error => {
-        console.error("Erro:", error);
-        mostrarAlerta("Erro interno do servidor", "danger");
-    })
-    .finally(() => {
-        // Reabilitar botão
-        btnSalvar.disabled = false;
-        btnSalvar.innerHTML = "<i class=\\"bi bi-check-lg me-1\\"></i>Salvar Endereço";
-    });
-});
-
-// Submissão do formulário de definir principal
-document.getElementById("formDefinirPrincipal").addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch("cliente/perfil/enderecos", {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-Requested-With": "XMLHttpRequest"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.sucesso) {
-            mostrarAlerta(data.mensagem, "success");
-            bootstrap.Modal.getInstance(document.getElementById("modalDefinirPrincipal")).hide();
-            
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            mostrarAlerta(data.mensagem || "Erro ao definir endereço principal", "danger");
-        }
-    })
-    .catch(error => {
-        console.error("Erro:", error);
-        mostrarAlerta("Erro interno do servidor", "danger");
-    });
-});
-
-// Submissão do formulário de exclusão
-document.getElementById("formExcluirEndereco").addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch("cliente/perfil/enderecos", {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-Requested-With": "XMLHttpRequest"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.sucesso) {
-            mostrarAlerta(data.mensagem, "success");
-            bootstrap.Modal.getInstance(document.getElementById("modalExcluir")).hide();
-            
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            mostrarAlerta(data.mensagem || "Erro ao excluir endereço", "danger");
-        }
-    })
-    .catch(error => {
-        console.error("Erro:", error);
-        mostrarAlerta("Erro interno do servidor", "danger");
-    });
-});
-
-function mostrarAlerta(message, type) {
-    const alertContainer = document.getElementById("alertContainer");
-    const alertId = "alert-" + Date.now();
-    
-    const alertHTML = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert" id="${alertId}">
-            <i class="bi bi-${type === "success" ? "check-circle" : (type === "warning" ? "exclamation-triangle" : "x-circle")} me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    alertContainer.insertAdjacentHTML("beforeend", alertHTML);
-    
-    // Auto remover após 5 segundos
-    setTimeout(() => {
-        const alert = document.getElementById(alertId);
-        if (alert) {
-            alert.remove();
-        }
-    }, 5000);
-}
-
-function editarEndereco(endereco) {
-    document.getElementById("modalTitle").textContent = "Editar Endereço";
-    document.getElementById("acaoEndereco").value = "editar";
-    document.getElementById("enderecoId").value = endereco.id;
-    document.getElementById("cep").value = endereco.cep;
-    document.getElementById("logradouro").value = endereco.logradouro;
-    document.getElementById("numero").value = endereco.numero;
-    document.getElementById("complemento").value = endereco.complemento || "";
-    document.getElementById("bairro").value = endereco.bairro;
-    document.getElementById("cidade").value = endereco.cidade;
-    document.getElementById("estado").value = endereco.estado;
-    document.getElementById("principal").checked = endereco.principal == 1;
-    
-    new bootstrap.Modal(document.getElementById("modalEndereco")).show();
-}
-
-function definirPrincipal(id) {
-    document.getElementById("enderecoIdPrincipal").value = id;
-    new bootstrap.Modal(document.getElementById("modalDefinirPrincipal")).show();
-}
-
-function excluirEndereco(id) {
-    document.getElementById("enderecoIdExcluir").value = id;
-    new bootstrap.Modal(document.getElementById("modalExcluir")).show();
-}
-
-// Reset modal ao fechar
-document.getElementById("modalEndereco").addEventListener("hidden.bs.modal", function() {
-    document.getElementById("formEndereco").reset();
-    document.getElementById("modalTitle").textContent = "Novo Endereço";
-    document.getElementById("acaoEndereco").value = "adicionar";
-    document.getElementById("enderecoId").value = "";
-});
-</script>
-';
-
 $content = ob_get_clean();
 include 'views/layouts/app.php';
 ?>

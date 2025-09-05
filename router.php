@@ -101,6 +101,14 @@ class Router {
         $methodName = $route['method'];
 
         try {
+            // Middleware para autenticação
+            if (method_exists($controllerName, 'middleware')) {
+                $controller = new $controllerName();
+                if (!$controller->middleware()) {
+                    throw new Exception("Acesso negado para esta rota.");
+                }
+            }
+
             error_log("Executando: $controllerName::$methodName");
             
             if (!class_exists($controllerName)) {
@@ -256,7 +264,7 @@ try {
     // ========================================
     $router->get('/prestador/dashboard', 'PrestadorController', 'dashboard');
     $router->get('/prestador/solicitacoes', 'PrestadorController', 'solicitacoes');
-    $router->get('/prestador/solicitacoes/detalhes', 'PrestadorController', 'detalhesSolicitacao');
+    $router->get('/prestador/solicitacoes/detalhes', 'PrestadorController', 'detalheSolicitacao');
     $router->post('/prestador/solicitacoes/proposta', 'PrestadorController', 'enviarProposta');
     
     // Propostas do Prestador
@@ -271,19 +279,38 @@ try {
     $router->post('/prestador/servicos/atualizar-status', 'PropostaController', 'atualizarStatus');
     
     // ========================================
-    // PERFIL E CONFIGURAÇÕES
+    // PERFIL E CONFIGURAÇÕES - CORRIGIDO
     // ========================================
+    
+    // Perfil Geral (funciona para ambos os tipos)
     $router->get('/perfil', 'PerfilController', 'index');
     $router->post('/perfil', 'PerfilController', 'atualizar');
     $router->get('/perfil/editar', 'PerfilController', 'editar');
     $router->post('/perfil/foto', 'PerfilController', 'atualizarFoto');
     
-    // Endereços
-    $router->get('/cliente/perfil/enderecos', 'PerfilController', 'enderecos');
-    $router->post('/cliente/perfil/enderecos', 'PerfilController', 'salvarEndereco');
-    $router->get('/prestador/perfil/enderecos', 'PerfilController', 'enderecos');
-    $router->post('/prestador/perfil/enderecos', 'PerfilController', 'salvarEndereco');
+    // ROTAS DE PERFIL ESPECÍFICAS POR TIPO DE USUÁRIO
     
+    // Cliente - Perfil
+    $router->get('/cliente/perfil', 'PerfilController', 'index');
+    $router->post('/cliente/perfil', 'PerfilController', 'atualizar');
+    $router->get('/cliente/perfil/editar', 'PerfilController', 'editar');
+    $router->post('/cliente/perfil/foto', 'PerfilController', 'atualizarFoto');
+    
+    // Prestador - Perfil  
+    $router->get('/prestador/perfil', 'PerfilController', 'index');
+    $router->post('/prestador/perfil', 'PerfilController', 'atualizar');
+    $router->get('/prestador/perfil/editar', 'PerfilController', 'editar');
+    $router->post('/prestador/perfil/foto', 'PerfilController', 'atualizarFoto');
+
+    // Endereços - CORRIGIDO: Usar o mesmo método para GET e POST
+    $router->get('/cliente/perfil/enderecos', 'PerfilController', 'enderecos');
+    $router->post('/cliente/perfil/enderecos', 'PerfilController', 'enderecos');
+    $router->get('/prestador/perfil/enderecos', 'PerfilController', 'enderecos');
+    $router->post('/prestador/perfil/enderecos', 'PerfilController', 'enderecos');
+    
+    // API para buscar CEP - CORRIGIDO
+    $router->get('/perfil/api/buscar-cep', 'PerfilController', 'buscarCep');
+
     // ========================================
     // NOTIFICAÇÕES
     // ========================================

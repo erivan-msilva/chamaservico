@@ -42,7 +42,7 @@ if (!defined('BASE_URL')) {
 }
 
 /**
- * Helper para gerar URLs dinâmicas - CORRIGIDO
+ * Helper para gerar URLs dinâmicas
  */
 function url($path = '') {
     // Remove barras duplas e triplas do início

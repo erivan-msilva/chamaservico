@@ -16,6 +16,7 @@ O **ChamaServiço** é uma plataforma web desenvolvida em PHP que facilita a con
 - **Receber Propostas** de prestadores qualificados
 - **Aceitar/Recusar Propostas** com sistema de notificação
 - **Acompanhar Status** do serviço em tempo real
+-**teste
 
 #### 🔧 Para Prestadores
 - **Dashboard Completo** com estatísticas e métricas

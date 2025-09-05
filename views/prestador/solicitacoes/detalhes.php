@@ -90,7 +90,7 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                                 <?php foreach ($solicitacao['imagens'] as $imagem): ?>
                                     <div class="col-md-3">
                                         <div class="position-relative">
-                                            <img src="/chamaservico/uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>"
+                                            <img src="<?= url('uploads/solicitacoes/' . htmlspecialchars($imagem['caminho_imagem'])) ?>"
                                                  class="img-fluid rounded" alt="Imagem da solicitação"
                                                  style="height: 120px; object-fit: cover; width: 100%;">
                                         </div>
@@ -145,7 +145,7 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                                     <h6 class="mb-0"><i class="bi bi-send me-2"></i>Enviar Proposta</h6>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST" action="/chamaservico/prestador/propostas/enviar">
+                                    <form method="POST" action="<?= url('prestador/solicitacoes/proposta') ?>">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="solicitacao_id" value="<?= $solicitacao['id'] ?>">
                                         
@@ -185,7 +185,7 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                                 <strong>Proposta já enviada!</strong><br>
                                 Você já enviou uma proposta para esta solicitação.
                                 <div class="mt-2">
-                                    <a href="/chamaservico/prestador/propostas" class="btn btn-sm btn-outline-primary">
+                                    <a href="<?= url('prestador/propostas') ?>" class="btn btn-sm btn-outline-primary">
                                         Ver Minhas Propostas
                                     </a>
                                 </div>

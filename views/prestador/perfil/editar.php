@@ -11,7 +11,7 @@ ob_start();
                 <h2 class="text-primary fw-bold">
                     <i class="bi bi-person-gear me-2"></i>Editar Perfil Prestador
                 </h2>
-                <a href="prestador/perfil" class="btn btn-outline-secondary">
+                <a href="<?= url('prestador/perfil') ?>" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Voltar
                 </a>
             </div>
@@ -65,7 +65,7 @@ ob_start();
                            data-bs-toggle="list">
                             <i class="bi bi-shield-lock me-2"></i>Segurança
                         </a>
-                        <a href="prestador/perfil/enderecos" class="list-group-item list-group-item-action">
+                        <a href="<?= url('prestador/perfil/enderecos') ?>" class="list-group-item list-group-item-action">
                             <i class="bi bi-geo-alt me-2"></i>Endereços
                         </a>
                     </div>
@@ -82,7 +82,7 @@ ob_start();
                                         <i class="bi bi-person me-2"></i>Dados Pessoais
                                     </h4>
                                     
-                                    <form method="POST" action="prestador/perfil/editar" id="formDadosPessoais">
+                                    <form method="POST" action="<?= url('prestador/perfil/editar') ?>" id="formDadosPessoais">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="dados_pessoais">
                                         
@@ -90,12 +90,12 @@ ob_start();
                                             <div class="col-md-6">
                                                 <label for="nome" class="form-label fw-semibold">Nome Completo *</label>
                                                 <input type="text" class="form-control" id="nome" name="nome"
-                                                    required value="<?= htmlspecialchars($usuario['nome'] ?? '') ?>">
+                                                       value="<?= htmlspecialchars($usuario['nome'] ?? '') ?>" required>
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="email" class="form-label fw-semibold">Email *</label>
                                                 <input type="email" class="form-control" id="email" name="email"
-                                                    required value="<?= htmlspecialchars($usuario['email'] ?? '') ?>">
+                                                       value="<?= htmlspecialchars($usuario['email'] ?? '') ?>" required>
                                             </div>
                                         </div>
                                         
@@ -103,18 +103,18 @@ ob_start();
                                             <div class="col-md-6">
                                                 <label for="telefone" class="form-label fw-semibold">Telefone</label>
                                                 <input type="text" class="form-control" id="telefone" name="telefone"
-                                                    value="<?= htmlspecialchars($usuario['telefone'] ?? '') ?>" 
-                                                    placeholder="(00) 00000-0000">
+                                                       value="<?= htmlspecialchars($usuario['telefone'] ?? '') ?>"
+                                                       placeholder="(11) 99999-9999">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="cpf" class="form-label fw-semibold">CPF</label>
                                                 <input type="text" class="form-control" id="cpf" name="cpf"
-                                                    value="<?= htmlspecialchars($usuario['cpf'] ?? '') ?>"
-                                                    placeholder="000.000.000-00"
-                                                    <?= (!empty($usuario['cpf'])) ? 'readonly' : '' ?>>
+                                                       value="<?= htmlspecialchars($usuario['cpf'] ?? '') ?>"
+                                                       placeholder="000.000.000-00"
+                                                       <?= !empty($usuario['cpf']) ? 'readonly' : '' ?>>
                                                 <?php if (!empty($usuario['cpf'])): ?>
                                                     <div class="form-text text-warning">
-                                                        <i class="bi bi-lock me-1"></i>
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>
                                                         CPF não pode ser alterado por questões de segurança
                                                     </div>
                                                 <?php endif; ?>
@@ -125,15 +125,21 @@ ob_start();
                                             <div class="col-md-6">
                                                 <label for="dt_nascimento" class="form-label fw-semibold">Data de Nascimento</label>
                                                 <input type="date" class="form-control" id="dt_nascimento" name="dt_nascimento"
-                                                    value="<?= $usuario['dt_nascimento'] ?? '' ?>" disabled>
+                                                       value="<?= $usuario['dt_nascimento'] ?? '' ?>"
+                                                       <?= !empty($usuario['dt_nascimento']) ? 'readonly' : '' ?>>
+                                                <?php if (!empty($usuario['dt_nascimento'])): ?>
+                                                    <div class="form-text text-warning">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                                        Data de nascimento não pode ser alterada
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label fw-semibold">Tipo de Conta</label>
-                                                <input type="text" class="form-control bg-light"
-                                                    value="<?= ucfirst($usuario['tipo'] ?? 'prestador') ?>" readonly>
-                                                <div class="form-text text-muted">
+                                                <label for="tipo_conta" class="form-label fw-semibold">Tipo de Conta</label>
+                                                <input type="text" class="form-control" value="Prestador de Serviços" readonly>
+                                                <div class="form-text">
                                                     <i class="bi bi-info-circle me-1"></i>
-                                                    O tipo de conta não pode ser alterado
+                                                    Seu tipo de conta não pode ser alterado
                                                 </div>
                                             </div>
                                         </div>
@@ -141,10 +147,12 @@ ob_start();
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-primary" id="btnSalvarDados">
                                                 <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                <i class="bi bi-check-circle me-1"></i>Salvar Alterações
+                                                <i class="bi bi-save me-1"></i>
+                                                Salvar Alterações
                                             </button>
                                             <button type="reset" class="btn btn-outline-secondary">
-                                                <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Cancelar
                                             </button>
                                         </div>
                                     </form>
@@ -156,7 +164,7 @@ ob_start();
                                         <i class="bi bi-shield-lock me-2"></i>Alterar Senha
                                     </h4>
                                     
-                                    <form method="POST" action="prestador/perfil/editar" id="formSenha">
+                                    <form method="POST" action="<?= url('prestador/perfil/editar') ?>" id="formSenha">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="alterar_senha">
                                         
@@ -164,7 +172,7 @@ ob_start();
                                             <label for="senha_atual" class="form-label fw-semibold">Senha Atual *</label>
                                             <div class="input-group">
                                                 <input type="password" class="form-control" id="senha_atual" name="senha_atual" required>
-                                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('senha_atual')">
+                                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('senha_atual')">
                                                     <i class="bi bi-eye" id="toggleIcon_senha_atual"></i>
                                                 </button>
                                             </div>
@@ -173,9 +181,8 @@ ob_start();
                                         <div class="mb-3">
                                             <label for="nova_senha" class="form-label fw-semibold">Nova Senha *</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="nova_senha" name="nova_senha"
-                                                    required minlength="6">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('nova_senha')">
+                                                <input type="password" class="form-control" id="nova_senha" name="nova_senha" required>
+                                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('nova_senha')">
                                                     <i class="bi bi-eye" id="toggleIcon_nova_senha"></i>
                                                 </button>
                                             </div>
@@ -186,7 +193,7 @@ ob_start();
                                             <label for="confirmar_senha" class="form-label fw-semibold">Confirmar Nova Senha *</label>
                                             <div class="input-group">
                                                 <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required>
-                                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmar_senha')">
+                                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmar_senha')">
                                                     <i class="bi bi-eye" id="toggleIcon_confirmar_senha"></i>
                                                 </button>
                                             </div>
@@ -196,10 +203,12 @@ ob_start();
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-warning" id="btnAlterarSenha">
                                                 <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                                <i class="bi bi-shield-check me-1"></i>Alterar Senha
+                                                <i class="bi bi-shield-lock me-1"></i>
+                                                Alterar Senha
                                             </button>
                                             <button type="reset" class="btn btn-outline-secondary">
-                                                <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Cancelar
                                             </button>
                                         </div>
                                     </form>
@@ -225,7 +234,7 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="prestador/perfil/editar" enctype="multipart/form-data" id="formFoto">
+                <form method="POST" action="<?= url('prestador/perfil/editar') ?>" enctype="multipart/form-data" id="formFoto">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="acao" value="upload_foto">
                     

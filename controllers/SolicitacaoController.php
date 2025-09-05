@@ -15,16 +15,8 @@ class SolicitacaoController
     public function listar()
     {
         $userId = Session::getUserId();
-
-        // Capturar filtros da URL
-        $filtros = [
-            'status' => $_GET['status'] ?? '',
-            'urgencia' => $_GET['urgencia'] ?? '',
-            'busca' => $_GET['busca'] ?? ''
-        ];
-
+        $filtros = $this->capturarFiltros(['status', 'urgencia', 'busca']);
         $solicitacoes = $this->model->buscarPorUsuario($userId, $filtros);
-
         include 'views/solicitacoes/listar.php';
     }
 
@@ -41,52 +33,67 @@ class SolicitacaoController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $tipoServicoId = $_POST['tipo_servico_id'] ?? null;
-            $enderecoId = $_POST['endereco_id'] ?? null;
-            $titulo = $_POST['titulo'] ?? '';
-            $descricao = $_POST['descricao'] ?? '';
-            $orcamentoEstimado = !empty($_POST['orcamento_estimado']) ? $_POST['orcamento_estimado'] : null;
-            $dataAtendimento = !empty($_POST['data_atendimento']) ? $_POST['data_atendimento'] : null;
-            $urgencia = $_POST['urgencia'] ?? '';
+            $dados = $this->capturarDadosSolicitacao();
+            try {
+                $this->validarDadosSolicitacao($dados);
+                $solicitacaoId = $this->model->criar($dados);
 
-            // Valide antes de salvar
-            if (!$tipoServicoId || !$enderecoId || !$titulo || !$descricao) {
-                Session::setFlash('error', 'Preencha todos os campos obrigatórios!', 'danger');
-                header('Location: cliente/solicitacoes/criar');
-                exit;
-            }
-
-            $dados = [
-                'cliente_id' => Session::getUserId(),
-                'tipo_servico_id' => $tipoServicoId,
-                'endereco_id' => $enderecoId,
-                'titulo' => trim($titulo),
-                'descricao' => trim($descricao),
-                'orcamento_estimado' => $orcamentoEstimado,
-                'data_atendimento' => $dataAtendimento,
-                'urgencia' => $urgencia
-            ];
-
-            $solicitacaoId = $this->model->criar($dados);
-
-            if ($solicitacaoId) {
-                // Processar upload de imagens
-                $uploadSuccess = $this->processarUploadImagens($solicitacaoId);
-
-                if ($uploadSuccess) {
-                    Session::setFlash('success', 'Solicitação criada com sucesso!', 'success');
+                if ($solicitacaoId) {
+                    $uploadSuccess = $this->processarUploadImagens($solicitacaoId);
+                    $this->definirMensagemUpload($uploadSuccess);
+                    header('Location: cliente/solicitacoes');
+                    exit;
                 } else {
-                    Session::setFlash('success', 'Solicitação criada, mas houve problemas no upload de algumas imagens.', 'warning');
+                    Session::setFlash('error', 'Erro ao criar solicitação!', 'danger');
                 }
-
-                header('Location: cliente/solicitacoes');
-                exit;
-            } else {
-                Session::setFlash('error', 'Erro ao criar solicitação!', 'danger');
+            } catch (Exception $e) {
+                Session::setFlash('error', $e->getMessage(), 'danger');
             }
         }
 
         include 'views/solicitacoes/form.php';
+    }
+
+    private function capturarFiltros(array $campos)
+    {
+        $filtros = [];
+        foreach ($campos as $campo) {
+            $filtros[$campo] = $_GET[$campo] ?? '';
+        }
+        return $filtros;
+    }
+
+    private function capturarDadosSolicitacao()
+    {
+        return [
+            'cliente_id' => Session::getUserId(),
+            'tipo_servico_id' => $_POST['tipo_servico_id'] ?? null,
+            'endereco_id' => $_POST['endereco_id'] ?? null,
+            'titulo' => trim($_POST['titulo'] ?? ''),
+            'descricao' => trim($_POST['descricao'] ?? ''),
+            'orcamento_estimado' => $_POST['orcamento_estimado'] ?? null,
+            'data_atendimento' => $_POST['data_atendimento'] ?? null,
+            'urgencia' => $_POST['urgencia'] ?? ''
+        ];
+    }
+
+    private function validarDadosSolicitacao($dados)
+    {
+        $camposObrigatorios = ['tipo_servico_id', 'endereco_id', 'titulo', 'descricao'];
+        foreach ($camposObrigatorios as $campo) {
+            if (empty($dados[$campo])) {
+                throw new Exception("O campo {$campo} é obrigatório!");
+            }
+        }
+    }
+
+    private function definirMensagemUpload($uploadSuccess)
+    {
+        if ($uploadSuccess) {
+            Session::setFlash('success', 'Solicitação criada com sucesso!', 'success');
+        } else {
+            Session::setFlash('success', 'Solicitação criada, mas houve problemas no upload de algumas imagens.', 'warning');
+        }
     }
 
     // Novo: Processar upload de múltiplas imagens

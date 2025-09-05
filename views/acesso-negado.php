@@ -3,30 +3,30 @@ $title = 'Acesso Negado - ChamaServiço';
 ob_start();
 ?>
 
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="text-center mb-4">
-                <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
-                    <i class="bi bi-shield-exclamation text-white" style="font-size: 3rem;"></i>
-                </div>
-                <h1 class="display-4 text-danger fw-bold">Acesso Negado</h1>
-                <p class="lead text-muted">Você não tem permissão para acessar esta página</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Acesso Negado</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="text-danger"><i class="bi bi-x-octagon me-2"></i>Acesso Negado</h1>
+                <p class="lead">Você não tem permissão para acessar esta página.</p>
+                <a href="<?= url('') ?>" class="btn btn-primary">Ir para Home</a>
             </div>
+        </div>
+    </div>
+</body>
+</html>
 
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <div class="alert alert-warning" role="alert">
-                        <h5 class="alert-heading">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            Possíveis motivos:
-                        </h5>
-                        <ul class="mb-0">
-                            <li>Você não está logado no sistema</li>
-                            <li>Sua sessão expirou</li>
-                            <li>Você não tem o tipo de conta necessário para esta área</li>
-                            <li>A página requer permissões específicas</li>
-                        </ul>
+<?php
+$content = ob_get_clean();
+include 'views/layouts/app.php';
+?>
                     </div>
 
                     <div class="row g-3">

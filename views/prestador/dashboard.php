@@ -14,10 +14,10 @@ ob_start();
             <p class="text-muted mb-0">Visão geral das suas atividades como prestador de serviços</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="prestador/solicitacoes" class="btn btn-primary">
+            <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-primary">
                 <i class="bi bi-search me-2"></i>Buscar Serviços
             </a>
-            <a href="prestador/propostas" class="btn btn-outline-warning">
+            <a href="<?= url('prestador/propostas') ?>" class="btn btn-outline-warning">
                 <i class="bi bi-file-earmark-text me-2"></i>Minhas Propostas
             </a>
         </div>
@@ -132,23 +132,19 @@ ob_start();
                     </h5>
                     <div class="d-grid gap-3">
                         <!-- Ação Primária - Mais Destaque -->
-                        <a href="prestador/solicitacoes" class="btn btn-primary btn-lg">
+                        <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-primary btn-lg">
                             <i class="bi bi-search me-2"></i>
                             Buscar Novos Serviços
                         </a>
-                        
-                        <!-- Ações Secundárias -->
-                        <a href="prestador/propostas" class="btn btn-outline-secondary">
+                        <a href="<?= url('prestador/propostas') ?>" class="btn btn-outline-secondary">
                             <i class="bi bi-file-earmark-text me-2"></i>
                             Ver Minhas Propostas
                         </a>
-                        
-                        <a href="prestador/servicos/andamento" class="btn btn-outline-secondary">
+                        <a href="<?= url('prestador/servicos/andamento') ?>" class="btn btn-outline-secondary">
                             <i class="bi bi-tools me-2"></i>
                             Serviços em Andamento
                         </a>
-                        
-                        <a href="prestador/perfil/editar" class="btn btn-outline-secondary">
+                        <a href="<?= url('prestador/perfil/editar') ?>" class="btn btn-outline-secondary">
                             <i class="bi bi-person-gear me-2"></i>
                             Editar Perfil
                         </a>
@@ -163,7 +159,7 @@ ob_start();
                         <i class="bi bi-clock-history me-2" style="color: #f5a522;"></i>
                         Atividade Recente
                     </h5>
-                    
+
                     <?php if (empty($ultimasPropostas)): ?>
                         <!-- Estado Vazio Aprimorado -->
                         <div class="text-center py-5">
@@ -175,7 +171,7 @@ ob_start();
                                 Suas atividades aparecerão aqui<br>
                                 Envie propostas e acompanhe seus serviços
                             </p>
-                            <a href="prestador/solicitacoes" class="btn btn-primary btn-sm">
+                            <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-primary btn-sm">
                                 <i class="bi bi-plus-circle me-1"></i>
                                 Começar Agora
                             </a>
@@ -190,7 +186,9 @@ ob_start();
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="fw-semibold mb-1 text-dark">
-                                            <?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Serviço') ?>
+                                            <a href="<?= url('prestador/solicitacoes/detalhes?id=' . $proposta['solicitacao_id']) ?>" class="text-decoration-none text-dark">
+                                                <?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Serviço') ?>
+                                            </a>
                                         </h6>
                                         <p class="text-muted small mb-1">
                                             Proposta de R$ <?= number_format($proposta['valor'], 2, ',', '.') ?>
@@ -205,9 +203,9 @@ ob_start();
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                        
+
                         <div class="text-center mt-3">
-                            <a href="prestador/propostas" class="btn btn-outline-primary btn-sm">
+                            <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-outline-primary btn-sm">
                                 Ver Todas as Propostas
                             </a>
                         </div>
@@ -224,7 +222,7 @@ ob_start();
     .timeline-item {
         position: relative;
     }
-    
+
     .timeline-item:not(:last-child)::after {
         content: '';
         position: absolute;
@@ -234,7 +232,7 @@ ob_start();
         width: 2px;
         background: linear-gradient(to bottom, #e9ecef, transparent);
     }
-    
+
     .timeline-marker {
         min-width: 36px;
         height: 36px;
@@ -244,43 +242,43 @@ ob_start();
         position: relative;
         z-index: 1;
     }
-    
+
     /* Hover effects para cards */
     .card {
         transition: all 0.3s ease;
     }
-    
+
     .card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
     }
-    
+
     /* Botões com transições suaves */
     .btn {
         transition: all 0.3s ease;
     }
-    
+
     .btn:hover {
         transform: translateY(-1px);
     }
-    
+
     /* Melhorias nos badges */
     .badge {
         font-weight: 500;
         padding: 0.5em 0.8em;
     }
-    
+
     /* Canvas responsivo */
     canvas {
         max-width: 100%;
         height: auto !important;
     }
-    
+
     /* Estados vazios */
     .text-center .bi {
         opacity: 0.3;
     }
-    
+
     /* Ícones coloridos */
     .card-body i[style*="color: #f5a522"] {
         filter: drop-shadow(0 2px 4px rgba(245, 165, 34, 0.2));
@@ -288,121 +286,121 @@ ob_start();
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Configuração dos gráficos com paleta moderna
-    const colors = {
-        primary: '#283579',
-        accent: '#f5a522',
-        success: '#28a745',
-        info: '#17a2b8',
-        warning: '#ffc107',
-        gradient: ['#283579', '#3d4a8a', '#586bb5', '#7589d1']
-    };
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuração dos gráficos com paleta moderna
+        const colors = {
+            primary: '#283579',
+            accent: '#f5a522',
+            success: '#28a745',
+            info: '#17a2b8',
+            warning: '#ffc107',
+            gradient: ['#283579', '#3d4a8a', '#586bb5', '#7589d1']
+        };
 
-    // Gráfico de Propostas por Mês
-    const proposalCtx = document.getElementById('propostas-chart');
-    if (proposalCtx) {
-        new Chart(proposalCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                datasets: [{
-                    label: 'Propostas Enviadas',
-                    data: [2, 5, 3, 8, 6, 4],
-                    borderColor: colors.accent,
-                    backgroundColor: colors.accent + '20',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: colors.accent,
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        // Gráfico de Propostas por Mês
+        const proposalCtx = document.getElementById('propostas-chart');
+        if (proposalCtx) {
+            new Chart(proposalCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Propostas Enviadas',
+                        data: [2, 5, 3, 8, 6, 4],
+                        borderColor: colors.accent,
+                        backgroundColor: colors.accent + '20',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: colors.accent,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f8f9fa'
-                        },
-                        ticks: {
-                            color: '#6c757d'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f8f9fa'
+                            },
+                            ticks: {
+                                color: '#6c757d'
+                            }
                         },
-                        ticks: {
-                            color: '#6c757d'
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6c757d'
+                            }
                         }
                     }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    // Gráfico de Status das Propostas
-    const statusCtx = document.getElementById('status-chart');
-    if (statusCtx) {
-        const total = <?= $estatisticas['total_propostas'] ?>;
-        const aceitas = <?= $estatisticas['propostas_aceitas'] ?>;
-        const pendentes = total - aceitas;
-        
-        new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Aceitas', 'Pendentes', 'Outras'],
-                datasets: [{
-                    data: [aceitas, pendentes, Math.max(0, total - aceitas - pendentes)],
-                    backgroundColor: [
-                        colors.success,
-                        colors.accent,
-                        '#e9ecef'
-                    ],
-                    borderWidth: 0,
-                    cutout: '60%'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                            color: '#6c757d'
+        // Gráfico de Status das Propostas
+        const statusCtx = document.getElementById('status-chart');
+        if (statusCtx) {
+            const total = <?= $estatisticas['total_propostas'] ?>;
+            const aceitas = <?= $estatisticas['propostas_aceitas'] ?>;
+            const pendentes = total - aceitas;
+
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aceitas', 'Pendentes', 'Outras'],
+                    datasets: [{
+                        data: [aceitas, pendentes, Math.max(0, total - aceitas - pendentes)],
+                        backgroundColor: [
+                            colors.success,
+                            colors.accent,
+                            '#e9ecef'
+                        ],
+                        borderWidth: 0,
+                        cutout: '60%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                color: '#6c757d'
+                            }
                         }
                     }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    // Animação de entrada para os KPIs
-    const kpiCards = document.querySelectorAll('.row.g-4.mb-5 .card');
-    kpiCards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
+        // Animação de entrada para os KPIs
+        const kpiCards = document.querySelectorAll('.row.g-4.mb-5 .card');
+        kpiCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
     });
-});
 </script>
 
 <!-- Chart.js -->

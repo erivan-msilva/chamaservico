@@ -8,12 +8,12 @@ ob_start();
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="prestador/dashboard" class="text-decoration-none">
+                <a href="<?= url('prestador/dashboard') ?>" class="text-decoration-none">
                     <i class="bi bi-house me-1"></i>Dashboard
                 </a>
             </li>
             <li class="breadcrumb-item">
-                <a href="prestador/propostas" class="text-decoration-none">Propostas</a>
+                <a href="<?= url('prestador/propostas') ?>" class="text-decoration-none">Propostas</a>
             </li>
             <li class="breadcrumb-item active">Detalhes</li>
         </ol>
@@ -175,7 +175,7 @@ ob_start();
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         <?php if ($proposta['status'] === 'aceita'): ?>
-                            <a href="prestador/servicos/detalhes?id=<?= $proposta['id'] ?>" 
+                            <a href="<?= url('prestador/servicos/detalhes?id=' . $proposta['id']) ?>" 
                                class="btn btn-success">
                                 <i class="bi bi-tools me-2"></i>
                                 Gerenciar Serviço
@@ -313,7 +313,7 @@ ob_start();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não, manter</button>
-                <form method="POST" action="prestador/propostas/cancelar" style="display: inline;">
+                <form method="POST" action="<?= url('prestador/propostas/cancelar') ?>" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="proposta_id_cancelar" value="">
                     <button type="submit" class="btn btn-danger">Sim, cancelar</button>

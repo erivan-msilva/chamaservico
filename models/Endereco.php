@@ -1,269 +1,269 @@
 <?php
 require_once 'core/Database.php';
 
-class Endereco {
-    private $db;
+class Endereco
+{
+    public $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = Database::getInstance();
     }
 
-    // Buscar endereços por pessoa
-    public function buscarPorPessoa($pessoaId) {
-        $sql = "SELECT * FROM tb_endereco WHERE pessoa_id = ? ORDER BY principal DESC, id ASC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$pessoaId]);
-        return $stmt->fetchAll();
-    }
-
-    // Buscar endereço por ID
-    public function buscarPorId($id) {
-        $sql = "SELECT * FROM tb_endereco WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
-        return $stmt->fetch();
-    }
-
-    // Buscar endereço principal
-    public function buscarPrincipal($pessoaId) {
-        $sql = "SELECT * FROM tb_endereco WHERE pessoa_id = ? AND principal = 1 LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$pessoaId]);
-        return $stmt->fetch();
-    }
-
-    // Adicionar novo endereço
-    public function adicionar($dados) {
+    /**
+     * Criar novo endereço
+     * @param array $dados Dados do endereço
+     * @return int|false ID do endereço criado ou false em caso de erro
+     */
+    public function criar($dados)
+    {
         try {
             $this->db->getConnection()->beginTransaction();
-            
-            // Se for principal, remover principal dos outros
-            if (!empty($dados['principal'])) {
-                $this->removerPrincipalOutros($dados['pessoa_id']);
+
+            // Se for principal, desmarcar outros endereços da pessoa
+            if ($dados['principal']) {
+                $this->desmarcarPrincipal($dados['pessoa_id']);
             }
-            
+
             $sql = "INSERT INTO tb_endereco (pessoa_id, cep, logradouro, numero, complemento, bairro, cidade, estado, principal) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
+
             $stmt = $this->db->prepare($sql);
             $resultado = $stmt->execute([
                 $dados['pessoa_id'],
                 $dados['cep'],
                 $dados['logradouro'],
                 $dados['numero'],
-                $dados['complemento'] ?? null,
+                $dados['complemento'],
                 $dados['bairro'],
                 $dados['cidade'],
                 $dados['estado'],
-                !empty($dados['principal']) ? 1 : 0
+                $dados['principal'] ? 1 : 0
             ]);
-            
+
             if ($resultado) {
                 $enderecoId = $this->db->lastInsertId();
                 $this->db->getConnection()->commit();
                 return $enderecoId;
+            } else {
+                $this->db->getConnection()->rollBack();
+                return false;
             }
-            
-            $this->db->getConnection()->rollBack();
-            return false;
-            
         } catch (Exception $e) {
-            $this->db->getConnection()->rollBack();
-            error_log("Erro ao adicionar endereço: " . $e->getMessage());
+            if ($this->db->getConnection()->inTransaction()) {
+                $this->db->getConnection()->rollBack();
+            }
+            error_log("Erro ao criar endereço: " . $e->getMessage());
             return false;
         }
     }
 
-    // Editar endereço
-    public function editar($id, $dados) {
+    /**
+     * Buscar endereços por pessoa
+     * @param int $pessoaId ID da pessoa
+     * @return array Lista de endereços
+     */
+    public function buscarPorPessoa($pessoaId)
+    {
+        $sql = "SELECT * FROM tb_endereco WHERE pessoa_id = ? ORDER BY principal DESC, id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$pessoaId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Buscar endereço por ID
+     * @param int $enderecoId ID do endereço
+     * @return array|false Dados do endereço ou false
+     */
+    public function buscarPorId($enderecoId)
+    {
+        $sql = "SELECT * FROM tb_endereco WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$enderecoId]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Atualizar endereço
+     * @param int $enderecoId ID do endereço
+     * @param array $dados Novos dados
+     * @return bool Sucesso da operação
+     */
+    public function atualizar($enderecoId, $dados)
+    {
         try {
-            $this->db->getConnection()->beginTransaction();
-            
-            // Se for principal, remover principal dos outros
-            if (!empty($dados['principal'])) {
-                $this->removerPrincipalOutros($dados['pessoa_id'], $id);
+            // Buscar dados atuais do endereço
+            $enderecoAtual = $this->buscarPorId($enderecoId);
+            if (!$enderecoAtual) {
+                return false;
             }
-            
-            $sql = "UPDATE tb_endereco SET 
-                    cep = ?, logradouro = ?, numero = ?, complemento = ?, 
-                    bairro = ?, cidade = ?, estado = ?, principal = ?
-                    WHERE id = ? AND pessoa_id = ?";
-            
+
+            $this->db->getConnection()->beginTransaction();
+
+            // Se for principal, desmarcar outros endereços da pessoa
+            if ($dados['principal']) {
+                $this->desmarcarPrincipal($enderecoAtual['pessoa_id'], $enderecoId);
+            }
+
+            $sql = "UPDATE tb_endereco 
+                    SET cep = ?, logradouro = ?, numero = ?, complemento = ?, 
+                        bairro = ?, cidade = ?, estado = ?, principal = ?
+                    WHERE id = ?";
+
             $stmt = $this->db->prepare($sql);
             $resultado = $stmt->execute([
                 $dados['cep'],
                 $dados['logradouro'],
                 $dados['numero'],
-                $dados['complemento'] ?? null,
+                $dados['complemento'],
                 $dados['bairro'],
                 $dados['cidade'],
                 $dados['estado'],
-                !empty($dados['principal']) ? 1 : 0,
-                $id,
-                $dados['pessoa_id']
+                $dados['principal'] ? 1 : 0,
+                $enderecoId
             ]);
-            
+
             if ($resultado) {
                 $this->db->getConnection()->commit();
                 return true;
+            } else {
+                $this->db->getConnection()->rollBack();
+                return false;
             }
-            
-            $this->db->getConnection()->rollBack();
-            return false;
-            
         } catch (Exception $e) {
-            $this->db->getConnection()->rollBack();
-            error_log("Erro ao editar endereço: " . $e->getMessage());
+            if ($this->db->getConnection()->inTransaction()) {
+                $this->db->getConnection()->rollBack();
+            }
+            error_log("Erro ao atualizar endereço: " . $e->getMessage());
             return false;
         }
     }
 
-    // Definir como principal
-    public function definirPrincipal($id, $pessoaId) {
+    /**
+     * Definir endereço como principal
+     * @param int $enderecoId ID do endereço
+     * @param int $pessoaId ID da pessoa (para validação)
+     * @return bool Sucesso da operação
+     */
+    public function definirComoPrincipal($enderecoId, $pessoaId)
+    {
         try {
             $this->db->getConnection()->beginTransaction();
-            
-            // Remover principal de todos os outros
-            $this->removerPrincipalOutros($pessoaId, $id);
-            
-            // Definir este como principal
-            $sql = "UPDATE tb_endereco SET principal = 1 WHERE id = ? AND pessoa_id = ?";
+
+            // Verificar se o endereço pertence à pessoa
+            $endereco = $this->buscarPorId($enderecoId);
+            if (!$endereco || $endereco['pessoa_id'] != $pessoaId) {
+                $this->db->getConnection()->rollBack();
+                return false;
+            }
+
+            // Desmarcar todos os endereços da pessoa como principal
+            $this->desmarcarPrincipal($pessoaId);
+
+            // Marcar o endereço especificado como principal
+            $sql = "UPDATE tb_endereco SET principal = 1 WHERE id = ?";
             $stmt = $this->db->prepare($sql);
-            $resultado = $stmt->execute([$id, $pessoaId]);
-            
+            $resultado = $stmt->execute([$enderecoId]);
+
             if ($resultado) {
                 $this->db->getConnection()->commit();
                 return true;
+            } else {
+                $this->db->getConnection()->rollBack();
+                return false;
             }
-            
-            $this->db->getConnection()->rollBack();
-            return false;
-            
         } catch (Exception $e) {
-            $this->db->getConnection()->rollBack();
-            error_log("Erro ao definir endereço principal: " . $e->getMessage());
+            if ($this->db->getConnection()->inTransaction()) {
+                $this->db->getConnection()->rollBack();
+            }
+            error_log("Erro ao definir endereço como principal: " . $e->getMessage());
             return false;
         }
     }
 
-    // Excluir endereço
-    public function excluir($id, $pessoaId) {
+    /**
+     * Deletar endereço
+     * @param int $enderecoId ID do endereço
+     * @return bool Sucesso da operação
+     */
+    public function deletar($enderecoId)
+    {
         try {
-            // Verificar se não é o único endereço
-            $total = $this->contarPorPessoa($pessoaId);
-            if ($total <= 1) {
-                return false; // Não pode excluir o último endereço
-            }
-            
-            // Verificar se é principal
-            $sql = "SELECT principal FROM tb_endereco WHERE id = ? AND pessoa_id = ?";
+            $sql = "DELETE FROM tb_endereco WHERE id = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([$id, $pessoaId]);
-            $endereco = $stmt->fetch();
-            
-            if (!$endereco) {
-                return false; // Endereço não encontrado
-            }
-            
-            $this->db->getConnection()->beginTransaction();
-            
-            // Excluir o endereço
-            $sql = "DELETE FROM tb_endereco WHERE id = ? AND pessoa_id = ?";
-            $stmt = $this->db->prepare($sql);
-            $resultado = $stmt->execute([$id, $pessoaId]);
-            
-            // Se era principal, definir outro como principal
-            if ($endereco['principal']) {
-                $sql = "UPDATE tb_endereco SET principal = 1 WHERE pessoa_id = ? LIMIT 1";
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute([$pessoaId]);
-            }
-            
-            if ($resultado) {
-                $this->db->getConnection()->commit();
-                return true;
-            }
-            
-            $this->db->getConnection()->rollBack();
-            return false;
-            
+            return $stmt->execute([$enderecoId]);
         } catch (Exception $e) {
-            $this->db->getConnection()->rollBack();
-            error_log("Erro ao excluir endereço: " . $e->getMessage());
+            error_log("Erro ao deletar endereço: " . $e->getMessage());
             return false;
         }
     }
 
-    // Contar endereços por pessoa
-    public function contarPorPessoa($pessoaId) {
+    /**
+     * Desmarcar endereço principal de uma pessoa
+     * @param int $pessoaId ID da pessoa
+     * @param int $excluirId ID do endereço para excluir da desmarcação (opcional)
+     * @return bool Sucesso da operação
+     */
+    private function desmarcarPrincipal($pessoaId, $excluirId = null)
+    {
+        try {
+            $sql = "UPDATE tb_endereco SET principal = 0 WHERE pessoa_id = ?";
+            $params = [$pessoaId];
+
+            if ($excluirId) {
+                $sql .= " AND id != ?";
+                $params[] = $excluirId;
+            }
+
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute($params);
+        } catch (Exception $e) {
+            error_log("Erro ao desmarcar principal: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Buscar endereço principal de uma pessoa
+     * @param int $pessoaId ID da pessoa
+     * @return array|false Endereço principal ou false
+     */
+    public function buscarPrincipalPorPessoa($pessoaId)
+    {
+        $sql = "SELECT * FROM tb_endereco WHERE pessoa_id = ? AND principal = 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$pessoaId]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Contar endereços de uma pessoa
+     * @param int $pessoaId ID da pessoa
+     * @return int Número de endereços
+     */
+    public function contarPorPessoa($pessoaId)
+    {
         $sql = "SELECT COUNT(*) FROM tb_endereco WHERE pessoa_id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$pessoaId]);
         return (int) $stmt->fetchColumn();
     }
 
-    // Verificar se endereço pertence à pessoa
-    public function pertenceAPessoa($enderecoId, $pessoaId) {
-        $sql = "SELECT COUNT(*) FROM tb_endereco WHERE id = ? AND pessoa_id = ?";
+    /**
+     * Verificar se endereço está sendo usado em solicitações
+     * @param int $enderecoId ID do endereço
+     * @return bool Se está sendo usado
+     */
+    public function verificarEmUso($enderecoId)
+    {
+        $sql = "SELECT COUNT(*) FROM tb_solicita_servico WHERE endereco_id = ?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$enderecoId, $pessoaId]);
+        $stmt->execute([$enderecoId]);
         return $stmt->fetchColumn() > 0;
     }
-
-    // Validar CEP
-    public function validarCEP($cep) {
-        $cep = preg_replace('/[^0-9]/', '', $cep);
-        return strlen($cep) === 8;
-    }
-
-    // Remover principal de outros endereços (método privado)
-    private function removerPrincipalOutros($pessoaId, $exceto = null) {
-        $sql = "UPDATE tb_endereco SET principal = 0 WHERE pessoa_id = ?";
-        $params = [$pessoaId];
-        
-        if ($exceto) {
-            $sql .= " AND id != ?";
-            $params[] = $exceto;
-        }
-        
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
-    }
-
-    // Buscar endereços com informações extras
-    public function buscarComDetalhes($pessoaId) {
-        $enderecos = $this->buscarPorPessoa($pessoaId);
-        
-        foreach ($enderecos as &$endereco) {
-            $endereco['endereco_completo'] = $this->formatarEnderecoCompleto($endereco);
-        }
-        
-        return $enderecos;
-    }
-
-    // Formatar endereço completo
-    public function formatarEnderecoCompleto($endereco) {
-        $completo = $endereco['logradouro'] . ', ' . $endereco['numero'];
-        
-        if (!empty($endereco['complemento'])) {
-            $completo .= ', ' . $endereco['complemento'];
-        }
-        
-        $completo .= ' - ' . $endereco['bairro'];
-        $completo .= ', ' . $endereco['cidade'] . ' - ' . $endereco['estado'];
-        $completo .= ' CEP: ' . $endereco['cep'];
-        
-        return $completo;
-    }
-
-    // Buscar cidades únicas
-    public function buscarCidades() {
-        $sql = "SELECT DISTINCT cidade, estado FROM tb_endereco ORDER BY cidade";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
-
+}
+?>
     // Estatísticas de endereços
     public function obterEstatisticas() {
         $sql = "SELECT 

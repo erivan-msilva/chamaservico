@@ -5,7 +5,7 @@ ob_start();
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-file-earmark-text me-2"></i>Minhas Propostas</h2>
-    <a href="prestador/solicitacoes" class="btn btn-success">
+    <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-success">
         <i class="bi bi-search me-1"></i>Buscar Mais Serviços
     </a>
 </div>
@@ -36,7 +36,7 @@ ob_start();
             <div class="col-md-3">
                 <label class="form-label">&nbsp;</label>
                 <div class="d-grid">
-                    <a href="prestador/propostas" class="btn btn-outline-secondary">
+                    <a href="<?= url('prestador/propostas') ?>" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle me-1"></i>Limpar
                     </a>
                 </div>
@@ -75,7 +75,7 @@ ob_start();
         <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
         <h4 class="text-muted mt-3">Nenhuma proposta encontrada</h4>
         <p class="text-muted">Você ainda não enviou propostas para solicitações.</p>
-        <a href="prestador/solicitacoes" class="btn btn-success">
+        <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-success">
             <i class="bi bi-search me-1"></i>Buscar Serviços Disponíveis
         </a>
     </div>
@@ -88,7 +88,7 @@ ob_start();
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
+                            <small class="text-white">
                                 <i class="bi bi-calendar me-1"></i>
                                 <?= date('d/m/Y H:i', strtotime($proposta['data_proposta'] ?? 'now')) ?>
                             </small>
@@ -122,7 +122,7 @@ ob_start();
                         </div>
                         <div class="card-footer">
                             <div class="d-flex gap-2">
-                                <a href="prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                <a href="<?= url('prestador/solicitacoes/detalhes?id=' . $proposta['solicitacao_id']) ?>" 
                                    class="btn btn-outline-success btn-sm flex-fill">
                                     <i class="bi bi-eye me-1"></i>Ver Solicitação
                                 </a>
@@ -188,7 +188,7 @@ ob_start();
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                        <a href="<?= url('prestador/solicitacoes/detalhes?id=' . $proposta['solicitacao_id']) ?>" 
                                            class="btn btn-outline-success" title="Ver detalhes">
                                             <i class="bi bi-eye"></i>
                                         </a>
@@ -264,7 +264,7 @@ ob_start();
                                 </div>
                                 
                                 <div class="d-flex gap-2 mt-3">
-                                    <a href="prestador/solicitacoes/detalhes?id=<?= $proposta['solicitacao_id'] ?>" 
+                                    <a href="<?= url('prestador/solicitacoes/detalhes?id=' . $proposta['solicitacao_id']) ?>" 
                                        class="btn btn-outline-success btn-sm">
                                         <i class="bi bi-eye me-1"></i>Ver Solicitação
                                     </a>
@@ -300,7 +300,7 @@ ob_start();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
-                <form method="POST" action="prestador/propostas/cancelar" style="display: inline;">
+                <form method="POST" action="<?= url('prestador/propostas/cancelar') ?>" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaIdCancelar">
                     <button type="submit" class="btn btn-danger">Confirmar Cancelamento</button>
@@ -313,6 +313,16 @@ ob_start();
 <style>
 .view-mode {
     transition: opacity 0.3s ease;
+}
+
+/* Adicione para garantir fundo escuro nos cards e texto branco */
+.card-header {
+    background-color: #283579 !important;
+    color: white !important;
+}
+
+.card-header .text-white {
+    color: #fff !important;
 }
 
 .timeline {
@@ -364,38 +374,76 @@ ob_start();
 <?php
 $scripts = '
 <script>
+// CORREÇÃO: Funções globais acessíveis pelos onclick do HTML
 function alternarVisualizacao(tipo) {
-    // Esconder todas as visualizações
-    document.querySelectorAll(".view-mode").forEach(el => el.style.display = "none");
-    
-    // Remover classe active de todos os botões
-    document.querySelectorAll(".btn-group .btn").forEach(btn => btn.classList.remove("active"));
-    
-    // Mostrar visualização selecionada
-    if (tipo === "cards") {
-        document.getElementById("visualizacaoCards").style.display = "block";
-        document.getElementById("btnCards").classList.add("active");
-    } else if (tipo === "lista") {
-        document.getElementById("visualizacaoLista").style.display = "block";
-        document.getElementById("btnLista").classList.add("active");
-    } else if (tipo === "timeline") {
-        document.getElementById("visualizacaoTimeline").style.display = "block";
-        document.getElementById("btnTimeline").classList.add("active");
+    try {
+        // Esconder todas as visualizações
+        document.querySelectorAll(".view-mode").forEach(el => {
+            if (el) el.style.display = "none";
+        });
+        
+        // Remover classe active de todos os botões
+        document.querySelectorAll(".btn-group .btn").forEach(btn => {
+            if (btn) btn.classList.remove("active");
+        });
+        
+        // Mostrar visualização selecionada
+        const elementosVis = {
+            "cards": "visualizacaoCards",
+            "lista": "visualizacaoLista", 
+            "timeline": "visualizacaoTimeline"
+        };
+        
+        const botoes = {
+            "cards": "btnCards",
+            "lista": "btnLista",
+            "timeline": "btnTimeline"
+        };
+        
+        const elemento = document.getElementById(elementosVis[tipo]);
+        const botao = document.getElementById(botoes[tipo]);
+        
+        if (elemento && botao) {
+            elemento.style.display = "block";
+            botao.classList.add("active");
+        }
+        
+        // Salvar preferência
+        localStorage.setItem("visualizacaoPropostas", tipo);
+    } catch (error) {
+        console.error("Erro ao alternar visualização:", error);
     }
-    
-    // Salvar preferência no localStorage
-    localStorage.setItem("visualizacaoPropostas", tipo);
 }
 
 function confirmarCancelamento(id) {
-    document.getElementById("propostaIdCancelar").value = id;
-    new bootstrap.Modal(document.getElementById("modalCancelar")).show();
+    if (!id || isNaN(id)) {
+        console.error("ID inválido para cancelamento:", id);
+        return;
+    }
+    
+    const inputId = document.getElementById("propostaIdCancelar");
+    if (inputId) {
+        inputId.value = id;
+        const modal = new bootstrap.Modal(document.getElementById("modalCancelar"));
+        modal.show();
+    } else {
+        console.error("Elemento propostaIdCancelar não encontrado");
+    }
 }
 
-// Carregar preferência de visualização
+// Event listeners após DOM pronto
 document.addEventListener("DOMContentLoaded", function() {
-    const visualizacaoSalva = localStorage.getItem("visualizacaoPropostas") || "cards";
-    alternarVisualizacao(visualizacaoSalva);
+    try {
+        // Carregar preferência de visualização
+        const visualizacaoSalva = localStorage.getItem("visualizacaoPropostas") || "cards";
+        alternarVisualizacao(visualizacaoSalva);
+        
+        console.log("Página de propostas carregada com sucesso");
+    } catch (error) {
+        console.error("Erro na inicialização:", error);
+        // Fallback para visualização padrão
+        alternarVisualizacao("cards");
+    }
 });
 </script>
 ';

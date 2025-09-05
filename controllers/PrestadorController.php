@@ -147,7 +147,7 @@ class PrestadorController
 
         if (!$solicitacaoId) {
             Session::setFlash('error', 'Solicitação não informada!', 'danger');
-            header('Location: /chamaservico/prestador/solicitacoes');
+            header('Location: ' . url('prestador/solicitacoes'));
             exit;
         }
 
@@ -156,7 +156,7 @@ class PrestadorController
 
             if (!$solicitacao || $solicitacao['status_id'] != 1) {
                 Session::setFlash('error', 'Solicitação não encontrada ou não está mais disponível!', 'danger');
-                header('Location: /chamaservico/prestador/solicitacoes');
+                header('Location: ' . url('prestador/solicitacoes'));
                 exit;
             }
 
@@ -167,7 +167,7 @@ class PrestadorController
         } catch (Exception $e) {
             error_log("Erro ao buscar detalhes da solicitação: " . $e->getMessage());
             Session::setFlash('error', 'Erro ao carregar detalhes!', 'danger');
-            header('Location: /chamaservico/prestador/solicitacoes');
+            header('Location: ' . url('prestador/solicitacoes'));
             exit;
         }
 
@@ -181,43 +181,44 @@ class PrestadorController
     public function enviarProposta()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /chamaservico/prestador/solicitacoes');
-            exit;
-        }
-
-        if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-            Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/prestador/solicitacoes');
-            exit;
-        }
-
-        $prestadorId = Session::getUserId();
-        $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
-        $valor = $_POST['valor'] ?? 0;
-        $descricao = trim($_POST['descricao'] ?? '');
-        $prazoExecucao = $_POST['prazo_execucao'] ?? null;
-
-        // Validações
-        if (!$solicitacaoId || !$valor || !$descricao) {
-            Session::setFlash('error', 'Preencha todos os campos obrigatórios!', 'danger');
-            header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
-            exit;
-        }
-
-        if ($valor <= 0) {
-            Session::setFlash('error', 'O valor deve ser maior que zero!', 'danger');
-            header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
+            header('Location: ' . url('prestador/solicitacoes'));
             exit;
         }
 
         try {
-            // Verificar se já enviou proposta
-            if ($this->propostaModel->verificarPropostaExistente($solicitacaoId, $prestadorId)) {
-                Session::setFlash('error', 'Você já enviou uma proposta para esta solicitação!', 'warning');
-                header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
-                exit;
+            // Verificar CSRF
+            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                throw new Exception('Token de segurança inválido!');
             }
 
+            $prestadorId = Session::getUserId();
+            $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
+            $valor = $_POST['valor'] ?? 0;
+            $descricao = trim($_POST['descricao'] ?? '');
+            $prazoExecucao = $_POST['prazo_execucao'] ?? 0;
+
+            // Validações
+            if (!$solicitacaoId || !$valor || !$descricao || !$prazoExecucao) {
+                throw new Exception('Todos os campos são obrigatórios!');
+            }
+
+            if ($valor <= 0) {
+                throw new Exception('O valor deve ser maior que zero!');
+            }
+
+            if ($prazoExecucao <= 0) {
+                throw new Exception('O prazo deve ser maior que zero!');
+            }
+
+            // Verificar se já enviou proposta
+            require_once 'models/Proposta.php';
+            $propostaModel = new Proposta();
+            
+            if ($propostaModel->verificarPropostaExistente($solicitacaoId, $prestadorId)) {
+                throw new Exception('Você já enviou uma proposta para esta solicitação!');
+            }
+
+            // Enviar proposta
             $dados = [
                 'solicitacao_id' => $solicitacaoId,
                 'prestador_id' => $prestadorId,
@@ -226,24 +227,48 @@ class PrestadorController
                 'prazo_execucao' => $prazoExecucao
             ];
 
-            if ($this->propostaModel->criar($dados)) {
+            $propostaId = $propostaModel->criar($dados);
+
+            if ($propostaId) {
                 // Criar notificação para o cliente
-                $this->criarNotificacaoNovaProposta($solicitacaoId, $prestadorId);
+                require_once 'models/Notificacao.php';
                 
-                Session::setFlash('success', 'Proposta enviada com sucesso!', 'success');
-                header('Location: /chamaservico/prestador/propostas');
+                // Buscar dados da solicitação
+                $solicitacao = $this->solicitacaoModel->buscarPorId($solicitacaoId);
+                
+                if ($solicitacao) {
+                    Notificacao::criarNotificacaoAutomatica(
+                        'nova_proposta',
+                        $solicitacao['cliente_id'],
+                        $propostaId,
+                        [
+                            'servico' => $solicitacao['titulo'],
+                            'valor' => $valor,
+                            'prestador' => Session::getUserName()
+                        ]
+                    );
+                }
+
+                Session::setFlash('success', 'Proposta enviada com sucesso! O cliente foi notificado.', 'success');
+                header('Location: ' . url('prestador/propostas'));
                 exit;
             } else {
-                Session::setFlash('error', 'Erro ao enviar proposta!', 'danger');
+                throw new Exception('Erro ao salvar proposta no banco de dados');
             }
 
         } catch (Exception $e) {
             error_log("Erro ao enviar proposta: " . $e->getMessage());
-            Session::setFlash('error', 'Erro interno ao enviar proposta!', 'danger');
+            Session::setFlash('error', $e->getMessage(), 'danger');
+            
+            // Redirecionar de volta para a solicitação
+            $solicitacaoId = $_POST['solicitacao_id'] ?? 0;
+            if ($solicitacaoId) {
+                header('Location: ' . url('prestador/solicitacoes/detalhes?id=' . $solicitacaoId));
+            } else {
+                header('Location: ' . url('prestador/solicitacoes'));
+            }
+            exit;
         }
-
-        header('Location: /chamaservico/prestador/solicitacoes/detalhes?id=' . $solicitacaoId);
-        exit;
     }
 
     /**

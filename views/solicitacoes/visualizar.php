@@ -30,7 +30,7 @@ ob_start();
                             <h6>
                                 <i class="bi bi-camera me-2"></i>Fotos Anexadas
                                 <span class="badge bg-primary"><?= count($solicitacao['imagens']) ?></span>
-                                <a href="cliente/solicitacoes/baixar-imagens?id=<?= $solicitacao['id'] ?>" class="btn btn-outline-secondary btn-sm ms-2">
+                                <a href="<?= url('cliente/solicitacoes/baixar-imagens?id=' . $solicitacao['id']) ?>" class="btn btn-outline-secondary btn-sm ms-2">
                                     <i class="bi bi-download"></i> Baixar Todas
                                 </a>
                             </h6>
@@ -140,7 +140,7 @@ ob_start();
                                             <?= ucfirst($proposta['status']) ?>
                                         </span>
                                     </span>
-                                    <a href="cliente/propostas/detalhes?id=<?= $proposta['id'] ?>" class="btn btn-outline-primary btn-sm">
+                                    <a href="<?= url('cliente/propostas/detalhes?id=' . $proposta['id']) ?>" class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-eye"></i> Ver Detalhes
                                     </a>
                                 </li>
@@ -164,16 +164,20 @@ ob_start();
                 <?php endif; ?>
 
                 <div class="d-flex gap-2">
-                    <a href="cliente/solicitacoes/editar?id=<?= $solicitacao['id'] ?>" class="btn btn-primary">
+                    <a href="<?= url('cliente/solicitacoes/editar?id=' . $solicitacao['id']) ?>" class="btn btn-primary">
                         <i class="bi bi-pencil me-1"></i>Editar
                     </a>
-                    <a href="cliente/solicitacoes" class="btn btn-outline-secondary">
+                    <a href="<?= url('cliente/solicitacoes') ?>" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i>Voltar
                     </a>
-                    <button type="button" class="btn btn-outline-danger ms-auto"
-                        onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)">
-                        <i class="bi bi-trash me-1"></i>Excluir
-                    </button>
+                    <form method="POST" action="<?= url('cliente/solicitacoes/deletar') ?>" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                        <input type="hidden" name="id" value="<?= $solicitacao['id'] ?>">
+                        <button type="submit" class="btn btn-outline-danger ms-auto"
+                            onclick="confirmarExclusao(<?= $solicitacao['id'] ?>)">
+                            <i class="bi bi-trash me-1"></i>Excluir
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -220,7 +224,7 @@ ob_start();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form method="POST" action="cliente/solicitacoes/deletar" style="display: inline;">
+                <form method="POST" action="<?= url('cliente/solicitacoes/deletar') ?>" style="display: inline;">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="id" value="<?= $solicitacao['id'] ?>">
                     <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>

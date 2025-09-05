@@ -22,7 +22,7 @@ class PrestadorPerfilController extends PerfilController {
         
         if (!$usuario) {
             Session::setFlash('error', 'Perfil não encontrado!', 'danger');
-            header('Location: /chamaservico/logout');
+            header('Location: ' . url('logout'));
             exit;
         }
         
@@ -35,7 +35,7 @@ class PrestadorPerfilController extends PerfilController {
         
         if (!$usuario) {
             Session::setFlash('error', 'Perfil não encontrado!', 'danger');
-            header('Location: /chamaservico/logout');
+            header('Location: ' . url('logout'));
             exit;
         }
         
@@ -45,7 +45,7 @@ class PrestadorPerfilController extends PerfilController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: /chamaservico/prestador/perfil/editar');
+                header('Location: ' . url('prestador/perfil/editar'));
                 exit;
             }
             
@@ -72,7 +72,7 @@ class PrestadorPerfilController extends PerfilController {
                     Session::setFlash('error', 'Ação inválida!', 'danger');
             }
             
-            header('Location: /chamaservico/prestador/perfil/editar');
+            header('Location: ' . url('prestador/perfil/editar'));
             exit;
         }
         
@@ -291,7 +291,7 @@ class PrestadorPerfilController extends PerfilController {
                 exit;
             }
             Session::setFlash('erro', 'Token de segurança inválido!', 'danger');
-            header('Location: /chamaservico/prestador/perfil/enderecos');
+            header('Location: ' . url('prestador/perfil/enderecos'));
             exit;
         }
         
@@ -314,9 +314,9 @@ class PrestadorPerfilController extends PerfilController {
                         'estado' => $_POST['estado'] ?? '',
                         'principal' => isset($_POST['principal'])
                     ];
-                    
-                    $resultado = $modeloEndereco->adicionar($dados);
-                    
+
+                    $resultado = $modeloEndereco->criar($dados);
+
                     if ($resultado) {
                         $mensagem = 'Endereço adicionado com sucesso!';
                         if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
@@ -359,7 +359,15 @@ class PrestadorPerfilController extends PerfilController {
                     
                 case 'definir_principal':
                     $enderecoId = $_POST['endereco_id'] ?? 0;
-                    $resultado = $modeloEndereco->definirPrincipal($enderecoId, $prestadorId);
+                    
+                    // First, unset all principal addresses for this user
+                    $enderecos = $modeloEndereco->buscarPorPessoa($prestadorId);
+                    foreach ($enderecos as $endereco) {
+                        $modeloEndereco->editar($endereco['id'], ['principal' => 0]);
+                    }
+                    
+                    // Then set the selected address as principal
+                    $resultado = $modeloEndereco->editar($enderecoId, ['principal' => 1]);
                     
                     if ($resultado) {
                         $mensagem = 'Endereço principal definido com sucesso!';
@@ -375,7 +383,7 @@ class PrestadorPerfilController extends PerfilController {
                     
                 case 'excluir':
                     $enderecoId = $_POST['endereco_id'] ?? 0;
-                    $resultado = $modeloEndereco->excluir($enderecoId, $prestadorId);
+                    $resultado = $modeloEndereco->excluir($enderecoId);
                     
                     if ($resultado) {
                         $mensagem = 'Endereço excluído com sucesso!';
@@ -402,7 +410,7 @@ class PrestadorPerfilController extends PerfilController {
             Session::setFlash('erro', $e->getMessage(), 'danger');
         }
         
-        header('Location: /chamaservico/prestador/perfil/enderecos');
+        header('Location: ' . url('prestador/perfil/enderecos'));
         exit;
     }
 }

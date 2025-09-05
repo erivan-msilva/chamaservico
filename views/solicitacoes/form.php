@@ -318,7 +318,7 @@ ob_start();
                                 <i class="bi bi-send me-2"></i>
                                 <?= isset($solicitacao) ? 'Salvar Alterações' : 'Publicar Solicitação' ?>
                             </button>
-                            <a href="solicitacoes" class="btn btn-outline-secondary">
+                            <a href="<?= url('solicitacoes') ?>" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-2"></i>
                                 Voltar à Lista
                             </a>

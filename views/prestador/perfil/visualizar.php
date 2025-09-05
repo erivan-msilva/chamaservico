@@ -24,10 +24,10 @@ $stats = [
                     <i class="bi bi-person-badge me-2"></i>Meu Perfil Prestador
                 </h2>
                 <div class="d-flex gap-2">
-                    <a href="prestador/perfil/editar" class="btn btn-success">
+                    <a href="<?= url('prestador/perfil/editar') ?>" class="btn btn-success">
                         <i class="bi bi-pencil me-1"></i>Editar Perfil
                     </a>
-                    <a href="prestador/dashboard" class="btn btn-outline-primary">
+                    <a href="<?= url('prestador/dashboard') ?>" class="btn btn-outline-primary">
                         <i class="bi bi-speedometer2 me-1"></i>Dashboard
                     </a>
                 </div>
@@ -142,7 +142,7 @@ $stats = [
                             <h5 class="mb-0 text-primary">
                                 <i class="bi bi-clock-history me-2"></i>Atividade Recente
                             </h5>
-                            <a href="prestador/propostas" class="btn btn-sm btn-outline-primary">
+                            <a href="<?= url('prestador/propostas') ?>" class="btn btn-sm btn-outline-primary">
                                 Ver Todas
                             </a>
                         </div>
@@ -155,7 +155,7 @@ $stats = [
                                     <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
                                     <h6 class="text-muted mt-2">Nenhuma proposta enviada ainda</h6>
                                     <p class="text-muted">Comece a buscar serviços disponíveis para enviar propostas</p>
-                                    <a href="prestador/solicitacoes" class="btn btn-primary">
+                                    <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-primary">
                                         <i class="bi bi-search me-1"></i>Buscar Serviços
                                     </a>
                                 </div>
@@ -169,13 +169,13 @@ $stats = [
                                                     <i class="bi bi-file-earmark-text"></i>
                                                 </div>
                                                 <div class="ms-3 flex-grow-1">
-                                                    <h6 class="mb-1"><?= htmlspecialchars($proposta['titulo']) ?></h6>
+                                                    <h6 class="mb-1"><?= htmlspecialchars($proposta['titulo'] ?? $proposta['solicitacao_titulo'] ?? 'Serviço sem título') ?></h6>
                                                     <p class="text-muted small mb-1">
-                                                        Valor: R$ <?= number_format($proposta['valor'], 2, ',', '.') ?> • 
-                                                        Status: <span class="badge bg-<?= $proposta['status'] === 'aceita' ? 'success' : ($proposta['status'] === 'pendente' ? 'warning' : 'secondary') ?>"><?= ucfirst($proposta['status']) ?></span>
+                                                        Valor: R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?> • 
+                                                        Status: <span class="badge bg-<?= ($proposta['status'] ?? 'pendente') === 'aceita' ? 'success' : (($proposta['status'] ?? 'pendente') === 'pendente' ? 'warning' : 'secondary') ?>"><?= ucfirst($proposta['status'] ?? 'pendente') ?></span>
                                                     </p>
                                                     <small class="text-muted">
-                                                        <i class="bi bi-clock me-1"></i><?= date('d/m/Y H:i', strtotime($proposta['data_proposta'])) ?>
+                                                        <i class="bi bi-clock me-1"></i><?= date('d/m/Y H:i', strtotime($proposta['data_proposta'] ?? 'now')) ?>
                                                     </small>
                                                 </div>
                                             </div>
@@ -265,16 +265,16 @@ $stats = [
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="prestador/solicitacoes" class="btn btn-success">
+                                <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-success">
                                     <i class="bi bi-search me-2"></i>Buscar Serviços
                                 </a>
-                                <a href="prestador/propostas" class="btn btn-outline-primary">
+                                <a href="<?= url('prestador/propostas') ?>" class="btn btn-outline-primary">
                                     <i class="bi bi-file-earmark-text me-2"></i>Minhas Propostas
                                 </a>
-                                <a href="prestador/servicos/andamento" class="btn btn-outline-info">
+                                <a href="<?= url('prestador/servicos/andamento') ?>" class="btn btn-outline-info">
                                     <i class="bi bi-tools me-2"></i>Serviços em Andamento
                                 </a>
-                                <a href="prestador/perfil/enderecos" class="btn btn-outline-secondary">
+                                <a href="<?= url('prestador/perfil/enderecos') ?>" class="btn btn-outline-secondary">
                                     <i class="bi bi-geo-alt me-2"></i>Meus Endereços
                                 </a>
                             </div>

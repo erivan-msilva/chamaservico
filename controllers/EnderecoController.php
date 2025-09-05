@@ -277,8 +277,8 @@ class EnderecoController {
     // Redirecionar para lista
     private function redirectToList() {
         $redirectPath = Session::isPrestador() && !Session::isCliente() 
-            ? '/chamaservico/prestador/perfil/enderecos' 
-            : '/chamaservico/cliente/perfil/enderecos';
+            ? 'prestador/perfil/enderecos' 
+            : 'cliente/perfil/enderecos';
             
         header("Location: $redirectPath");
         exit;

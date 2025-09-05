@@ -8,25 +8,40 @@
     <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    
+
     <style>
         :root {
-            --cor-primaria: #283579;     /* Azul escuro */
-            --cor-secundaria: #f5a522;   /* Amarelo/dourado */
-            --cor-branco: #ffffff;       /* Branco */
-            --cor-cinza-claro: #f8f9fa;  /* Cinza claro */
-            --cor-texto: #212529;        /* Texto escuro */
-            --cor-hover: #1e2a5f;        /* Azul mais escuro para hover */
-            --cor-dourado-hover: #d48c00; /* Dourado mais escuro para hover */
-            --cor-nav-text: rgba(255, 255, 255, 0.9);  /* Texto nav normal */
-            --cor-nav-active: #ffffff;   /* Texto nav ativo */
-            --cor-nav-hover: rgba(255, 255, 255, 0.75); /* Texto nav hover */
+            --cor-primaria: #283579;
+            /* Azul escuro */
+            --cor-secundaria: #f5a522;
+            /* Amarelo/dourado */
+            --cor-branco: #ffffff;
+            /* Branco */
+            --cor-cinza-claro: #f8f9fa;
+            /* Cinza claro */
+            --cor-texto: #212529;
+            /* Texto escuro */
+            --cor-hover: #1e2a5f;
+            /* Azul mais escuro para hover */
+            --cor-dourado-hover: #d48c00;
+            /* Dourado mais escuro para hover */
+            --cor-nav-text: rgba(255, 255, 255, 0.9);
+            /* Texto nav normal */
+            --cor-nav-active: #ffffff;
+            /* Texto nav ativo */
+            --cor-nav-hover: rgba(255, 255, 255, 0.75);
+            /* Texto nav hover */
         }
 
         body {
             font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--cor-cinza-claro);
             color: var(--cor-texto);
+        }
+
+        /* Reset básico para altura total */
+        html {
+            height: 100%;
         }
 
         /* ========================================
@@ -393,19 +408,46 @@
             background-color: var(--cor-primaria);
             color: var(--cor-branco);
             border-top: 3px solid var(--cor-secundaria);
+            flex-shrink: 0;
+            margin-top: auto; /* Empurra o footer para baixo quando necessário */
         }
 
         /* ANIMAÇÕES MANTIDAS */
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
-            20%, 40%, 60%, 80% { transform: rotate(10deg); }
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: rotate(-10deg);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: rotate(10deg);
+            }
         }
 
         .bell-shake {
@@ -417,22 +459,22 @@
             .navbar {
                 padding: 0.75rem 0;
             }
-            
+
             .navbar-nav {
                 gap: 0;
                 margin-top: 1rem;
             }
-            
+
             .navbar-nav .nav-link {
                 padding: 0.75rem 1rem !important;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
-            
+
             .navbar-nav .nav-link.active::after {
                 left: 1rem;
                 width: calc(100% - 2rem);
             }
-            
+
             .navbar-brand {
                 font-size: 1.2rem;
             }
@@ -478,13 +520,13 @@
                         <!-- Dashboard/Início -->
                         <li class="nav-item">
                             <?php if (Session::isPrestador() && !Session::isCliente()): ?>
-                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') !== false ? ' active' : '' ?>" 
-                                   href="<?= url('prestador/dashboard') ?>">
+                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') !== false ? ' active' : '' ?>"
+                                    href="<?= url('prestador/dashboard') ?>">
                                     Dashboard
                                 </a>
                             <?php elseif (Session::isCliente()): ?>
-                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/cliente/dashboard') !== false ? ' active' : '' ?>" 
-                                   href="<?= url('cliente/dashboard') ?>">
+                                <a class="nav-link<?= strpos($_SERVER['REQUEST_URI'], '/cliente/dashboard') !== false ? ' active' : '' ?>"
+                                    href="<?= url('cliente/dashboard') ?>">
                                     Dashboard
                                 </a>
                             <?php endif; ?>
@@ -493,20 +535,26 @@
                         <!-- Menu do Cliente -->
                         <?php if (Session::isCliente()): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/cliente/') !== false ? ' active' : '' ?>" 
-                                   href="#" role="button" data-bs-toggle="dropdown">
+                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/cliente/') !== false ? ' active' : '' ?>"
+                                    href="#" role="button" data-bs-toggle="dropdown">
                                     Cliente
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><h6 class="dropdown-header">Solicitações</h6></li>
+                                    <li>
+                                        <h6 class="dropdown-header">Solicitações</h6>
+                                    </li>
                                     <li><a class="dropdown-item" href="<?= url('cliente/solicitacoes') ?>">
-                                        <i class="bi bi-list"></i>Minhas Solicitações
-                                    </a></li>
+                                            <i class="bi bi-list"></i>Minhas Solicitações
+                                        </a></li>
                                     <li><a class="dropdown-item" href="<?= url('cliente/solicitacoes/criar') ?>">
-                                        <i class="bi bi-plus-circle"></i>Nova Solicitação
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Propostas</h6></li>
+                                            <i class="bi bi-plus-circle"></i>Nova Solicitação
+                                        </a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <h6 class="dropdown-header">Propostas</h6>
+                                    </li>
                                     <li>
                                         <a class="dropdown-item" href="<?= url('cliente/propostas/recebidas') ?>">
                                             <i class="bi bi-envelope"></i>Propostas Recebidas
@@ -519,12 +567,17 @@
                                                 if ($pendentes > 0): ?>
                                                     <span class="notification-badge-menu"><?= $pendentes ?></span>
                                             <?php endif;
-                                            } catch (Exception $e) {}
+                                            } catch (Exception $e) {
+                                            }
                                             ?>
                                         </a>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Serviços</h6></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <h6 class="dropdown-header">Serviços</h6>
+                                    </li>
                                     <li>
                                         <a class="dropdown-item" href="<?= url('cliente/servicos/concluidos') ?>">
                                             <i class="bi bi-check-circle"></i>Serviços Concluídos
@@ -536,7 +589,8 @@
                                                 if ($servicosConcluidos > 0): ?>
                                                     <span class="notification-badge-menu"><?= $servicosConcluidos ?></span>
                                             <?php endif;
-                                            } catch (Exception $e) {}
+                                            } catch (Exception $e) {
+                                            }
                                             ?>
                                         </a>
                                     </li>
@@ -547,21 +601,23 @@
                         <!-- Menu do Prestador -->
                         <?php if (Session::isPrestador()): ?>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/prestador/') !== false && strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') === false ? ' active' : '' ?>" 
-                                   href="#" role="button" data-bs-toggle="dropdown">
+                                <a class="nav-link dropdown-toggle<?= strpos($_SERVER['REQUEST_URI'], '/prestador/') !== false && strpos($_SERVER['REQUEST_URI'], '/prestador/dashboard') === false ? ' active' : '' ?>"
+                                    href="#" role="button" data-bs-toggle="dropdown">
                                     Prestador
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><h6 class="dropdown-header">Trabalho</h6></li>
+                                    <li>
+                                        <h6 class="dropdown-header">Trabalho</h6>
+                                    </li>
                                     <li><a class="dropdown-item" href="<?= url('prestador/solicitacoes') ?>">
-                                        <i class="bi bi-search"></i>Buscar Serviços
-                                    </a></li>
+                                            <i class="bi bi-search"></i>Buscar Serviços
+                                        </a></li>
                                     <li><a class="dropdown-item" href="<?= url('prestador/propostas') ?>">
-                                        <i class="bi bi-file-earmark-text"></i>Minhas Propostas
-                                    </a></li>
+                                            <i class="bi bi-file-earmark-text"></i>Minhas Propostas
+                                        </a></li>
                                     <li><a class="dropdown-item" href="<?= url('prestador/servicos/andamento') ?>">
-                                        <i class="bi bi-tools"></i>Serviços em Andamento
-                                    </a></li>
+                                            <i class="bi bi-tools"></i>Serviços em Andamento
+                                        </a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
@@ -574,25 +630,29 @@
                             <ul class="dropdown-menu">
                                 <?php if (Session::isCliente()): ?>
                                     <li><a class="dropdown-item" href="<?= url('cliente/solicitacoes/criar') ?>">
-                                        <i class="bi bi-plus-circle"></i>Nova Solicitação
-                                    </a></li>
+                                            <i class="bi bi-plus-circle"></i>Nova Solicitação
+                                        </a></li>
                                     <li><a class="dropdown-item" href="<?= url('cliente/propostas/recebidas') ?>">
-                                        <i class="bi bi-inbox"></i>Ver Propostas
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                            <i class="bi bi-inbox"></i>Ver Propostas
+                                        </a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
                                 <?php endif; ?>
                                 <?php if (Session::isPrestador()): ?>
                                     <li><a class="dropdown-item" href="<?= url('prestador/solicitacoes') ?>">
-                                        <i class="bi bi-search"></i>Buscar Trabalhos
-                                    </a></li>
+                                            <i class="bi bi-search"></i>Buscar Trabalhos
+                                        </a></li>
                                     <li><a class="dropdown-item" href="<?= url('prestador/propostas') ?>">
-                                        <i class="bi bi-file-earmark-text"></i>Minhas Propostas
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                            <i class="bi bi-file-earmark-text"></i>Minhas Propostas
+                                        </a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
                                 <?php endif; ?>
                                 <li><a class="dropdown-item" href="<?= url('/perfil') ?>">
-                                    <i class="bi bi-person-gear"></i>Editar Perfil
-                                </a></li>
+                                        <i class="bi bi-person-gear"></i>Editar Perfil
+                                    </a></li>
                             </ul>
                         </li>
                     </ul>
@@ -648,7 +708,7 @@
                                     ?>
                                 </span>
                             </a>
-                            
+
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
                                     <div class="dropdown-item-text">
@@ -676,25 +736,33 @@
                                         </div>
                                     </div>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li><a class="dropdown-item" href="<?= BASE_URL ?>/notificacoes">
-                                    <i class="bi bi-bell"></i>Notificações
-                                    <?php if ($notificacoesNaoLidas > 0): ?>
-                                        <span class="notification-badge-menu"><?= $notificacoesNaoLidas ?></span>
-                                    <?php endif; ?>
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><h6 class="dropdown-header">Minha Conta</h6></li>
+                                        <i class="bi bi-bell"></i>Notificações
+                                        <?php if ($notificacoesNaoLidas > 0): ?>
+                                            <span class="notification-badge-menu"><?= $notificacoesNaoLidas ?></span>
+                                        <?php endif; ?>
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <h6 class="dropdown-header">Minha Conta</h6>
+                                </li>
                                 <li><a class="dropdown-item" href="<?= BASE_URL ?>/perfil">
-                                    <i class="bi bi-person"></i>Meu Perfil
-                                </a></li>
+                                        <i class="bi bi-person"></i>Meu Perfil
+                                    </a></li>
                                 <li><a class="dropdown-item" href="<?= BASE_URL ?><?= Session::isPrestador() && !Session::isCliente() ? '/prestador/perfil/enderecos' : '/cliente/perfil/enderecos' ?>">
-                                    <i class="bi bi-geo-alt"></i>Meus Endereços
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                        <i class="bi bi-geo-alt"></i>Meus Endereços
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li><a class="dropdown-item text-danger" href="<?= BASE_URL ?>/logout">
-                                    <i class="bi bi-box-arrow-right"></i>Sair da Conta
-                                </a></li>
+                                        <i class="bi bi-box-arrow-right"></i>Sair da Conta
+                                    </a></li>
                             </ul>
                         </div>
                     </div>
@@ -794,7 +862,7 @@
     `;
 
             try {
-                const response = await fetch('/chamaservico/cliente/perfil/enderecos?action=api_list');
+                const response = await fetch('cliente/perfil/enderecos?action=api_list');
 
                 if (!response.ok) {
                     throw new Error('Erro ao carregar endereços');
@@ -831,7 +899,7 @@
                     formData.append('acao', 'definir_principal');
                     formData.append('endereco_id', id);
 
-                    const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
+                    const response = await fetch('cliente/perfil/enderecos', {
                         method: 'POST',
                         body: formData
                     });
@@ -859,7 +927,7 @@
                     formData.append('acao', 'excluir');
                     formData.append('endereco_id', id);
 
-                    const response = await fetch('/chamaservico/cliente/perfil/enderecos', {
+                    const response = await fetch('/cliente/perfil/enderecos', {
                         method: 'POST',
                         body: formData
                     });
@@ -1026,4 +1094,5 @@
 
     <?= $scripts ?? '' ?>
 </body>
+
 </html>

@@ -1,249 +1,227 @@
 <?php
-$title = 'Detalhes do Serviço - Prestador';
+$title = 'Detalhes do Serviço - Prestador - ChamaServiço';
 ob_start();
 ?>
 
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <h2 class="h3 mb-1">
-                <i class="bi bi-clipboard-check text-primary me-2"></i>
-                Detalhes do Serviço
-            </h2>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="prestador/dashboard">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="prestador/servicos/andamento">Serviços em Andamento</a></li>
-                    <li class="breadcrumb-item active">Detalhes</li>
-                </ol>
-            </nav>
-        </div>
-        <a href="prestador/servicos/andamento" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>
-            Voltar aos Serviços
-        </a>
-    </div>
-
-    <?php if (empty($servico)): ?>
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            Serviço não encontrado ou você não tem permissão para visualizá-lo.
-        </div>
-    <?php else: ?>
-        
-        <!-- Card Principal do Serviço -->
-        <div class="row">
-            <div class="col-lg-8">
-                <!-- Informações do Serviço -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="bi bi-tools me-2"></i>
-                                <?= htmlspecialchars($servico['titulo']) ?>
-                            </h5>
-                            <span class="badge" style="background-color: <?= $servico['status_cor'] ?? '#6c757d' ?>;">
-                                <?= htmlspecialchars($servico['status_nome'] ?? 'Status não definido') ?>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <h6 class="fw-bold text-primary">Tipo de Serviço</h6>
-                                <p class="mb-0"><?= htmlspecialchars($servico['tipo_servico_nome']) ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="fw-bold text-success">Valor Acordado</h6>
-                                <p class="mb-0 fs-5 fw-bold text-success">R$ <?= number_format($servico['valor'], 2, ',', '.') ?></p>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <h6 class="fw-bold">Prazo</h6>
-                                <p class="mb-0"><?= $servico['prazo_execucao'] ? $servico['prazo_execucao'] . ' dia(s)' : 'Não informado' ?></p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="fw-bold">Data Preferencial</h6>
-                                <p class="mb-0">
-                                    <?php if ($servico['data_atendimento']): ?>
-                                        <?= date('d/m/Y H:i', strtotime($servico['data_atendimento'])) ?>
-                                    <?php else: ?>
-                                        <span class="text-muted">Não informada</span>
-                                    <?php endif; ?>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <h6 class="fw-bold">Descrição do Serviço</h6>
-                            <p class="mb-0"><?= nl2br(htmlspecialchars($servico['descricao'])) ?></p>
-                        </div>
-
-                        <!-- Urgência -->
-                        <div class="mb-3">
-                            <h6 class="fw-bold">Urgência</h6>
-                            <?php
-                            $urgenciaBadge = [
-                                'baixa' => 'success',
-                                'media' => 'warning', 
-                                'alta' => 'danger'
-                            ];
-                            $urgenciaTexto = [
-                                'baixa' => 'Baixa',
-                                'media' => 'Média',
-                                'alta' => 'Alta'
-                            ];
-                            ?>
-                            <span class="badge bg-<?= $urgenciaBadge[$servico['urgencia']] ?? 'secondary' ?>">
-                                <?= $urgenciaTexto[$servico['urgencia']] ?? 'Não informada' ?>
-                            </span>
-                        </div>
-                    </div>
+    <div class="row">
+        <div class="col-12">
+            <!-- Header da página -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-eye text-primary me-2"></i>
+                        Detalhes do Serviço
+                    </h2>
+                    <p class="text-muted">Informações completas do serviço em execução</p>
                 </div>
+                <div>
+                    <a href="<?= url('prestador/servicos/andamento') ?>" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Voltar à Lista
+                    </a>
+                </div>
+            </div>
 
-                <!-- Imagens do Serviço -->
-                <?php if (!empty($servico['imagens'])): ?>
+            <!-- Informações do Serviço -->
+            <div class="row">
+                <!-- Coluna Principal -->
+                <div class="col-lg-8">
+                    <!-- Card: Detalhes do Serviço -->
                     <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-info text-white">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-clipboard-data me-2"></i>
+                                    Informações do Serviço
+                                </h5>
+                                <span class="badge" style="background-color: <?= htmlspecialchars($servico['status_cor']) ?>">
+                                    <?= htmlspecialchars($servico['status_nome']) ?>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="text-primary mb-3"><?= htmlspecialchars($servico['titulo']) ?></h4>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <strong>Tipo de Serviço:</strong>
+                                    <p class="text-muted"><?= htmlspecialchars($servico['tipo_servico_nome']) ?></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Urgência:</strong>
+                                    <span class="badge bg-<?= $servico['urgencia'] === 'alta' ? 'danger' : ($servico['urgencia'] === 'media' ? 'warning' : 'success') ?>">
+                                        <?= ucfirst($servico['urgencia']) ?>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <strong>Descrição:</strong>
+                                <p class="text-muted"><?= nl2br(htmlspecialchars($servico['descricao'])) ?></p>
+                            </div>
+
+                            <?php if ($servico['data_atendimento']): ?>
+                                <div class="mb-4">
+                                    <strong>Data Preferencial:</strong>
+                                    <p class="text-info">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        <?= date('d/m/Y H:i', strtotime($servico['data_atendimento'])) ?>
+                                    </p>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Imagens do Serviço -->
+                            <?php if (!empty($servico['imagens'])): ?>
+                                <div class="mb-4">
+                                    <strong>Imagens Anexadas:</strong>
+                                    <div class="row mt-2">
+                                        <?php foreach ($servico['imagens'] as $imagem): ?>
+                                            <div class="col-md-3 mb-3">
+                                                <img src="<?= url('uploads/solicitacoes/' . htmlspecialchars($imagem['caminho_imagem'])) ?>"
+                                                    class="img-fluid rounded shadow-sm"
+                                                    style="cursor: pointer;"
+                                                    onclick="ampliarImagem(this.src)">
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Card: Endereço -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-secondary text-white">
                             <h6 class="mb-0">
-                                <i class="bi bi-images me-2"></i>
-                                Fotos do Serviço (<?= count($servico['imagens']) ?>)
+                                <i class="bi bi-geo-alt me-2"></i>
+                                Local do Serviço
                             </h6>
                         </div>
                         <div class="card-body">
-                            <div class="row g-2">
-                                <?php foreach ($servico['imagens'] as $imagem): ?>
-                                    <div class="col-md-4">
-                                        <div class="position-relative">
-                                            <img src="uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>" 
-                                                 class="img-fluid rounded" 
-                                                 style="height: 150px; width: 100%; object-fit: cover;"
-                                                 data-bs-toggle="modal" 
-                                                 data-bs-target="#modalImagem"
-                                                 data-src="uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>">
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
+                            <address class="mb-0">
+                                <strong><?= htmlspecialchars($servico['logradouro']) ?>, <?= htmlspecialchars($servico['numero']) ?></strong><br>
+                                <?php if ($servico['complemento']): ?>
+                                    <?= htmlspecialchars($servico['complemento']) ?><br>
+                                <?php endif; ?>
+                                <?= htmlspecialchars($servico['bairro']) ?><br>
+                                <?= htmlspecialchars($servico['cidade']) ?>/<?= htmlspecialchars($servico['estado']) ?><br>
+                                CEP: <?= htmlspecialchars($servico['cep']) ?>
+                            </address>
                         </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-                <!-- Cliente -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">
-                            <i class="bi bi-person me-2"></i>
-                            Informações do Cliente
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="text-center mb-3">
-                            <h5 class="fw-bold"><?= htmlspecialchars($servico['cliente_nome']) ?></h5>
-                        </div>
-                        
-                        <?php if (!empty($servico['cliente_telefone'])): ?>
-                            <div class="d-grid mb-2">
-                                <a href="tel:<?= htmlspecialchars($servico['cliente_telefone']) ?>" 
-                                   class="btn btn-success btn-sm">
-                                    <i class="bi bi-telephone me-2"></i>
-                                    <?= htmlspecialchars($servico['cliente_telefone']) ?>
-                                </a>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if (!empty($servico['cliente_email'])): ?>
-                            <div class="d-grid mb-2">
-                                <a href="mailto:<?= htmlspecialchars($servico['cliente_email']) ?>" 
-                                   class="btn btn-info btn-sm">
-                                    <i class="bi bi-envelope me-2"></i>
-                                    Enviar Email
-                                </a>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
 
-                <!-- Endereço -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-warning text-dark">
-                        <h6 class="mb-0">
-                            <i class="bi bi-geo-alt me-2"></i>
-                            Local do Serviço
-                        </h6>
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Card: Informações Financeiras -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-cash-coin me-2"></i>
+                                Valores e Prazos
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <h3 class="text-success mb-3">R$ <?= number_format($servico['valor'], 2, ',', '.') ?></h3>
+
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <strong class="text-primary"><?= $servico['prazo_execucao'] ?? 'A definir' ?></strong>
+                                    <br><small class="text-muted">Dias para execução</small>
+                                </div>
+                                <div class="col-6">
+                                    <strong class="text-warning">R$ <?= number_format($servico['orcamento_estimado'] ?? 0, 2, ',', '.') ?></strong>
+                                    <br><small class="text-muted">Orçamento inicial</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <address class="mb-3">
-                            <strong><?= htmlspecialchars($servico['logradouro']) ?>, <?= htmlspecialchars($servico['numero']) ?></strong><br>
-                            <?php if ($servico['complemento']): ?>
-                                <?= htmlspecialchars($servico['complemento']) ?><br>
+
+                    <!-- Card: Cliente -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-person me-2"></i>
+                                Informações do Cliente
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="text-dark"><?= htmlspecialchars($servico['cliente_nome']) ?></h6>
+
+                            <?php if ($servico['cliente_email']): ?>
+                                <p class="text-muted mb-2">
+                                    <i class="bi bi-envelope me-1"></i>
+                                    <a href="mailto:<?= htmlspecialchars($servico['cliente_email']) ?>">
+                                        <?= htmlspecialchars($servico['cliente_email']) ?>
+                                    </a>
+                                </p>
                             <?php endif; ?>
-                            <?= htmlspecialchars($servico['bairro']) ?><br>
-                            <?= htmlspecialchars($servico['cidade']) ?>/<?= htmlspecialchars($servico['estado']) ?><br>
-                            CEP: <?= htmlspecialchars($servico['cep']) ?>
-                        </address>
-                        
-                        <div class="d-grid">
-                            <a href="https://www.google.com/maps/search/<?= urlencode($servico['logradouro'] . ', ' . $servico['numero'] . ', ' . $servico['bairro'] . ', ' . $servico['cidade'] . ', ' . $servico['estado']) ?>" 
-                               target="_blank" class="btn btn-outline-primary btn-sm">
-                                <i class="bi bi-map me-2"></i>
-                                Ver no Google Maps
-                            </a>
+
+                            <?php if ($servico['cliente_telefone']): ?>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-telephone me-1"></i>
+                                    <a href="tel:<?= htmlspecialchars($servico['cliente_telefone']) ?>">
+                                        <?= htmlspecialchars($servico['cliente_telefone']) ?>
+                                    </a>
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </div>
-                </div>
 
-                <!-- Atualizar Status -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-dark text-white">
-                        <h6 class="mb-0">
-                            <i class="bi bi-gear me-2"></i>
-                            Atualizar Status
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="prestador/servicos/atualizar-status" id="formStatus">
-                            <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                            <input type="hidden" name="proposta_id" value="<?= $servico['id'] ?>">
+                    <!-- Card: Ações -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-dark text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-lightning me-2"></i>
+                                Ações Rápidas
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <?php if ($servico['status_id'] != 5): // Se não estiver concluído 
+                                ?>
+                                    <button type="button" class="btn btn-success"
+                                        onclick="atualizarStatus(<?= $servico['id'] ?>, 'concluido')">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Marcar como Concluído
+                                    </button>
 
-                            <div class="mb-3">
-                                <label for="novo_status" class="form-label fw-bold">Novo Status</label>
-                                <select class="form-select" id="novo_status" name="novo_status" required>
-                                    <option value="">Selecione...</option>
-                                    <option value="em_andamento">Em Andamento</option>
-                                    <option value="concluido">Concluído</option>
-                                    <option value="aguardando_materiais">Aguardando Materiais</option>
-                                    <option value="suspenso">Suspenso</option>
-                                </select>
+                                    <button type="button" class="btn btn-warning"
+                                        onclick="atualizarStatus(<?= $servico['id'] ?>, 'aguardando_materiais')">
+                                        <i class="bi bi-pause-circle me-1"></i>
+                                        Aguardando Materiais
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-danger"
+                                        onclick="atualizarStatus(<?= $servico['id'] ?>, 'suspenso')">
+                                        <i class="bi bi-stop-circle me-1"></i>
+                                        Suspender Temporariamente
+                                    </button>
+                                <?php else: ?>
+                                    <div class="alert alert-success text-center">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        <strong>Serviço Concluído!</strong>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if ($servico['cliente_telefone']): ?>
+                                    <a href="tel:<?= htmlspecialchars($servico['cliente_telefone']) ?>"
+                                        class="btn btn-outline-primary">
+                                        <i class="bi bi-telephone me-1"></i>
+                                        Ligar para Cliente
+                                    </a>
+                                <?php endif; ?>
                             </div>
-
-                            <div class="mb-3">
-                                <label for="observacoes" class="form-label">Observações (opcional)</label>
-                                <textarea class="form-control" id="observacoes" name="observacoes" rows="3" 
-                                          placeholder="Adicione observações sobre o andamento do serviço..."></textarea>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-check-circle me-2"></i>
-                                    Atualizar Status
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    <?php endif; ?>
+    </div>
 </div>
 
-<!-- Modal para Visualizar Imagens -->
+<!-- Modal para Ampliar Imagem -->
 <div class="modal fade" id="modalImagem" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -252,48 +230,78 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
-                <img id="imagemModal" src="" class="img-fluid">
+                <img id="imagemAmpliada" src="" class="img-fluid">
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal para Atualizar Status (mesmo da página anterior) -->
+<div class="modal fade" id="modalAtualizarStatus" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="POST" action="<?= url('prestador/servicos/atualizar-status') ?>">
+            <div class="modal-header">
+                <h5 class="modal-title">Atualizar Status do Serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                <input type="hidden" name="proposta_id" id="modalPropostaId" value="<?= $servico['id'] ?>">
+                <input type="hidden" name="novo_status" id="modalNovoStatus">
+                <input type="hidden" name="redirect" value="prestador/servicos/detalhes?id=<?= $servico['id'] ?>">
+
+                <div class="mb-3">
+                    <label for="modalObservacoes" class="form-label">Observações (opcional)</label>
+                    <textarea class="form-control" id="modalObservacoes" name="observacoes" rows="3"
+                        placeholder="Adicione observações sobre a atualização do status..."></textarea>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span id="modalStatusMensagem"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="modalBtnConfirmar">
+                    Confirmar Atualização
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Modal de imagens
-    const modalImagem = document.getElementById('modalImagem');
-    if (modalImagem) {
-        const imagemModal = document.getElementById('imagemModal');
-        
-        modalImagem.addEventListener('show.bs.modal', function(event) {
-            const trigger = event.relatedTarget;
-            const src = trigger.getAttribute('data-src');
-            imagemModal.src = src;
-        });
+    function ampliarImagem(src) {
+        document.getElementById('imagemAmpliada').src = src;
+        const modal = new bootstrap.Modal(document.getElementById('modalImagem'));
+        modal.show();
     }
 
-    // Validação do formulário de status
-    const formStatus = document.getElementById('formStatus');
-    if (formStatus) {
-        formStatus.addEventListener('submit', function(e) {
-            const novoStatus = document.getElementById('novo_status').value;
-            
-            if (!novoStatus) {
-                e.preventDefault();
-                alert('Por favor, selecione um novo status.');
-                return;
-            }
+    function atualizarStatus(propostaId, novoStatus) {
+        const statusMessages = {
+            'concluido': 'Marcar este serviço como concluído? O cliente será notificado.',
+            'aguardando_materiais': 'Marcar como "Aguardando Materiais"? O cliente será informado.',
+            'suspenso': 'Suspender temporariamente este serviço?'
+        };
 
-            // Confirmação para status "concluído"
-            if (novoStatus === 'concluido') {
-                if (!confirm('Tem certeza que deseja marcar este serviço como concluído? O cliente será notificado.')) {
-                    e.preventDefault();
-                    return;
-                }
-            }
-        });
+        const statusTitles = {
+            'concluido': 'Concluir Serviço',
+            'aguardando_materiais': 'Aguardando Materiais',
+            'suspenso': 'Suspender Serviço'
+        };
+
+        document.getElementById('modalNovoStatus').value = novoStatus;
+        document.getElementById('modalStatusMensagem').textContent = statusMessages[novoStatus];
+        document.querySelector('#modalAtualizarStatus .modal-title').textContent = statusTitles[novoStatus];
+
+        const btnConfirmar = document.getElementById('modalBtnConfirmar');
+        btnConfirmar.className = `btn ${novoStatus === 'concluido' ? 'btn-success' : (novoStatus === 'suspenso' ? 'btn-warning' : 'btn-info')}`;
+        btnConfirmar.innerHTML = `<i class="bi bi-check me-1"></i>Confirmar`;
+
+        const modal = new bootstrap.Modal(document.getElementById('modalAtualizarStatus'));
+        modal.show();
     }
-});
 </script>
 
 <?php

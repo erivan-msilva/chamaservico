@@ -9,7 +9,7 @@ ob_start();
         <p class="text-muted mb-0">Encontre oportunidades de trabalho na sua área</p>
     </div>
     <div>
-        <a href="/chamaservico/prestador/propostas" class="btn btn-outline-primary">
+        <a href="<?= url('prestador/propostas') ?>" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-text me-1"></i>Minhas Propostas
         </a>
     </div>
@@ -112,7 +112,7 @@ ob_start();
         <i class="bi bi-search" style="font-size: 4rem; color: #ccc;"></i>
         <h4 class="text-muted mt-3">Nenhuma solicitação encontrada</h4>
         <p class="text-muted">Ajuste os filtros ou aguarde novas solicitações.</p>
-        <a href="/chamaservico/prestador/solicitacoes" class="btn btn-outline-primary">
+        <a href="<?= url('prestador/solicitacoes') ?>" class="btn btn-outline-primary">
             <i class="bi bi-arrow-clockwise me-1"></i>Limpar Filtros
         </a>
     </div>
@@ -125,7 +125,7 @@ ob_start();
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm hover-card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
+                            <small class="text-white">
                                 <i class="bi bi-calendar3 me-1"></i>
                                 <?= date('d/m/Y H:i', strtotime($solicitacao['data_solicitacao'])) ?>
                             </small>
@@ -169,7 +169,7 @@ ob_start();
                             <?php endif; ?>
                         </div>
                         <div class="card-footer bg-transparent">
-                            <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $solicitacao['id'] ?>" 
+                            <a href="<?= url('prestador/solicitacoes/detalhes?id=' . $solicitacao['id']) ?>" 
                                class="btn btn-primary w-100">
                                 <i class="bi bi-eye me-1"></i>Ver Detalhes e Enviar Proposta
                             </a>
@@ -227,7 +227,7 @@ ob_start();
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $solicitacao['id'] ?>" 
+                                    <a href="<?= url('prestador/solicitacoes/detalhes?id=' . $solicitacao['id']) ?>" 
                                        class="btn btn-outline-primary btn-sm" title="Ver detalhes">
                                         <i class="bi bi-eye"></i>
                                     </a>
@@ -274,7 +274,7 @@ ob_start();
                                         <span class="badge bg-primary"><?= $index + 1 ?></span>
                                     </div>
                                     <div class="mt-2">
-                                        <a href="/chamaservico/prestador/solicitacoes/detalhes?id=<?= $solicitacao['id'] ?>" 
+                                        <a href="<?= url('prestador/solicitacoes/detalhes?id=' . $solicitacao['id']) ?>" 
                                            class="btn btn-outline-primary btn-sm">
                                             Ver Detalhes
                                         </a>
@@ -293,6 +293,16 @@ ob_start();
 <style>
 .view-mode {
     transition: opacity 0.3s ease;
+}
+
+/* Adicione para garantir fundo escuro nos cards e texto branco */
+.card-header {
+    background-color: #283579 !important;
+    color: white !important;
+}
+
+.card-header .text-white {
+    color: #fff !important;
 }
 
 .hover-card {
@@ -336,41 +346,62 @@ ob_start();
 <?php
 $scripts = '
 <script>
+// CORREÇÃO: Funções globais com tratamento de erro
 function alternarVisualizacao(tipo) {
-    // Esconder todas as visualizações
-    document.querySelectorAll(".view-mode").forEach(el => el.style.display = "none");
-    
-    // Remover classe active de todos os botões
-    document.querySelectorAll(".btn-group .btn").forEach(btn => btn.classList.remove("active"));
-    
-    // Mostrar visualização selecionada
-    if (tipo === "cards") {
-        document.getElementById("visualizacaoCards").style.display = "block";
-        document.getElementById("btnCards").classList.add("active");
-    } else if (tipo === "lista") {
-        document.getElementById("visualizacaoLista").style.display = "block";
-        document.getElementById("btnLista").classList.add("active");
-    } else if (tipo === "mapa") {
-        document.getElementById("visualizacaoMapa").style.display = "block";
-        document.getElementById("btnMapa").classList.add("active");
+    try {
+        const viewModes = document.querySelectorAll(".view-mode");
+        const buttons = document.querySelectorAll(".btn-group .btn");
         
-        // Inicializar mapa se necessário
-        setTimeout(() => {
-            inicializarMapa();
-        }, 300);
+        // Esconder todas as visualizações
+        viewModes.forEach(el => el.style.display = "none");
+        
+        // Remover classe active de todos os botões
+        buttons.forEach(btn => btn.classList.remove("active"));
+        
+        // Configuração das visualizações
+        const configs = {
+            "cards": { element: "visualizacaoCards", button: "btnCards" },
+            "lista": { element: "visualizacaoLista", button: "btnLista" },
+            "mapa": { element: "visualizacaoMapa", button: "btnMapa" }
+        };
+        
+        const config = configs[tipo];
+        if (!config) {
+            console.error("Tipo de visualização inválido:", tipo);
+            return;
+        }
+        
+        const elemento = document.getElementById(config.element);
+        const botao = document.getElementById(config.button);
+        
+        if (elemento && botao) {
+            elemento.style.display = "block";
+            botao.classList.add("active");
+            
+            // Inicializar mapa se necessário
+            if (tipo === "mapa") {
+                setTimeout(() => inicializarMapa(), 300);
+            }
+        } else {
+            console.error("Elementos não encontrados para:", tipo);
+        }
+        
+        // Salvar preferência
+        localStorage.setItem("visualizacaoSolicitacoes", tipo);
+    } catch (error) {
+        console.error("Erro ao alternar visualização:", error);
     }
-    
-    // Salvar preferência no localStorage
-    localStorage.setItem("visualizacaoSolicitacoes", tipo);
 }
 
 function inicializarMapa() {
-    // Placeholder para inicialização do mapa
-    console.log("Mapa seria inicializado aqui");
-    
-    // Simular carregamento do mapa
-    const mapaContainer = document.getElementById("mapaContainer");
-    if (mapaContainer) {
+    try {
+        const mapaContainer = document.getElementById("mapaContainer");
+        if (!mapaContainer) {
+            console.error("Container do mapa não encontrado");
+            return;
+        }
+        
+        // Simular carregamento
         mapaContainer.innerHTML = `
             <div class="d-flex align-items-center justify-content-center h-100">
                 <div class="text-center">
@@ -382,7 +413,7 @@ function inicializarMapa() {
             </div>
         `;
         
-        // Simular carregamento
+        // Simular carregamento completo
         setTimeout(() => {
             mapaContainer.innerHTML = `
                 <div class="d-flex align-items-center justify-content-center h-100">
@@ -394,40 +425,73 @@ function inicializarMapa() {
                 </div>
             `;
         }, 1500);
+    } catch (error) {
+        console.error("Erro ao inicializar mapa:", error);
     }
 }
 
 function atualizarSolicitacoes() {
-    // Recarregar a página mantendo os filtros
-    window.location.reload();
+    try {
+        const btn = document.querySelector(".btn-outline-success");
+        if (btn) {
+            btn.innerHTML = "<i class=\"bi bi-arrow-clockwise me-1 spinning\"></i>Atualizando...";
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error("Erro ao atualizar:", error);
+        window.location.reload();
+    }
 }
 
-// Carregar preferência de visualização
+// Event listeners após DOM pronto
 document.addEventListener("DOMContentLoaded", function() {
-    const visualizacaoSalva = localStorage.getItem("visualizacaoSolicitacoes") || "cards";
-    alternarVisualizacao(visualizacaoSalva);
+    try {
+        const visualizacaoSalva = localStorage.getItem("visualizacaoSolicitacoes") || "cards";
+        alternarVisualizacao(visualizacaoSalva);
+        
+        // Salvar timestamp do último refresh
+        localStorage.setItem("lastRefreshSolicitacoes", new Date().toISOString());
+        
+        console.log("Página de solicitações carregada com sucesso");
+    } catch (error) {
+        console.error("Erro na inicialização:", error);
+        alternarVisualizacao("cards"); // Fallback
+    }
 });
 
-// Auto-refresh a cada 2 minutos
-setInterval(() => {
-    if (document.visibilityState === "visible") {
-        const now = new Date();
-        const lastRefresh = localStorage.getItem("lastRefreshSolicitacoes");
-        
-        if (!lastRefresh || (now - new Date(lastRefresh)) > 120000) { // 2 minutos
-            const btn = document.querySelector(".btn-outline-success");
-            if (btn) {
-                btn.innerHTML = "<i class=\"bi bi-arrow-clockwise me-1 spinning\"></i>Atualizando...";
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+// Auto-refresh otimizado (opcional)
+let autoRefreshInterval;
+const AUTO_REFRESH_TIME = 120000; // 2 minutos
+
+function initAutoRefresh() {
+    // Limpar intervalo anterior se existir
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    
+    autoRefreshInterval = setInterval(() => {
+        if (document.visibilityState === "visible") {
+            const now = new Date();
+            const lastRefresh = localStorage.getItem("lastRefreshSolicitacoes");
+            
+            if (!lastRefresh || (now - new Date(lastRefresh)) > AUTO_REFRESH_TIME) {
+                atualizarSolicitacoes();
             }
         }
-    }
-}, 120000);
+    }, AUTO_REFRESH_TIME);
+}
 
-// Salvar timestamp do último refresh
-localStorage.setItem("lastRefreshSolicitacoes", new Date().toISOString());
+// Inicializar auto-refresh quando página ficar visível
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") {
+        initAutoRefresh();
+    } else if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+});
+
+// Inicializar auto-refresh
+initAutoRefresh();
 </script>
 
 <style>

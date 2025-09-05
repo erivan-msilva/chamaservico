@@ -10,28 +10,24 @@ class PerfilController
     public function __construct()
     {
         $this->model = new Perfil();
-        Session::requireClientLogin();
+        Session::requireLogin(); // Permite acesso para ambos
     }
 
-    public function index()
-    {
+    public function index() {
         $userId = Session::getUserId();
         $usuario = $this->model->buscarPorId($userId);
-        $enderecos = $this->model->buscarEnderecosPorUsuario($userId);
 
         if (!$usuario) {
-            Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: logout');
+            Session::setFlash('error', 'Perfil não encontrado!', 'danger');
+            header('Location: ' . url('logout'));
             exit;
         }
 
-        // Redirecionar baseado no tipo de usuário
-        if (Session::isPrestador() && !Session::isCliente()) {
-            header('Location: prestador/perfil');
-            exit;
+        // Verifica tipo de usuário e inclui a view correta
+        if (Session::isPrestador()) {
+            include 'views/prestador/perfil/visualizar.php';
         } else {
-            header('Location: cliente/perfil');
-            exit;
+            include 'views/cliente/perfil/visualizar.php';
         }
     }
 
@@ -73,8 +69,12 @@ class PerfilController
             exit;
         }
 
-        // Usar a view de edição comum
-        include 'views/cliente/perfil/editar.php';
+        // CORREÇÃO: Incluir a view correta conforme o tipo de usuário
+        if (Session::isPrestador()) {
+            include 'views/prestador/perfil/editar.php';
+        } else {
+            include 'views/cliente/perfil/editar.php';
+        }
     }
 
     // Método enderecos removido por duplicidade.
@@ -461,4 +461,3 @@ class PerfilController
         }
     }
 }
-?>
