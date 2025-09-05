@@ -3,8 +3,9 @@ $title = 'Detalhes da Proposta - ChamaServiço';
 ob_start();
 ?>
 
-<!-- Adicionar CSS customizado -->
+<!-- CSS Customizado Melhorado -->
 <style>
+/* Estilos Existentes */
 .timeline {
     position: relative;
     padding-left: 2rem;
@@ -16,11 +17,13 @@ ob_start();
     top: 0;
     bottom: 0;
     width: 2px;
-    background: #dee2e6;
+    background: linear-gradient(to bottom, #007bff, #28a745);
 }
 .timeline-item {
     position: relative;
     margin-bottom: 1.5rem;
+    padding-left: 1rem;
+    transition: all 0.3s ease;
 }
 .timeline-item::before {
     content: '';
@@ -31,10 +34,189 @@ ob_start();
     height: 0.8rem;
     border-radius: 50%;
     background: #6c757d;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.1);
 }
 .timeline-item.active::before {
-    background: #198754;
+    background: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    transform: scale(1.2);
 }
+.timeline-item:hover {
+    transform: translateX(5px);
+}
+
+/* Status do Prestador - NOVO */
+.prestador-avatar {
+    position: relative;
+    display: inline-block;
+}
+.status-indicator {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+.status-online {
+    background-color: #28a745;
+    animation: pulse-online 2s infinite;
+}
+.status-offline {
+    background-color: #6c757d;
+}
+@keyframes pulse-online {
+    0% { transform: scale(1); box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 0 0 rgba(40, 167, 69, 0.7); }
+    50% { transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 0 8px rgba(40, 167, 69, 0); }
+    100% { transform: scale(1); box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+/* Avaliações Interativas - NOVO */
+.rating-container {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+.rating-tooltip {
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.rating-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+}
+.rating-container:hover .rating-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* Estatísticas com Ícones - NOVO */
+.stat-item {
+    position: relative;
+    padding: 1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid #e9ecef;
+}
+.stat-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+.stat-icon {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    opacity: 0.4;
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
+}
+.stat-item:hover .stat-icon {
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+/* Abas Melhoradas - NOVO */
+.nav-tabs {
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    padding: 0.5rem 0.5rem 0;
+    border: none;
+    box-shadow: inset 0 -1px 0 #dee2e6;
+}
+.nav-tabs .nav-link {
+    color: #6c757d;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 6px 6px 0 0;
+    margin-right: 0.25rem;
+    transition: all 0.3s ease;
+    position: relative;
+    background: transparent;
+}
+.nav-tabs .nav-link:hover {
+    color: #495057;
+    background-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.nav-tabs .nav-link.active {
+    color: #007bff;
+    background-color: white;
+    border-bottom: 3px solid #007bff;
+    font-weight: 600;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Animação de Fade nas Abas - NOVO */
+.tab-pane {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: all 0.4s ease;
+}
+.tab-pane.show.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Botões de Ação Melhorados - NOVO */
+.action-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.action-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: all 0.6s ease;
+    transform: translate(-50%, -50%);
+}
+.action-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.action-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+.btn-success.action-button:hover {
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+}
+
+/* Card Responsivo */
 .chat-container {
     max-height: 300px;
     overflow-y: auto;
@@ -75,30 +257,29 @@ ob_start();
 .image-gallery img:hover {
     transform: scale(1.05);
 }
-.nav-tabs .nav-link {
-    color: #6c757d;
-    font-weight: 500;
-    padding: 1rem 1.5rem;
-    border: none;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s ease;
-}
-.nav-tabs .nav-link:hover {
-    color: #495057;
-    border-bottom-color: #f8d7da;
-}
-.nav-tabs .nav-link.active {
-    color: #007bff;
-    background-color: transparent;
-    border-bottom-color: #007bff;
-    font-weight: 600;
-}
-.tab-content {
-    padding-top: 2rem;
-}
 .prestador-card-highlight {
     border: 2px solid #007bff;
     box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.15);
+    transition: all 0.3s ease;
+}
+.prestador-card-highlight:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 1rem 2rem rgba(0, 123, 255, 0.2);
+}
+
+/* Modal Melhorado */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.confirmation-summary {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+    border: 2px solid #28a745;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 </style>
 
@@ -180,7 +361,7 @@ ob_start();
                     </div>
                 </div>
 
-                <!-- Card do Prestador em Destaque -->
+                <!-- Card do Prestador MELHORADO -->
                 <div class="card shadow-sm mb-4 prestador-card-highlight">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
@@ -191,28 +372,39 @@ ob_start();
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-3 text-center">
-                                <?php
-                                $fotoPrestador = $proposta['prestador_foto'] ?? null;
-                                if ($fotoPrestador && file_exists("uploads/perfil/" . basename($fotoPrestador))):
-                                ?>
-                                    <img src="uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
-                                        class="rounded-circle mb-2" width="100" height="100" 
-                                        style="object-fit: cover; border: 3px solid #007bff;" alt="Foto do prestador">
-                                <?php else: ?>
-                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-2"
-                                        style="width: 100px; height: 100px; border: 3px solid #6c757d;">
-                                        <i class="bi bi-person" style="font-size: 3rem; color: #6c757d;"></i>
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <!-- Avaliação -->
-                                <div class="text-warning mb-1">
-                                    <?php 
-                                    $avaliacao = floatval($proposta['prestador_avaliacao'] ?? 0);
-                                    for($i = 1; $i <= 5; $i++): 
+                                <!-- Foto com Status Indicator -->
+                                <div class="prestador-avatar mb-2">
+                                    <?php
+                                    $fotoPrestador = $proposta['prestador_foto'] ?? null;
+                                    if ($fotoPrestador && file_exists("propostas/uploads/perfil/" . basename($fotoPrestador))):
                                     ?>
-                                        <i class="bi bi-star<?= $i <= $avaliacao ? '-fill' : '' ?>"></i>
-                                    <?php endfor; ?>
+                                        <img src="uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
+                                            class="rounded-circle" width="100" height="100" 
+                                            style="object-fit: cover; border: 3px solid #007bff;" alt="Foto do prestador">
+                                    <?php else: ?>
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                            style="width: 100px; height: 100px; border: 3px solid #6c757d;">
+                                            <i class="bi bi-person" style="font-size: 3rem; color: #6c757d;"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <!-- Status Indicator -->
+                                    <div class="status-indicator status-online" title="Prestador Online"></div>
+                                </div>
+                                
+                                <!-- Avaliação Interativa -->
+                                <div class="rating-container mb-1">
+                                    <div class="text-warning">
+                                        <?php 
+                                        $avaliacao = floatval($proposta['prestador_avaliacao'] ?? 0);
+                                        for($i = 1; $i <= 5; $i++): 
+                                        ?>
+                                            <i class="bi bi-star<?= $i <= $avaliacao ? '-fill' : '' ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <div class="rating-tooltip">
+                                        Nota Média: <?= number_format($avaliacao, 1) ?> de 5<br>
+                                        Baseado em <?= $proposta['prestador_total_avaliacoes'] ?? 0 ?> avaliações
+                                    </div>
                                 </div>
                                 <small class="text-muted">(<?= $proposta['prestador_total_avaliacoes'] ?? 0 ?> avaliações)</small>
                             </div>
@@ -230,19 +422,28 @@ ob_start();
                                     <span><?= htmlspecialchars($proposta['prestador_email'] ?? 'Não informado') ?></span>
                                 </div>
 
-                                <!-- Estatísticas em linha -->
+                                <!-- Estatísticas Melhoradas com Ícones -->
                                 <div class="row text-center mt-3">
                                     <div class="col-4">
-                                        <strong class="d-block text-primary fs-5"><?= $proposta['prestador_servicos_concluidos'] ?? 0 ?></strong>
-                                        <small class="text-muted">Serviços</small>
+                                        <div class="stat-item">
+                                            <i class="bi bi-check-all stat-icon text-primary"></i>
+                                            <strong class="d-block text-primary fs-5"><?= $proposta['prestador_servicos_concluidos'] ?? 0 ?></strong>
+                                            <small class="text-muted">Serviços</small>
+                                        </div>
                                     </div>
                                     <div class="col-4">
-                                        <strong class="d-block text-success fs-5"><?= number_format($proposta['prestador_avaliacao'] ?? 0, 1) ?></strong>
-                                        <small class="text-muted">Nota</small>
+                                        <div class="stat-item">
+                                            <i class="bi bi-star stat-icon text-warning"></i>
+                                            <strong class="d-block text-success fs-5"><?= number_format($proposta['prestador_avaliacao'] ?? 0, 1) ?></strong>
+                                            <small class="text-muted">Nota</small>
+                                        </div>
                                     </div>
                                     <div class="col-4">
-                                        <strong class="d-block text-warning fs-5"><?= $proposta['prestador_anos_experiencia'] ?? 0 ?>+</strong>
-                                        <small class="text-muted">Anos</small>
+                                        <div class="stat-item">
+                                            <i class="bi bi-calendar-check stat-icon text-info"></i>
+                                            <strong class="d-block text-warning fs-5"><?= $proposta['prestador_anos_experiencia'] ?? 0 ?>+</strong>
+                                            <small class="text-muted">Anos</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -276,10 +477,10 @@ ob_start();
                     </div>
                 </div>
 
-                <!-- Sistema de Abas -->
+                <!-- Sistema de Abas MELHORADO -->
                 <div class="card shadow-sm">
                     <div class="card-body p-0">
-                        <!-- Navegação das Abas -->
+                        <!-- Navegação das Abas Melhorada -->
                         <ul class="nav nav-tabs" id="propostaTab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="detalhes-tab" data-bs-toggle="tab" data-bs-target="#detalhes" type="button" role="tab">
@@ -332,16 +533,16 @@ ob_start();
                                     </div>
                                 </div>
 
-                                <!-- Ações da Proposta -->
+                                <!-- Ações da Proposta MELHORADAS -->
                                 <div class="row">
                                     <div class="col-12">
                                         <h6><i class="bi bi-gear me-2"></i>Ações</h6>
                                         <?php if (($proposta['status'] ?? 'pendente') === 'pendente'): ?>
                                             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                                                <button type="button" class="btn btn-success btn-lg px-4" data-bs-toggle="modal" data-bs-target="#modalAceitar">
+                                                <button type="button" class="btn btn-success btn-lg px-4 action-button" data-bs-toggle="modal" data-bs-target="#modalAceitar">
                                                     <i class="bi bi-check-circle me-2"></i>Aceitar Proposta
                                                 </button>
-                                                <button type="button" class="btn btn-outline-danger btn-lg px-4" data-bs-toggle="modal" data-bs-target="#modalRecusar">
+                                                <button type="button" class="btn btn-outline-danger btn-lg px-4 action-button" data-bs-toggle="modal" data-bs-target="#modalRecusar">
                                                     <i class="bi bi-x-circle me-2"></i>Recusar Proposta
                                                 </button>
                                             </div>
@@ -462,7 +663,7 @@ ob_start();
 
             <!-- Coluna Lateral Reduzida -->
             <div class="col-md-4">
-                <!-- Resumo Rápido -->
+                <!-- Resumo Rápido MELHORADO -->
                 <div class="card shadow-sm mb-3">
                     <div class="card-header bg-info text-white">
                         <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Resumo Rápido</h6>
@@ -474,10 +675,10 @@ ob_start();
                         </div>
                         <div class="d-grid">
                             <?php if (($proposta['status'] ?? 'pendente') === 'pendente'): ?>
-                                <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#modalAceitar">
+                                <button type="button" class="btn btn-success mb-2 action-button" data-bs-toggle="modal" data-bs-target="#modalAceitar">
                                     <i class="bi bi-check-circle me-1"></i>Aceitar
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRecusar">
+                                <button type="button" class="btn btn-outline-danger action-button" data-bs-toggle="modal" data-bs-target="#modalRecusar">
                                     <i class="bi bi-x-circle me-1"></i>Recusar
                                 </button>
                             <?php endif; ?>
@@ -495,7 +696,7 @@ ob_start();
     </div>
 </div>
 
-<!-- Modal Aceitar Proposta - MELHORADO -->
+<!-- Modal Aceitar Proposta MELHORADO -->
 <div class="modal fade" id="modalAceitar" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -510,77 +711,63 @@ ob_start();
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?>">
                     
-                    <!-- Informações do Prestador no Modal -->
-                    <div class="card bg-light mb-4">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-md-3 text-center">
-                                    <?php if ($fotoPrestador && file_exists("uploads/perfil/" . basename($fotoPrestador))): ?>
-                                        <img src="uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
-                                            class="rounded-circle" width="80" height="80" 
-                                            style="object-fit: cover; border: 3px solid #28a745;" alt="Foto do prestador">
-                                    <?php else: ?>
-                                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
-                                            style="width: 80px; height: 80px;">
-                                            <i class="bi bi-person text-white" style="font-size: 2rem;"></i>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="col-md-9">
-                                    <h5 class="mb-1 text-success"><?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?></h5>
-                                    <div class="text-warning mb-2">
-                                        <?php for($i = 1; $i <= 5; $i++): ?>
-                                            <i class="bi bi-star<?= $i <= $avaliacao ? '-fill' : '' ?>"></i>
-                                        <?php endfor; ?>
-                                        <span class="text-muted ms-1">(<?= $proposta['prestador_total_avaliacoes'] ?? 0 ?> avaliações)</span>
+                    <!-- Resumo da Decisão MELHORADO -->
+                    <div class="confirmation-summary">
+                        <div class="text-center">
+                            <h5 class="text-success mb-3">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Você está prestes a aceitar esta proposta
+                            </h5>
+                            <div class="bg-white rounded p-3 shadow-sm">
+                                <h6 class="mb-2">Resumo da Contratação:</h6>
+                                <p class="mb-1">
+                                    <strong>Serviço:</strong> <?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Serviço') ?>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Prestador:</strong> <?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>
+                                </p>
+                                <div class="row text-center mt-3">
+                                    <div class="col-6">
+                                        <h4 class="text-success mb-0">R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?></h4>
+                                        <small class="text-muted">Valor Total</small>
                                     </div>
-                                    <div class="row text-center">
-                                        <div class="col-4">
-                                            <strong class="d-block text-primary"><?= $proposta['prestador_servicos_concluidos'] ?? 0 ?></strong>
-                                            <small class="text-muted">Serviços</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <strong class="d-block text-success">R$ <?= number_format($proposta['valor'], 2, ',', '.') ?></strong>
-                                            <small class="text-muted">Valor</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <strong class="d-block text-info"><?= $proposta['prazo_execucao'] ?></strong>
-                                            <small class="text-muted">Dia(s)</small>
-                                        </div>
+                                    <div class="col-6">
+                                        <h4 class="text-primary mb-0"><?= ($proposta['prazo_execucao'] ?? 0) ?> dia(s)</h4>
+                                        <small class="text-muted">Prazo</small>
                                     </div>
                                 </div>
                             </div>
+                            <p class="mt-3 mb-0 text-dark">
+                                <strong>Confirma a contratação de <?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>?</strong>
+                            </p>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="observacoes" class="form-label">
-                            <i class="bi bi-chat-text me-1"></i>Observações para o Prestador (Opcional)
-                        </label>
-                        <textarea class="form-control" id="observacoes" name="observacoes" rows="4" 
-                                 placeholder="Deixe uma mensagem para o prestador sobre detalhes específicos, horários preferenciais, etc."></textarea>
-                        <div class="form-text">
-                            <i class="bi bi-lightbulb me-1"></i>
-                            Aproveite para informar horários preferenciais, detalhes específicos do serviço ou outras observações importantes.
-                        </div>
-                    </div>
+                    <!-- ...existing code... -->
                     
-                    <div class="alert alert-info">
-                        <h6><i class="bi bi-bell me-2"></i>O que acontece após aceitar?</h6>
-                        <ul class="mb-0">
-                            <li>O prestador será <strong>notificado imediatamente</strong></li>
-                            <li>Outras propostas serão automaticamente recusadas</li>
-                            <li>O status do serviço mudará para "Em Andamento"</li>
-                            <li>Você poderá acompanhar o progresso do serviço</li>
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-info-circle me-2"></i>Atenção - Esta ação não pode ser desfeita!</h6>
+                        <ul class="mb-0 small">
+                            <li>✅ O prestador será <strong>notificado imediatamente</strong></li>
+                            <li>✅ Outras propostas serão automaticamente recusadas</li>
+                            <li>✅ O status mudará para "Serviço Contratado"</li>
+                            <li>✅ Você receberá os dados de contato completos</li>
                         </ul>
+                    </div>
+
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="confirmarTermos" required>
+                        <label class="form-check-label fw-bold" for="confirmarTermos">
+                            Confirmo que li e concordo com os termos desta contratação
+                        </label>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle me-1"></i>Cancelar
                     </button>
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="bi bi-check-circle me-1"></i>Confirmar e Aceitar Proposta
+                    <button type="submit" class="btn btn-success btn-lg action-button">
+                        <i class="bi bi-check-circle me-1"></i>Sim, Contratar Serviço
                     </button>
                 </div>
             </form>
