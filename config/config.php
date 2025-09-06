@@ -62,6 +62,21 @@ function url($path = '') {
     return $fullUrl;
 }
 
+/**
+ * Função para incluir arquivos de forma segura (para compatibilidade com EmailService)
+ * @param string $path Caminho relativo do arquivo
+ */
+function includeFile($path) {
+    $baseDir = dirname(__DIR__); // Diretório raiz do projeto
+    $fullPath = $baseDir . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
+    
+    if (file_exists($fullPath)) {
+        require_once $fullPath;
+        return true;
+    }
+    throw new Exception("Arquivo não encontrado: {$fullPath}");
+}
+
 // =====================================
 // DETECÇÃO DE AMBIENTE
 // =====================================
@@ -92,6 +107,21 @@ if ($isLocal) {
     define('DB_PASS', 'pdSNPX6rm2MJE8XM4rTq');
     define('AMBIENTE', 'producao');
 }
+
+// =====================================
+// CONFIGURAÇÕES DE E-MAIL SMTP
+// =====================================
+
+// Configurações SMTP para produção e desenvolvimento
+if (!defined('EMAIL_SMTP_HOST')) define('EMAIL_SMTP_HOST', 'h63.servidorhh.com');
+if (!defined('EMAIL_SMTP_PORT')) define('EMAIL_SMTP_PORT', 587);
+if (!defined('EMAIL_SMTP_USERNAME')) define('EMAIL_SMTP_USERNAME', 'chamaservico@tds104-senac.online');
+if (!defined('EMAIL_SMTP_PASSWORD')) define('EMAIL_SMTP_PASSWORD', 'Chama@Servico123');
+if (!defined('EMAIL_FROM_EMAIL')) define('EMAIL_FROM_EMAIL', 'chamaservico@tds104-senac.online');
+if (!defined('EMAIL_FROM_NAME')) define('EMAIL_FROM_NAME', 'ChamaServiço');
+
+// Log da configuração de e-mail
+error_log("📧 Configurações de e-mail carregadas - Host: " . EMAIL_SMTP_HOST . " - Porta: " . EMAIL_SMTP_PORT . " - Ambiente: " . AMBIENTE);
 
 // =====================================
 // OUTRAS CONFIGURAÇÕES

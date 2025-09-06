@@ -97,7 +97,7 @@ ob_start();
                     <div>
                         <small class="text-muted">
                             <strong>Como funciona:</strong><br>
-                            Digite seu e-mail cadastrado e você receberá um link para criar uma nova senha.
+                           Digite seu e-mail cadastrado e você receberá um link para criar uma nova senha.
                         </small>
                     </div>
                 </div>
