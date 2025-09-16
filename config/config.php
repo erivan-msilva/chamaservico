@@ -111,6 +111,9 @@ date_default_timezone_set('America/Sao_Paulo');
 
 // Log da configuração
 error_log("Config carregada - BASE_URL: " . BASE_URL . " - Ambiente: " . AMBIENTE);
+
+// Carregar funções auxiliares
+require_once __DIR__ . '/functions.php';
 ?>
 
 

@@ -3,14 +3,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Verificar se está logado como admin
+// Verificar se está logado
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: admin/login');
+    header('Location: /admin/login');
     exit;
 }
 
-// Variáveis dinâmicas para notificações
-$novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do controller/model
+// Definir função url se não existir
+if (!function_exists('url')) {
+    function url($path = '') {
+        return 'https://chamaservico.tds104-senac.online/' . ltrim($path, '/');
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -27,14 +31,14 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
         }
         
         .nav-link {
-            color: rgba(255, 255, 255, 0.8) !important;
+            color: rgba(255,255,255,0.8) !important;
             transition: all 0.3s ease;
         }
         
         .nav-link:hover,
         .nav-link.active {
             color: #fff !important;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.1);
             border-radius: 8px;
         }
         
@@ -42,38 +46,16 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
         }
-        
-        .stats-widget {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid;
-            margin-bottom: 1.5rem;
-            transition: transform 0.2s;
-        }
-        
-        .stats-widget:hover {
-            transform: translateY(-2px);
-        }
-        
-        .activity-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            border: none;
-        }
 
-        /* MELHORIAS DO MENU - Agrupamento Lógico */
         .nav-section-title {
-            color: rgba(255, 255, 255, 0.6) !important;
+            color: rgba(255,255,255,0.6) !important;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             padding: 0.75rem 1rem 0.25rem 1rem;
             margin-top: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             cursor: default;
         }
         
@@ -81,38 +63,14 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
             margin-top: 0;
         }
         
-        /* Melhorias no Link Ativo */
         .nav-link.active {
-            background: rgba(255, 255, 255, 0.15) !important;
+            background: rgba(255,255,255,0.15) !important;
             border-left: 3px solid #fff !important;
             margin-left: 0 !important;
             padding-left: calc(1rem - 3px) !important;
             position: relative;
         }
-        
-        /* Badge de Notificação */
-        .notification-badge {
-            background: #dc3545 !important;
-            color: white !important;
-            font-size: 0.7rem;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 50%;
-            min-width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        /* Estilos específicos da página */
+
         <?= $styles ?? '' ?>
     </style>
 </head>
@@ -130,64 +88,54 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                         <p class="text-white-50 small">ChamaServiço</p>
                     </div>
                     
-                    <!-- MENU MELHORADO COM AGRUPAMENTO LÓGICO -->
                     <ul class="nav flex-column">
-                        <!-- SEÇÃO: PAINEL -->
                         <li class="nav-section-title">
                             <i class="bi bi-speedometer2 me-1"></i>Painel
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'dashboard' ? 'active' : '' ?>" href="admin/dashboard">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'dashboard' ? 'active' : '' ?>" href="<?= url('admin/dashboard') ?>">
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Dashboard
                             </a>
                         </li>
                         
-                        <!-- SEÇÃO: GESTÃO -->
                         <li class="nav-section-title">
                             <i class="bi bi-gear me-1"></i>Gestão
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link d-flex justify-content-between align-items-center <?= ($currentPage ?? '') === 'solicitacoes' ? 'active' : '' ?>" href="admin/solicitacoes">
-                                <span>
-                                    <i class="bi bi-list-task me-2"></i>
-                                    Solicitações
-                                </span>
-                                <?php if ($novasSolicitacoes > 0): ?>
-                                    <span class="notification-badge"><?= $novasSolicitacoes ?></span>
-                                <?php endif; ?>
+                            <a class="nav-link <?= ($currentPage ?? '') === 'solicitacoes' ? 'active' : '' ?>" href="<?= url('admin/solicitacoes') ?>">
+                                <i class="bi bi-list-task me-2"></i>
+                                Solicitações
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'usuarios' ? 'active' : '' ?>" href="admin/usuarios">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'usuarios' ? 'active' : '' ?>" href="<?= url('admin/usuarios') ?>">
                                 <i class="bi bi-people me-2"></i>
                                 Usuários
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'tipos-servico' ? 'active' : '' ?>" href="admin/tipos-servico">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'tipos-servico' ? 'active' : '' ?>" href="<?= url('admin/tipos-servico') ?>">
                                 <i class="bi bi-tools me-2"></i>
                                 Tipos de Serviços
                             </a>
                         </li>
                         
-                        <!-- SEÇÃO: ANÁLISE -->
                         <li class="nav-section-title">
                             <i class="bi bi-graph-up me-1"></i>Análise
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'relatorios' ? 'active' : '' ?>" href="admin/relatorios">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'relatorios' ? 'active' : '' ?>" href="<?= url('admin/relatorios') ?>">
                                 <i class="bi bi-graph-up me-2"></i>
                                 Relatórios
                             </a>
                         </li>
                         
-                        <!-- SEÇÃO: SISTEMA -->
                         <li class="nav-section-title">
                             <i class="bi bi-gear-fill me-1"></i>Sistema
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($currentPage ?? '') === 'configuracoes' ? 'active' : '' ?>" href="admin/configuracoes">
+                            <a class="nav-link <?= ($currentPage ?? '') === 'configuracoes' ? 'active' : '' ?>" href="<?= url('admin/configuracoes') ?>">
                                 <i class="bi bi-gear me-2"></i>
                                 Configurações
                             </a>
@@ -202,7 +150,7 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
                             <div class="text-white fw-bold small">
                                 <?= htmlspecialchars($_SESSION['admin_nome'] ?? 'Admin Sistema') ?>
                             </div>
-                            <a href="admin/logout" class="btn btn-outline-light btn-sm mt-2">
+                            <a href="<?= url('admin/logout') ?>" class="btn btn-outline-light btn-sm mt-2">
                                 <i class="bi bi-box-arrow-right me-1"></i>
                                 Sair
                             </a>
@@ -213,7 +161,7 @@ $novasSolicitacoes = $novasSolicitacoes ?? 3; // Esta variável viria do control
 
             <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-                <?= $content ?>
+                <?= $content ?? '' ?>
             </main>
         </div>
     </div>

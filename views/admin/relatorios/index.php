@@ -1,125 +1,20 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verificar se está logado como admin
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: ' . url('admin/login'));
+    exit;
+}
+
 // Configuração do layout
 $title = 'Relatórios e Análises - Admin';
 $currentPage = 'relatorios';
 
-// Buscar dados reais do banco de dados
-try {
-    require_once 'core/Database.php';
-    $db = Database::getInstance();
-    
-    // Buscar estatísticas gerais
-    $sqlEstatisticas = "
-        SELECT 
-            (SELECT COUNT(*) FROM tb_solicita_servico) as total_solicitacoes,
-            (SELECT COUNT(*) FROM tb_pessoa WHERE tipo IN ('cliente', 'ambos')) as total_clientes,
-            (SELECT COUNT(*) FROM tb_pessoa WHERE tipo IN ('prestador', 'ambos')) as total_prestadores,
-            (SELECT COUNT(*) FROM tb_proposta) as total_propostas,
-            (SELECT COUNT(*) FROM tb_proposta WHERE status = 'aceita') as propostas_aceitas,
-            (SELECT SUM(valor) FROM tb_proposta WHERE status = 'aceita') as valor_total_aceito,
-            (SELECT COUNT(*) FROM tb_solicita_servico WHERE status_id = 5) as servicos_concluidos,
-            (SELECT COUNT(*) FROM tb_avaliacao) as total_avaliacoes,
-            (SELECT AVG(nota) FROM tb_avaliacao) as nota_media_geral
-    ";
-    
-    $stmt = $db->prepare($sqlEstatisticas);
-    $stmt->execute();
-    $estatisticas = $stmt->fetch() ?: [
-        'total_solicitacoes' => 0,
-        'total_clientes' => 0,
-        'total_prestadores' => 0,
-        'total_propostas' => 0,
-        'propostas_aceitas' => 0,
-        'valor_total_aceito' => 0,
-        'servicos_concluidos' => 0,
-        'total_avaliacoes' => 0,
-        'nota_media_geral' => 0
-    ];
-    
-    // Buscar dados para gráficos dos últimos 12 meses
-    $sqlSolicitacoesMes = "
-        SELECT 
-            DATE_FORMAT(data_solicitacao, '%Y-%m') as mes,
-            COUNT(*) as total
-        FROM tb_solicita_servico 
-        WHERE data_solicitacao >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY DATE_FORMAT(data_solicitacao, '%Y-%m')
-        ORDER BY mes ASC
-    ";
-    
-    $stmt = $db->prepare($sqlSolicitacoesMes);
-    $stmt->execute();
-    $solicitacoesPorMes = $stmt->fetchAll();
-    
-    // Buscar tipos de serviços mais solicitados
-    $sqlTiposPopulares = "
-        SELECT 
-            ts.nome,
-            COUNT(s.id) as total,
-            AVG(s.orcamento_estimado) as orcamento_medio
-        FROM tb_tipo_servico ts
-        LEFT JOIN tb_solicita_servico s ON ts.id = s.tipo_servico_id
-        GROUP BY ts.id, ts.nome
-        ORDER BY total DESC
-        LIMIT 10
-    ";
-    
-    $stmt = $db->prepare($sqlTiposPopulares);
-    $stmt->execute();
-    $tiposPopulares = $stmt->fetchAll();
-    
-    // Buscar distribuição por status
-    $sqlStatusDistribuicao = "
-        SELECT 
-            st.nome,
-            st.cor,
-            COUNT(s.id) as total
-        FROM tb_status_solicitacao st
-        LEFT JOIN tb_solicita_servico s ON st.id = s.status_id
-        GROUP BY st.id, st.nome, st.cor
-        ORDER BY total DESC
-    ";
-    
-    $stmt = $db->prepare($sqlStatusDistribuicao);
-    $stmt->execute();
-    $statusDistribuicao = $stmt->fetchAll();
-    
-    // Buscar cidades com mais atividade
-    $sqlCidadesAtivas = "
-        SELECT 
-            e.cidade,
-            e.estado,
-            COUNT(s.id) as total_solicitacoes
-        FROM tb_endereco e
-        JOIN tb_solicita_servico s ON e.id = s.endereco_id
-        GROUP BY e.cidade, e.estado
-        ORDER BY total_solicitacoes DESC
-        LIMIT 10
-    ";
-    
-    $stmt = $db->prepare($sqlCidadesAtivas);
-    $stmt->execute();
-    $cidadesAtivas = $stmt->fetchAll();
-    
-    // Buscar evolução mensal de propostas
-    $sqlEvolucaoMensal = "
-        SELECT 
-            DATE_FORMAT(s.data_solicitacao, '%Y-%m') as mes,
-            COUNT(DISTINCT s.id) as total_solicitacoes,
-            COUNT(DISTINCT p.id) as total_propostas
-        FROM tb_solicita_servico s
-        LEFT JOIN tb_proposta p ON s.id = p.solicitacao_id
-        WHERE s.data_solicitacao >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY DATE_FORMAT(s.data_solicitacao, '%Y-%m')
-        ORDER BY mes ASC
-    ";
-    
-    $stmt = $db->prepare($sqlEvolucaoMensal);
-    $stmt->execute();
-    $evolucaoMensal = $stmt->fetchAll();
-    
-} catch (Exception $e) {
-    error_log("Erro ao buscar dados de relatórios: " . $e->getMessage());
+// Se as variáveis não estiverem definidas, usar valores padrão
+if (!isset($estatisticas)) {
     $estatisticas = [
         'total_solicitacoes' => 0,
         'total_clientes' => 0,
@@ -131,12 +26,12 @@ try {
         'total_avaliacoes' => 0,
         'nota_media_geral' => 0
     ];
-    $solicitacoesPorMes = [];
-    $tiposPopulares = [];
-    $statusDistribuicao = [];
-    $cidadesAtivas = [];
-    $evolucaoMensal = [];
 }
+
+if (!isset($evolucaoMensal)) $evolucaoMensal = [];
+if (!isset($tiposPopulares)) $tiposPopulares = [];
+if (!isset($statusDistribuicao)) $statusDistribuicao = [];
+if (!isset($cidadesAtivas)) $cidadesAtivas = [];
 
 ob_start();
 ?>
@@ -177,6 +72,16 @@ ob_start();
         </div>
     </div>
 </div>
+
+<!-- Flash Messages -->
+<?php if (isset($_SESSION['admin_flash'])): ?>
+    <?php $flash = $_SESSION['admin_flash']; unset($_SESSION['admin_flash']); ?>
+    <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show">
+        <i class="bi bi-<?= $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle' ?> me-2"></i>
+        <?= htmlspecialchars($flash['message']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
 
 <!-- KPIs Principais -->
 <div class="row mb-4">
@@ -219,7 +124,7 @@ ob_start();
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <h6 class="text-muted mb-2">Total de Usuários</h6>
-                    <h2 class="text-warning mb-0"><?= number_format(($estatisticas['total_clientes'] + $estatisticas['total_prestadores'])) ?></h2>
+                    <h2 class="text-warning mb-0"><?= number_format(($estatisticas['total_clientes'] ?? 0) + ($estatisticas['total_prestadores'] ?? 0)) ?></h2>
                     <small class="text-info">
                         <i class="bi bi-people"></i> Cadastrados
                     </small>
@@ -236,7 +141,7 @@ ob_start();
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <h6 class="text-muted mb-2">Serviços Concluídos</h6>
-                    <h2 class="text-info mb-0"><?= number_format($estatisticas['servicos_concluidos']) ?></h2>
+                    <h2 class="text-info mb-0"><?= number_format($estatisticas['servicos_concluidos'] ?? 0) ?></h2>
                     <small class="text-success">
                         <i class="bi bi-check-circle"></i> Finalizados
                     </small>
@@ -529,87 +434,121 @@ $styles = '
 }
 ';
 
-// Scripts específicos da página
+// Scripts específicos da página - CORRIGIDO para evitar erro do Canvas
 $scripts = '
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Dados para os gráficos
-const evolucaoData = ' . json_encode($evolucaoMensal) . ';
-const statusDistribuicao = ' . json_encode($statusDistribuicao) . ';
+document.addEventListener("DOMContentLoaded", function() {
+    // Dados para os gráficos
+    const evolucaoData = ' . json_encode($evolucaoMensal) . ';
+    const statusDistribuicao = ' . json_encode($statusDistribuicao) . ';
 
-// Gráfico de Evolução
-const ctxEvolucao = document.getElementById("chartEvolucao").getContext("2d");
-new Chart(ctxEvolucao, {
-    type: "line",
-    data: {
-        labels: evolucaoData.map(item => {
-            const [ano, mes] = item.mes.split("-");
-            return new Date(ano, mes - 1).toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
-        }),
-        datasets: [{
-            label: "Solicitações",
-            data: evolucaoData.map(item => item.total_solicitacoes),
-            borderColor: "#0d6efd",
-            backgroundColor: "rgba(13, 110, 253, 0.1)",
-            tension: 0.4,
-            fill: true
-        }, {
-            label: "Propostas",
-            data: evolucaoData.map(item => item.total_propostas),
-            borderColor: "#198754",
-            backgroundColor: "rgba(25, 135, 84, 0.1)",
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        interaction: {
-            intersect: false,
-            mode: "index"
-        },
-        plugins: {
-            legend: {
-                position: "top"
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
-            }
-        }
-    }
-});
+    // Verificar se os elementos canvas existem antes de criar os gráficos
+    const canvasEvolucao = document.getElementById("chartEvolucao");
+    const canvasStatus = document.getElementById("chartStatus");
 
-// Gráfico de Status
-const ctxStatus = document.getElementById("chartStatus").getContext("2d");
-new Chart(ctxStatus, {
-    type: "doughnut",
-    data: {
-        labels: statusDistribuicao.map(item => item.nome),
-        datasets: [{
-            data: statusDistribuicao.map(item => item.total),
-            backgroundColor: statusDistribuicao.map(item => item.cor),
-            borderWidth: 2,
-            borderColor: "#fff"
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: "bottom",
-                labels: {
-                    padding: 15,
-                    usePointStyle: true,
-                    font: {
-                        size: 11
+    // Gráfico de Evolução
+    if (canvasEvolucao && evolucaoData && evolucaoData.length > 0) {
+        try {
+            new Chart(canvasEvolucao.getContext("2d"), {
+                type: "line",
+                data: {
+                    labels: evolucaoData.map(item => {
+                        const [ano, mes] = item.mes.split("-");
+                        return new Date(ano, mes - 1).toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
+                    }),
+                    datasets: [{
+                        label: "Solicitações",
+                        data: evolucaoData.map(item => item.total_solicitacoes),
+                        borderColor: "#0d6efd",
+                        backgroundColor: "rgba(13, 110, 253, 0.1)",
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: "Propostas",
+                        data: evolucaoData.map(item => item.total_propostas),
+                        borderColor: "#198754",
+                        backgroundColor: "rgba(25, 135, 84, 0.1)",
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        intersect: false,
+                        mode: "index"
+                    },
+                    plugins: {
+                        legend: {
+                            position: "top"
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
                     }
                 }
-            }
+            });
+        } catch(e) {
+            console.error("Erro ao criar gráfico de evolução:", e);
+        }
+    } else {
+        // Mostrar mensagem de dados vazios no gráfico
+        if (canvasEvolucao) {
+            const ctx = canvasEvolucao.getContext("2d");
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#666";
+            ctx.textAlign = "center";
+            ctx.fillText("Nenhum dado disponível", canvasEvolucao.width/2, canvasEvolucao.height/2);
+        }
+    }
+
+    // Gráfico de Status
+    if (canvasStatus && statusDistribuicao && statusDistribuicao.length > 0) {
+        try {
+            new Chart(canvasStatus.getContext("2d"), {
+                type: "doughnut",
+                data: {
+                    labels: statusDistribuicao.map(item => item.nome),
+                    datasets: [{
+                        data: statusDistribuicao.map(item => item.total),
+                        backgroundColor: statusDistribuicao.map(item => item.cor),
+                        borderWidth: 2,
+                        borderColor: "#fff"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch(e) {
+            console.error("Erro ao criar gráfico de status:", e);
+        }
+    } else {
+        // Mostrar mensagem de dados vazios
+        if (canvasStatus) {
+            const ctx = canvasStatus.getContext("2d");
+            ctx.font = "14px Arial";
+            ctx.fillStyle = "#666";
+            ctx.textAlign = "center";
+            ctx.fillText("Nenhum dado disponível", canvasStatus.width/2, canvasStatus.height/2);
         }
     }
 });
@@ -632,20 +571,6 @@ setTimeout(function() {
         }
     });
 }, 5000);
-
-// Animação de entrada dos cards
-document.addEventListener("DOMContentLoaded", function() {
-    const cards = document.querySelectorAll(".card, .stats-widget");
-    cards.forEach((card, index) => {
-        card.style.opacity = "0";
-        card.style.transform = "translateY(20px)";
-        setTimeout(() => {
-            card.style.transition = "all 0.5s ease";
-            card.style.opacity = "1";
-            card.style.transform = "translateY(0)";
-        }, index * 100);
-    });
-});
 </script>
 ';
 

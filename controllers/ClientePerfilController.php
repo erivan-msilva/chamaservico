@@ -10,7 +10,7 @@ class ClientePerfilController {
         Session::requireClientLogin();
         
         if (!Session::isCliente()) {
-            header('Location: /acesso-negado');
+            header('Location: ' . url('acesso-negado'));
             exit;
         }
     }
@@ -22,7 +22,7 @@ class ClientePerfilController {
         
         if (!$usuario) {
             Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: logout');
+            header('Location: ' . url('logout'));
             exit;
         }
         
@@ -35,14 +35,14 @@ class ClientePerfilController {
         
         if (!$usuario) {
             Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: logout');
+            header('Location: ' . url('logout'));
             exit;
         }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: cliente/perfil/editar');
+                header('Location: ' . url('cliente/perfil/editar'));
                 exit;
             }
             
@@ -62,7 +62,7 @@ class ClientePerfilController {
                     Session::setFlash('error', 'Ação inválida!', 'danger');
             }
             
-            header('Location: cliente/perfil/editar');
+            header('Location: ' . url('cliente/perfil/editar'));
             exit;
         }
         
@@ -118,7 +118,7 @@ class ClientePerfilController {
             } else {
                 Session::setFlash('error', 'Erro ao cadastrar endereço!', 'danger');
             }
-            header('Location: cliente/perfil/enderecos');
+            header('Location: ' . url('cliente/perfil/enderecos'));
             exit;
         }
 
@@ -148,7 +148,7 @@ class ClientePerfilController {
                     exit;
                 }
                 Session::setFlash('error', $msg, 'danger');
-                header('Location: cliente/perfil/enderecos');
+                header('Location: ' . url('cliente/perfil/enderecos'));
                 exit;
             }
 
@@ -167,7 +167,7 @@ class ClientePerfilController {
             } else {
                 Session::setFlash('error', 'Erro ao excluir endereço!', 'danger');
             }
-            header('Location: cliente/perfil/enderecos');
+            header('Location: ' . url('cliente/perfil/enderecos'));
             exit;
         }
 
@@ -244,7 +244,7 @@ class ClientePerfilController {
                 exit;
             }
             Session::setFlash('erro', 'Token de segurança inválido!', 'danger');
-            header('Location: /cliente/perfil/enderecos');
+            header('Location: ' . url('cliente/perfil/enderecos'));
             exit;
         }
         
@@ -355,7 +355,7 @@ class ClientePerfilController {
             Session::setFlash('erro', $e->getMessage(), 'danger');
         }
         
-        header('Location: cliente/perfil/enderecos');
+        header('Location: ' . url('cliente/perfil/enderecos'));
         exit;
     }
     
@@ -420,47 +420,56 @@ class ClientePerfilController {
         }
     }
     
-    private function uploadFotoPerfil($userId) {
+    private function uploadFotoPerfil($userId)
+    {
         if (!isset($_FILES['foto_perfil']) || $_FILES['foto_perfil']['error'] !== UPLOAD_ERR_OK) {
             Session::setFlash('error', 'Erro no upload da imagem!', 'danger');
             return;
         }
-        
+
         $arquivo = $_FILES['foto_perfil'];
         $uploadDir = 'uploads/perfil/';
-        
+
+        // Criar diretório se não existir
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
-        
+
+        // Validações
         $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         $maxFileSize = 2 * 1024 * 1024; // 2MB
-        
+
         if (!in_array($arquivo['type'], $allowedTypes)) {
             Session::setFlash('error', 'Formato de imagem não permitido! Use JPG ou PNG.', 'danger');
             return;
         }
-        
+
         if ($arquivo['size'] > $maxFileSize) {
             Session::setFlash('error', 'Imagem muito grande! Máximo 2MB.', 'danger');
             return;
         }
-        
+
+        // Gerar nome único
         $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
         $nomeArquivo = 'perfil_' . $userId . '_' . time() . '.' . $extensao;
         $caminhoCompleto = $uploadDir . $nomeArquivo;
-        
+
+        // Fazer upload
         if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
+            // Remover foto anterior se existir
             $usuario = $this->model->buscarPorId($userId);
-            if ($usuario['foto_perfil'] && file_exists($uploadDir . $usuario['foto_perfil'])) {
-                unlink($uploadDir . $usuario['foto_perfil']);
+            if ($usuario['foto_perfil'] && file_exists($uploadDir . basename($usuario['foto_perfil']))) {
+                unlink($uploadDir . basename($usuario['foto_perfil']));
             }
-            
+
+            // Atualizar no banco - salvar apenas o nome do arquivo
             if ($this->model->atualizarFotoPerfil($userId, $nomeArquivo)) {
                 Session::setFlash('success', 'Foto atualizada com sucesso!', 'success');
+                // Atualizar sessão
                 Session::set('foto_perfil', $nomeArquivo);
             } else {
                 Session::setFlash('error', 'Erro ao salvar foto no banco!', 'danger');
+                // Remover arquivo se erro no banco
                 unlink($caminhoCompleto);
             }
         } else {
@@ -539,7 +548,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: cliente/perfil/enderecos');
+            header('Location: ' . url('cliente/perfil/enderecos'));
             exit;
         }
     }
@@ -586,7 +595,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: cliente/perfil/enderecos');
+            header('Location: ' . url('cliente/perfil/enderecos'));
             exit;
         }
     }
@@ -617,7 +626,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: cliente/perfil/enderecos');
+            header('Location: ' . url('cliente/perfil/enderecos'));
             exit;
         }
     }
@@ -653,7 +662,7 @@ class ClientePerfilController {
         }
         
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: cliente/perfil/enderecos');
+            header('Location: ' . url('cliente/perfil/enderecos'));
             exit;
         }
     }

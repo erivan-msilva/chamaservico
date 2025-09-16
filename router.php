@@ -338,14 +338,40 @@ try {
     $router->get('/propostas/recebidas', 'ClientePropostaController', 'recebidas');
     
     // ========================================
-    // ÁREA ADMINISTRATIVA
+    // ÁREA ADMINISTRATIVA - ROTAS COMPLETAS
     // ========================================
+    
+    // Login Administrativo - Seu AuthAdminController
+    $router->get('/admin/login', 'AuthAdminController', 'login');
+    $router->post('/admin/login', 'AuthAdminController', 'authenticate');
+    $router->get('/admin/logout', 'AuthAdminController', 'logout');
+    
+    // Dashboard - Redirecionar para AdminController simples
     $router->get('/admin', 'AdminController', 'dashboard');
     $router->get('/admin/dashboard', 'AdminController', 'dashboard');
-    $router->get('/admin/usuarios', 'AdminController', 'usuarios');
-    $router->get('/admin/solicitacoes', 'AdminController', 'solicitacoes');
-    $router->get('/admin/propostas', 'AdminController', 'propostas');
     
+    // Páginas Admin - Usando AdminController simples que chama suas views
+    $router->get('/admin/usuarios', 'AdminController', 'usuarios');
+    $router->get('/admin/usuarios/visualizar', 'AdminController', 'usuariosVisualizar'); // NOVO
+    $router->post('/admin/usuarios/alterar-status', 'AdminController', 'usuariosAlterarStatus'); // NOVO
+    $router->post('/admin/usuarios/ativar', 'AdminController', 'usuariosAtivar'); // NOVO
+    $router->post('/admin/usuarios/desativar', 'AdminController', 'usuariosDesativar'); // NOVO
+    
+    $router->get('/admin/solicitacoes', 'AdminController', 'solicitacoes');
+    $router->get('/admin/solicitacoes/visualizar', 'AdminController', 'solicitacoesVisualizar'); // NOVO
+    $router->post('/admin/solicitacoes/alterar-status', 'AdminController', 'solicitacoesAlterarStatus'); // NOVO
+    
+    $router->get('/admin/propostas', 'AdminController', 'propostas');
+    $router->get('/admin/configuracoes', 'AdminController', 'configuracoes');
+    $router->post('/admin/configuracoes/salvar', 'AdminController', 'salvarConfiguracoes'); // NOVO
+    $router->post('/admin/configuracoes/testar-email', 'AdminController', 'testarEmail'); // NOVO
+    $router->post('/admin/configuracoes/gerar-backup', 'AdminController', 'gerarBackup'); // NOVO
+    $router->get('/admin/tipos-servico', 'AdminController', 'tiposServico');
+    $router->post('/admin/tipos-servico/salvar', 'AdminController', 'tiposServicoSalvar'); // NOVO
+    $router->post('/admin/tipos-servico/ativar', 'AdminController', 'tiposServicoAtivar'); // NOVO
+    $router->post('/admin/tipos-servico/desativar', 'AdminController', 'tiposServicoDesativar'); // NOVO
+    $router->get('/admin/relatorios', 'AdminController', 'relatorios');
+
     error_log("Rotas configuradas para raiz do domínio, executando router...");
     $router->run();
     

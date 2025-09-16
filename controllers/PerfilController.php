@@ -38,14 +38,14 @@ class PerfilController
 
         if (!$usuario) {
             Session::setFlash('error', 'Usuário não encontrado!', 'danger');
-            header('Location: logout');
+            header('Location: ' . url('logout'));
             exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: perfil/editar');
+                header('Location: ' . url('perfil/editar'));
                 exit;
             }
 
@@ -65,7 +65,7 @@ class PerfilController
                     Session::setFlash('error', 'Ação inválida!', 'danger');
             }
 
-            header('Location: perfil/editar');
+            header('Location: ' . url('perfil/editar'));
             exit;
         }
 
@@ -220,7 +220,7 @@ class PerfilController
                     exit;
                 }
 
-                header('Location: perfil/enderecos');
+                header('Location: ' . url('perfil/enderecos'));
                 exit;
             }
 
@@ -330,7 +330,7 @@ class PerfilController
 
         // Para requisições normais, redirecionar
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: perfil/enderecos');
+            header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }
@@ -381,7 +381,7 @@ class PerfilController
 
         // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: perfil/enderecos');
+            header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }
@@ -416,7 +416,7 @@ class PerfilController
 
         // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: perfil/enderecos');
+            header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }
@@ -456,7 +456,7 @@ class PerfilController
 
         // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            header('Location: perfil/enderecos');
+            header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }

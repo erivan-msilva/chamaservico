@@ -41,7 +41,7 @@ try {
     
     $sqlUsuarios = "
         SELECT 
-            p.id, p.nome, p.email, p.tipo, p.ativo, p.data_cadastro, p.ultimo_acesso, p.foto_perfil,
+            p.*,
             (SELECT COUNT(*) FROM tb_solicita_servico WHERE cliente_id = p.id) as total_solicitacoes,
             (SELECT COUNT(*) FROM tb_proposta WHERE prestador_id = p.id) as total_propostas
         FROM tb_pessoa p 
@@ -191,10 +191,10 @@ ob_start();
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <div class="text-xs fw-bold text-info text-uppercase mb-1">
-                        Novos Hoje
+                        Prestadores
                     </div>
                     <div class="h3 mb-0 fw-bold text-gray-800">
-                        <?= number_format($stats['novos_hoje']) ?>
+                        <?= number_format($stats['prestadores'] + $stats['ambos']) ?>
                     </div>
                 </div>
                 <div class="col-auto">
@@ -209,10 +209,10 @@ ob_start();
             <div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <div class="text-xs fw-bold text-warning text-uppercase mb-1">
-                        Prestadores
+                        Novos Hoje
                     </div>
                     <div class="h3 mb-0 fw-bold text-gray-800">
-                        <?= number_format($stats['prestadores'] + $stats['ambos']) ?>
+                        <?= number_format($stats['novos_hoje']) ?>
                     </div>
                 </div>
                 <div class="col-auto">
@@ -234,32 +234,24 @@ ob_start();
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="busca" class="form-control" 
                            placeholder="Nome ou email..." 
-                           value="<?= htmlspecialchars($filtros['busca']) ?>">
+                           value="<?= htmlspecialchars($filtros['busca'] ?? '') ?>">
                 </div>
             </div>
             <div class="col-md-2">
                 <label class="form-label fw-bold">Tipo</label>
                 <select name="tipo" class="form-select">
                     <option value="">Todos</option>
-                    <option value="cliente" <?= $filtros['tipo'] === 'cliente' ? 'selected' : '' ?>>Cliente</option>
-                    <option value="prestador" <?= $filtros['tipo'] === 'prestador' ? 'selected' : '' ?>>Prestador</option>
-                    <option value="ambos" <?= $filtros['tipo'] === 'ambos' ? 'selected' : '' ?>>Ambos</option>
+                    <option value="cliente" <?= ($filtros['tipo'] ?? '') === 'cliente' ? 'selected' : '' ?>>Cliente</option>
+                    <option value="prestador" <?= ($filtros['tipo'] ?? '') === 'prestador' ? 'selected' : '' ?>>Prestador</option>
+                    <option value="ambos" <?= ($filtros['tipo'] ?? '') === 'ambos' ? 'selected' : '' ?>>Ambos</option>
                 </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label fw-bold">Status</label>
                 <select name="ativo" class="form-select">
                     <option value="">Todos</option>
-                    <option value="1" <?= $filtros['ativo'] === '1' ? 'selected' : '' ?>>Ativo</option>
-                    <option value="0" <?= $filtros['ativo'] === '0' ? 'selected' : '' ?>>Inativo</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold">Ordenar por</label>
-                <select name="ordem" class="form-select">
-                    <option value="nome" <?= $filtros['ordem'] === 'nome' ? 'selected' : '' ?>>Nome</option>
-                    <option value="data_cadastro" <?= $filtros['ordem'] === 'data_cadastro' ? 'selected' : '' ?>>Data de Cadastro</option>
-                    <option value="ultimo_acesso" <?= $filtros['ordem'] === 'ultimo_acesso' ? 'selected' : '' ?>>Último Acesso</option>
+                    <option value="1" <?= ($filtros['ativo'] ?? '') === '1' ? 'selected' : '' ?>>Ativo</option>
+                    <option value="0" <?= ($filtros['ativo'] ?? '') === '0' ? 'selected' : '' ?>>Inativo</option>
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
@@ -285,7 +277,7 @@ ob_start();
                 <?php endif; ?>
             </p>
             <?php if (!empty(array_filter($filtros))): ?>
-                <a href="/chamaservico/admin/usuarios" class="btn btn-outline-primary">
+                <a href="<?= url('admin/usuarios') ?>" class="btn btn-outline-primary">
                     <i class="bi bi-x-circle me-1"></i>Limpar Filtros
                 </a>
             <?php endif; ?>
@@ -305,7 +297,7 @@ ob_start();
                                     $fotoExiste = $fotoPerfil && file_exists("uploads/perfil/" . basename($fotoPerfil));
                                     ?>
                                     <?php if ($fotoExiste): ?>
-                                        <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars(basename($fotoPerfil)) ?>"
+                                        <img src="<?= url('uploads/perfil/' . htmlspecialchars(basename($fotoPerfil))) ?>"
                                              class="user-avatar me-3" alt="Avatar">
                                     <?php else: ?>
                                         <div class="user-avatar bg-secondary d-flex align-items-center justify-content-center me-3">
@@ -350,7 +342,7 @@ ob_start();
                                 </div>
                                 
                                 <div class="d-flex gap-1">
-                                    <a href="/chamaservico/admin/usuarios/visualizar?id=<?= $usuario['id'] ?>" 
+                                    <a href="<?= url('admin/usuarios/visualizar?id=' . $usuario['id']) ?>" 
                                        class="btn btn-outline-info btn-action flex-fill">
                                         <i class="bi bi-eye"></i> Ver
                                     </a>
@@ -376,7 +368,7 @@ ob_start();
                                             <li><a class="dropdown-item" href="mailto:<?= $usuario['email'] ?>">
                                                 <i class="bi bi-envelope me-2"></i>Enviar Email
                                             </a></li>
-                                            <li><a class="dropdown-item" href="/chamaservico/admin/usuarios/visualizar?id=<?= $usuario['id'] ?>">
+                                            <li><a class="dropdown-item" href="<?= url('admin/usuarios/visualizar?id=' . $usuario['id']) ?>">
                                                 <i class="bi bi-info-circle me-2"></i>Detalhes
                                             </a></li>
                                         </ul>
@@ -414,7 +406,7 @@ ob_start();
                                                 $fotoExiste = $fotoPerfil && file_exists("uploads/perfil/" . basename($fotoPerfil));
                                                 ?>
                                                 <?php if ($fotoExiste): ?>
-                                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars(basename($fotoPerfil)) ?>"
+                                                    <img src="<?= url('uploads/perfil/' . htmlspecialchars(basename($fotoPerfil))) ?>"
                                                          class="user-avatar-sm me-3" alt="Avatar">
                                                 <?php else: ?>
                                                     <div class="user-avatar-sm bg-secondary d-flex align-items-center justify-content-center me-3">
@@ -448,7 +440,7 @@ ob_start();
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group">
-                                                <a href="/chamaservico/admin/usuarios/visualizar?id=<?= $usuario['id'] ?>" 
+                                                <a href="<?= url('admin/usuarios/visualizar?id=' . $usuario['id']) ?>" 
                                                    class="btn btn-outline-primary" title="Visualizar">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
@@ -486,7 +478,7 @@ ob_start();
                                 $fotoExiste = $fotoPerfil && file_exists("uploads/perfil/" . basename($fotoPerfil));
                                 ?>
                                 <?php if ($fotoExiste): ?>
-                                    <img src="/chamaservico/uploads/perfil/<?= htmlspecialchars(basename($fotoPerfil)) ?>"
+                                    <img src="<?= url('uploads/perfil/' . htmlspecialchars(basename($fotoPerfil))) ?>"
                                          class="user-avatar mx-auto d-block" alt="Avatar">
                                 <?php else: ?>
                                     <div class="user-avatar bg-secondary d-flex align-items-center justify-content-center mx-auto">
@@ -528,7 +520,7 @@ ob_start();
                             </div>
                             <div class="col-md-2">
                                 <div class="d-flex flex-column gap-1">
-                                    <a href="/chamaservico/admin/usuarios/visualizar?id=<?= $usuario['id'] ?>" 
+                                    <a href="<?= url('admin/usuarios/visualizar?id=' . $usuario['id']) ?>" 
                                        class="btn btn-outline-info btn-sm">
                                         <i class="bi bi-eye me-1"></i>Visualizar
                                     </a>
@@ -720,8 +712,7 @@ function alterarStatus(userId, novoStatus) {
     btnConfirmar.textContent = novoStatus ? "Ativar" : "Desativar";
     
     btnConfirmar.onclick = function() {
-        // Simular ação - em produção, fazer requisição AJAX
-        fetch("/chamaservico/admin/usuarios/alterar-status", {
+        fetch("' . url('admin/usuarios/alterar-status') . '", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -751,7 +742,7 @@ function alterarStatus(userId, novoStatus) {
 }
 
 function exportarUsuarios() {
-    alert("Funcionalidade de exportação será implementada em breve.");
+    window.open("' . url('admin/api/exportar-usuarios') . '", "_blank");
 }
 
 function enviarEmailMassa() {
@@ -782,11 +773,8 @@ setTimeout(function() {
         }
     });
 }, 5000);
-
 </script>
 ';
 
 include 'views/admin/layouts/app.php';
 ?>
-            
-       

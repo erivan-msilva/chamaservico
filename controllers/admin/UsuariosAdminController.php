@@ -33,8 +33,8 @@ class UsuariosAdminController extends BaseAdminController {
         
         if (!$usuario) {
             $this->setFlash('error', 'Usuário não encontrado!');
-            header('Location: admin/usuarios');
-            exit;
+            $this->redirect('admin/usuarios');
+            return;
         }
         
         $estatisticas = $this->getEstatisticasUsuario($id);
@@ -53,8 +53,7 @@ class UsuariosAdminController extends BaseAdminController {
             $this->setFlash('error', 'Erro ao ativar usuário!');
         }
         
-        header('Location: admin/usuarios');
-        exit;
+        $this->redirect('admin/usuarios');
     }
     
     public function desativar() {
@@ -66,8 +65,7 @@ class UsuariosAdminController extends BaseAdminController {
             $this->setFlash('error', 'Erro ao desativar usuário!');
         }
         
-        header('Location: admin/usuarios');
-        exit;
+        $this->redirect('admin/usuarios');
     }
     
     private function buscarUsuarios($filtros = []) {
@@ -232,5 +230,7 @@ class UsuariosAdminController extends BaseAdminController {
             return false;
         }
     }
+}
+?>
 }
 ?>

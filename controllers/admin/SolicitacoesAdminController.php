@@ -65,7 +65,7 @@ class SolicitacoesAdminController extends BaseAdminController {
         
         if (!$id) {
             $this->setFlash('error', 'Solicitação não encontrada!');
-            $this->redirect('/admin/solicitacoes');
+            $this->redirect('admin/solicitacoes');
             return;
         }
         
@@ -73,7 +73,7 @@ class SolicitacoesAdminController extends BaseAdminController {
         
         if (!$solicitacao) {
             $this->setFlash('error', 'Solicitação não encontrada!');
-            $this->redirect('/admin/solicitacoes');
+            $this->redirect('admin/solicitacoes');
             return;
         }
         
@@ -82,13 +82,13 @@ class SolicitacoesAdminController extends BaseAdminController {
     
     public function alterarStatus() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('/admin/solicitacoes');
+            $this->redirect('admin/solicitacoes');
             return;
         }
         
         if (!$this->verificarCSRF()) {
             $this->setFlash('error', 'Token de segurança inválido!');
-            $this->redirect('/admin/solicitacoes');
+            $this->redirect('admin/solicitacoes');
             return;
         }
         
@@ -102,7 +102,7 @@ class SolicitacoesAdminController extends BaseAdminController {
             $this->setFlash('error', 'Erro ao atualizar status da solicitação!');
         }
         
-        $this->redirect('/admin/solicitacoes');
+        $this->redirect('admin/solicitacoes');
     }
     
     public function estatisticas() {

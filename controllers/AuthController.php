@@ -68,7 +68,7 @@ class AuthController
                 $admin = $this->verificarLoginAdmin($email, $senha);
                 if ($admin) {
                     Session::loginAdmin($admin['id'], $admin['nome'], $admin['email'], $admin['nivel']);
-                    header('Location: ' . url('admin/dashboard'));
+                    header('Location: /admin/dashboard');  // CORRIGIDO: URL absoluta
                     exit;
                 }
 
@@ -91,18 +91,31 @@ class AuthController
     private function verificarLoginAdmin($email, $senha)
     {
         try {
-            // CORREÇÃO: Usar Database diretamente em vez de $this->model->db
+            // Usar Database diretamente
             require_once 'core/Database.php';
             $db = Database::getInstance();
             
-            $sql = "SELECT * FROM tb_usuario WHERE email = ? AND ativo = 1";
+            error_log("Verificando login admin para email: $email");
+            
+            // Buscar na tabela tb_usuario com todos os campos necessários
+            $sql = "SELECT id, nome, email, senha, nivel, ativo, ultimo_acesso FROM tb_usuario WHERE email = ? AND ativo = 1";
             $stmt = $db->prepare($sql);
             $stmt->execute([$email]);
             $admin = $stmt->fetch();
 
-            if ($admin && password_verify($senha, $admin['senha'])) {
-                return $admin;
+            if ($admin) {
+                error_log("Admin encontrado: " . $admin['email'] . " (Nível: " . $admin['nivel'] . ")");
+                
+                if (password_verify($senha, $admin['senha'])) {
+                    error_log("✅ Senha correta para admin: " . $admin['email']);
+                    return $admin;
+                } else {
+                    error_log("❌ Senha incorreta para admin: " . $admin['email']);
+                }
+            } else {
+                error_log("❌ Admin não encontrado para email: $email");
             }
+            
             return false;
         } catch (Exception $e) {
             error_log("Erro no login admin: " . $e->getMessage());
@@ -321,4 +334,5 @@ class AuthController
         include 'views/auth/redefinir_nova.php';
     }
 }
+?>
 ?>

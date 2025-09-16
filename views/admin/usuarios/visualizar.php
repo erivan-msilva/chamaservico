@@ -21,7 +21,7 @@ if ($usuarioId) {
     try {
         require_once 'core/Database.php';
         $db = Database::getInstance();
-        
+
         // Buscar dados do usuário
         $sql = "
             SELECT 
@@ -33,11 +33,11 @@ if ($usuarioId) {
             FROM tb_pessoa p 
             WHERE p.id = ?
         ";
-        
+
         $stmt = $db->prepare($sql);
         $stmt->execute([$usuarioId]);
         $usuario = $stmt->fetch();
-        
+
         if (!$usuario) {
             $_SESSION['admin_flash'] = [
                 'type' => 'error',
@@ -46,13 +46,13 @@ if ($usuarioId) {
             header('Location: /chamaservico/admin/usuarios');
             exit;
         }
-        
+
         // Buscar endereços do usuário
         $sqlEnderecos = "SELECT * FROM tb_endereco WHERE pessoa_id = ? ORDER BY principal DESC, id DESC";
         $stmtEnderecos = $db->prepare($sqlEnderecos);
         $stmtEnderecos->execute([$usuarioId]);
         $enderecos = $stmtEnderecos->fetchAll();
-        
+
         // Buscar últimas solicitações
         $sqlSolicitacoes = "
             SELECT s.*, ts.nome as tipo_servico_nome, st.nome as status_nome, st.cor as status_cor
@@ -66,7 +66,6 @@ if ($usuarioId) {
         $stmtSolicitacoes = $db->prepare($sqlSolicitacoes);
         $stmtSolicitacoes->execute([$usuarioId]);
         $solicitacoes = $stmtSolicitacoes->fetchAll();
-        
     } catch (Exception $e) {
         error_log("Erro ao buscar usuário: " . $e->getMessage());
         $_SESSION['admin_flash'] = [
@@ -98,7 +97,7 @@ ob_start();
         <i class="bi bi-person-circle me-2"></i>
         <?= htmlspecialchars($usuario['nome']) ?>
     </h1>
-    
+
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
             <a href="/chamaservico/admin/usuarios" class="btn btn-outline-secondary">
@@ -106,10 +105,10 @@ ob_start();
                 Voltar
             </a>
         </div>
-        
+
         <div class="btn-group">
-            <button type="button" class="btn btn-<?= $usuario['ativo'] ? 'danger' : 'success' ?>" 
-                    onclick="alterarStatus(<?= $usuario['ativo'] ? 0 : 1 ?>)">
+            <button type="button" class="btn btn-<?= $usuario['ativo'] ? 'danger' : 'success' ?>"
+                onclick="alterarStatus(<?= $usuario['ativo'] ? 0 : 1 ?>)">
                 <i class="bi bi-person-<?= $usuario['ativo'] ? 'x' : 'check' ?> me-1"></i>
                 <?= $usuario['ativo'] ? 'Desativar' : 'Ativar' ?>
             </button>
@@ -123,7 +122,8 @@ ob_start();
 
 <!-- Flash Messages -->
 <?php if (isset($_SESSION['admin_flash'])): ?>
-    <?php $flash = $_SESSION['admin_flash']; unset($_SESSION['admin_flash']); ?>
+    <?php $flash = $_SESSION['admin_flash'];
+    unset($_SESSION['admin_flash']); ?>
     <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show">
         <i class="bi bi-<?= $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle' ?> me-2"></i>
         <?= htmlspecialchars($flash['message']) ?>
@@ -431,32 +431,32 @@ function enviarEmail() {
 
 include 'views/admin/layouts/app.php';
 ?>
-    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function alterarStatus(novoStatus) {
-            const acao = novoStatus ? 'ativar' : 'desativar';
-            if (confirm(`Tem certeza que deseja ${acao} este usuário?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = novoStatus ? '/chamaservico/admin/usuarios/ativar' : '/chamaservico/admin/usuarios/desativar';
-                
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'id';
-                input.value = <?= $usuario['id'] ?>;
-                
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
-            }
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function alterarStatus(novoStatus) {
+        const acao = novoStatus ? 'ativar' : 'desativar';
+        if (confirm(`Tem certeza que deseja ${acao} este usuário?`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = novoStatus ? '/chamaservico/admin/usuarios/ativar' : '/chamaservico/admin/usuarios/desativar';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'id';
+            input.value = <?= $usuario['id'] ?>;
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
         }
-        
-        function enviarEmail() {
-            window.location.href = 'mailto:<?= $usuario['email'] ?>';
-        }
-    </script>
+    }
+
+    function enviarEmail() {
+        window.location.href = 'mailto:<?= $usuario['email'] ?>';
+    }
+</script>
 </body>
+
 </html>
-   

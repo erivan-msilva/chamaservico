@@ -9,12 +9,87 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
-// Simular notificações dinâmicas para demonstração - REMOVIDO
-// $novasSolicitacoes = 3; // Esta variável viria do controller/model
+// CORREÇÃO: Buscar dados da solicitação
+$solicitacaoId = $_GET['id'] ?? 0;
+$solicitacao = null;
+
+if ($solicitacaoId) {
+    try {
+        require_once 'core/Database.php';
+        $db = Database::getInstance();
+        
+        // Buscar dados completos da solicitação
+        $sql = "SELECT s.*, 
+                       p.nome as cliente_nome, p.email as cliente_email, p.telefone as cliente_telefone,
+                       ts.nome as tipo_servico_nome,
+                       st.nome as status_nome, st.cor as status_cor,
+                       e.logradouro, e.numero, e.complemento, e.bairro, e.cidade, e.estado, e.cep
+                FROM tb_solicita_servico s
+                LEFT JOIN tb_pessoa p ON s.cliente_id = p.id
+                LEFT JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+                LEFT JOIN tb_status_solicitacao st ON s.status_id = st.id
+                LEFT JOIN tb_endereco e ON s.endereco_id = e.id
+                WHERE s.id = ?";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$solicitacaoId]);
+        $solicitacao = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$solicitacao) {
+            $_SESSION['admin_flash'] = [
+                'type' => 'error',
+                'message' => 'Solicitação não encontrada!'
+            ];
+            header('Location: admin/solicitacoes');
+            exit;
+        }
+        
+    } catch (Exception $e) {
+        error_log("Erro ao buscar solicitação: " . $e->getMessage());
+        $_SESSION['admin_flash'] = [
+            'type' => 'error',
+            'message' => 'Erro ao carregar dados da solicitação!'
+        ];
+        header('Location: admin/solicitacoes');
+        exit;
+    }
+} else {
+    // Se não tem ID, usar dados simulados para evitar erros
+    $solicitacao = [
+        'id' => 1,
+        'titulo' => 'Solicitação de Exemplo',
+        'descricao' => 'Esta é uma solicitação de exemplo para demonstração.',
+        'data_solicitacao' => date('Y-m-d H:i:s'),
+        'data_atendimento' => null,
+        'orcamento_estimado' => 200.00,
+        'urgencia' => 'media',
+        'status_nome' => 'Aguardando Propostas',
+        'status_cor' => '#FFC107',
+        'tipo_servico_nome' => 'Serviço Geral',
+        'cliente_nome' => 'Cliente Exemplo',
+        'cliente_email' => 'cliente@exemplo.com',
+        'cliente_telefone' => '(11) 99999-9999',
+        'logradouro' => 'Rua Exemplo',
+        'numero' => '123',
+        'complemento' => 'Apto 1',
+        'bairro' => 'Centro',
+        'cidade' => 'São Paulo',
+        'estado' => 'SP',
+        'cep' => '01000-000'
+    ];
+}
+
+// CORREÇÃO: Verificar se função url existe
+if (!function_exists('url')) {
+    function url($path = '') {
+        $baseUrl = 'https://chamaservico.tds104-senac.online';
+        return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-<head></head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizar Solicitação - Admin</title>
@@ -396,7 +471,7 @@ if (!isset($_SESSION['admin_id'])) {
                             <i class="bi bi-speedometer2 me-1"></i>Painel
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="admin/dashboard">
+                            <a class="nav-link" href="<?= url('admin/dashboard') ?>">
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Dashboard
                             </a>
@@ -407,20 +482,19 @@ if (!isset($_SESSION['admin_id'])) {
                             <i class="bi bi-gear me-1"></i>Gestão
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="admin/solicitacoes">
+                            <a class="nav-link active" href="<?= url('admin/solicitacoes') ?>">
                                 <i class="bi bi-list-task me-2"></i>
                                 Solicitações
-                                <!-- BADGE REMOVIDO -->
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="admin/usuarios">
+                            <a class="nav-link" href="<?= url('admin/usuarios') ?>">
                                 <i class="bi bi-people me-2"></i>
                                 Usuários
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="admin/tipos-servico">
+                            <a class="nav-link" href="<?= url('admin/tipos-servico') ?>">
                                 <i class="bi bi-tools me-2"></i>
                                 Tipos de Serviços
                             </a>
@@ -431,7 +505,7 @@ if (!isset($_SESSION['admin_id'])) {
                             <i class="bi bi-graph-up me-1"></i>Análise
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="admin/relatorios">
+                            <a class="nav-link" href="<?= url('admin/relatorios') ?>">
                                 <i class="bi bi-graph-up me-2"></i>
                                 Relatórios
                             </a>
@@ -442,7 +516,7 @@ if (!isset($_SESSION['admin_id'])) {
                             <i class="bi bi-gear-fill me-1"></i>Sistema
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="admin/configuracoes">
+                            <a class="nav-link" href="<?= url('admin/configuracoes') ?>">
                                 <i class="bi bi-gear me-2"></i>
                                 Configurações
                             </a>
@@ -476,7 +550,7 @@ if (!isset($_SESSION['admin_id'])) {
                     </h1>
                     <div class="btn-toolbar">
                         <div class="btn-group me-2">
-                            <a href="admin/solicitacoes" class="btn btn-outline-secondary btn-modern">
+                            <a href="<?= url('admin/solicitacoes') ?>" class="btn btn-outline-secondary btn-modern">
                                 <i class="bi bi-arrow-left me-1"></i>
                                 Voltar
                             </a>
@@ -814,7 +888,7 @@ if (!isset($_SESSION['admin_id'])) {
                     </div>
                 </div>
 
-                <!-- Modal para alterar status -->
+                <!-- Modal para alterar status - CORRIGIR ACTION -->
                 <div class="modal fade" id="statusModal" tabindex="-1">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -825,7 +899,7 @@ if (!isset($_SESSION['admin_id'])) {
                                 </h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-                            <form method="POST" action="admin/solicitacoes/alterar-status">
+                            <form method="POST" action="<?= url('admin/solicitacoes/alterar-status') ?>">
                                 <div class="modal-body">
                                     <input type="hidden" name="id" value="<?= $solicitacao['id'] ?>">
                                     
@@ -918,31 +992,7 @@ if (!isset($_SESSION['admin_id'])) {
                                 card.style.transition = 'all 0.5s ease';
                                 card.style.opacity = '1';
                                 card.style.transform = 'translateY(0)';
-                            }, index * 100);
-                        });
-                        
-                        // Animação dos itens da timeline
-                        const timelineItems = document.querySelectorAll(".timeline-item");
-                        timelineItems.forEach((item, index) => {
-                            item.style.opacity = "0";
-                            item.style.transform = "translateX(-20px)";
-                            setTimeout(() => {
-                                item.style.transition = "all 0.5s ease";
-                                item.style.opacity = "1";
-                                item.style.transform = "translateX(0)";
-                            }, (index * 200) + 500);
-                        });
-                        
-                        // Animação dos cards da sidebar
-                        const sidebarCards = document.querySelectorAll(".col-lg-4 > *");
-                        sidebarCards.forEach((card, index) => {
-                            card.style.opacity = "0";
-                            card.style.transform = "translateX(20px)";
-                            setTimeout(() => {
-                                card.style.transition = "all 0.5s ease";
-                                card.style.opacity = "1";
-                                card.style.transform = "translateX(0)";
-                            }, (index * 150) + 800);
+                            });
                         });
                     });
                 </script>
@@ -950,92 +1000,10 @@ if (!isset($_SESSION['admin_id'])) {
         </div>
     </div>
 
-    <!-- Modal para visualizar imagens -->
-    <div class="modal fade" id="imageModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-camera me-2"></i>Visualizar Imagem <span id="imageNumber"></span>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center p-1">
-                    <img id="modalImage" src="" class="img-fluid" alt="Imagem ampliada" style="max-height: 80vh; border-radius: 10px;">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts Adicionais -->
     <script>
-        function openImageModal(imageSrc, imageNumber) {
-            document.getElementById("modalImage").src = imageSrc;
-            document.getElementById("imageNumber").textContent = "- Foto " + imageNumber;
-            new bootstrap.Modal(document.getElementById("imageModal")).show();
-        }
-        
-        function alterarStatus() {
-            new bootstrap.Modal(document.getElementById("statusModal")).show();
-        }
-        
-        function enviarEmail() {
-            window.location.href = 'mailto:<?= $solicitacao['cliente_email'] ?>';
-        }
-        
-        function gerarRelatorio() {
-            window.print();
-        }
-        
-        function exportarDados() {
-            alert("Funcionalidade de exportação será implementada em breve!");
-        }
-
-        // Fechar modal ao clicar na imagem
-        document.getElementById("modalImage").addEventListener("click", function() {
-            bootstrap.Modal.getInstance(document.getElementById("imageModal")).hide();
-        });
-        
-        // Animação de entrada dos cards
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.info-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    card.style.transition = 'all 0.5s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
-            
-            // Animação dos itens da timeline
-            const timelineItems = document.querySelectorAll(".timeline-item");
-            timelineItems.forEach((item, index) => {
-                item.style.opacity = "0";
-                item.style.transform = "translateX(-20px)";
-                setTimeout(() => {
-                    item.style.transition = "all 0.5s ease";
-                    item.style.opacity = "1";
-                    item.style.transform = "translateX(0)";
-                }, (index * 200) + 500);
-            });
-            
-            // Animação dos cards da sidebar
-            const sidebarCards = document.querySelectorAll(".col-lg-4 > *");
-            sidebarCards.forEach((card, index) => {
-                card.style.opacity = "0";
-                card.style.transform = "translateX(20px)";
-                setTimeout(() => {
-                    card.style.transition = "all 0.5s ease";
-                    card.style.opacity = "1";
-                    card.style.transform = "translateX(0)";
-                }, (index * 150) + 800);
-            });
-        });
+        // Exemplo de script adicional
+        console.log("Admin - Visualizar Solicitação carregado.");
     </script>
 </body>
 </html>

@@ -3,9 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Se já estiver logado, redirecionar
+// Se já estiver logado, redirecionar - CORRIGIDO URL
 if (isset($_SESSION['admin_id'])) {
-    header('Location: admin/dashboard');
+    header('Location: ' . url('admin/dashboard'));
     exit;
 }
 
@@ -446,8 +446,8 @@ $mensagem_sessao = isset($_GET['sessao_expirada']) ? 'Sua sessão expirou. Faça
                             </div>
                         <?php endif; ?>
 
-                        <!-- Formulário de Login -->
-                        <form method="POST" action="admin/login" id="loginForm">
+                        <!-- Formulário de Login - CORRIGIR ACTION -->
+                        <form method="POST" action="<?= url('admin/login') ?>" id="loginForm">
                             <div class="form-floating">
                                 <input type="email"
                                     class="form-control"

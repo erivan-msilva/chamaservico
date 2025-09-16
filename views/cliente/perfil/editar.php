@@ -334,13 +334,30 @@ function mascaraTelefone(input) {
     input.value = value;
 }
 
-// Preview da foto
+// Preview da foto - CORRIGIDO
 function previewFoto(input) {
     const file = input.files[0];
     const previewDiv = document.getElementById("imagemPreview");
     const previewImg = document.getElementById("previewImg");
     
     if (file) {
+        // Validar tamanho do arquivo
+        if (file.size > 2 * 1024 * 1024) { // 2MB
+            alert("Arquivo muito grande! Máximo 2MB.");
+            input.value = "";
+            previewDiv.classList.add("d-none");
+            return;
+        }
+        
+        // Validar tipo do arquivo
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+        if (!allowedTypes.includes(file.type)) {
+            alert("Formato não permitido! Use JPG ou PNG.");
+            input.value = "";
+            previewDiv.classList.add("d-none");
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = function(e) {
             previewImg.src = e.target.result;
@@ -352,39 +369,21 @@ function previewFoto(input) {
     }
 }
 
-// Spinner nos formulários
+// Spinner nos formulários - MELHORADO
 function addSpinnerToForm(formId, buttonId) {
-    document.getElementById(formId).addEventListener("submit", function() {
-        const btn = document.getElementById(buttonId);
-        const spinner = btn.querySelector(".spinner-border");
-        const icon = btn.querySelector("i:not(.spinner-border)");
-        
-        spinner.classList.remove("d-none");
-        if (icon) icon.classList.add("d-none");
-        btn.disabled = true;
-    });
-}
-
-// Validação de idade mínima para data de nascimento
-function validarIdade() {
-    const input = document.getElementById("dt_nascimento");
-    if (!input.readOnly && input.value) {
-        const hoje = new Date();
-        const nascimento = new Date(input.value);
-        const idade = hoje.getFullYear() - nascimento.getFullYear();
-        const mes = hoje.getMonth() - nascimento.getMonth();
-        
-        if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
-            idade--;
-        }
-        
-        if (idade < 16) {
-            alert("Você deve ter pelo menos 16 anos para se cadastrar.");
-            input.value = "";
-        } else if (idade > 120) {
-            alert("Data de nascimento inválida.");
-            input.value = "";
-        }
+    const form = document.getElementById(formId);
+    if (form) {
+        form.addEventListener("submit", function(e) {
+            const btn = document.getElementById(buttonId);
+            if (btn) {
+                const spinner = btn.querySelector(".spinner-border");
+                const icon = btn.querySelector("i:not(.spinner-border)");
+                
+                if (spinner) spinner.classList.remove("d-none");
+                if (icon) icon.classList.add("d-none");
+                btn.disabled = true;
+            }
+        });
     }
 }
 
@@ -408,15 +407,31 @@ document.addEventListener("DOMContentLoaded", function() {
     // Validação de idade
     document.getElementById("dt_nascimento").addEventListener("change", validarIdade);
     
-    // Preview da foto
-    document.getElementById("foto_perfil").addEventListener("change", function() {
-        previewFoto(this);
-    });
+    // Preview da foto - CORRIGIDO
+    const fotoInput = document.getElementById("foto_perfil");
+    if (fotoInput) {
+        fotoInput.addEventListener("change", function() {
+            previewFoto(this);
+        });
+    }
     
     // Spinners nos formulários
     addSpinnerToForm("formDadosPessoais", "btnSalvarDados");
     addSpinnerToForm("formSenha", "btnAlterarSenha");
     addSpinnerToForm("formFoto", "btnUploadFoto");
+    
+    // Validação adicional do formulário de foto
+    const formFoto = document.getElementById("formFoto");
+    if (formFoto) {
+        formFoto.addEventListener("submit", function(e) {
+            const fotoInput = document.getElementById("foto_perfil");
+            if (!fotoInput.files || !fotoInput.files[0]) {
+                e.preventDefault();
+                alert("Por favor, selecione uma imagem.");
+                return false;
+            }
+        });
+    }
 });
 </script>
 ';

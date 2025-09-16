@@ -26,20 +26,27 @@ class Autoloader
     public static function autoload($className)
     {
         $paths = [
+            'controllers/admin/' . $className . '.php',
             'controllers/' . $className . '.php',
             'models/' . $className . '.php',
             'core/' . $className . '.php',
             'config/' . $className . '.php'
         ];
 
+        error_log("🔍 Autoloader tentando carregar: $className");
+
         foreach ($paths as $path) {
             $fullPath = __DIR__ . '/../' . $path;
+            error_log("   Tentando: $fullPath");
+            
             if (file_exists($fullPath)) {
                 require_once $fullPath;
+                error_log("✅ Autoloader carregou: $path");
                 return true;
             }
         }
 
+        error_log("❌ Autoloader: Classe '$className' não encontrada em nenhum caminho");
         return false;
     }
 

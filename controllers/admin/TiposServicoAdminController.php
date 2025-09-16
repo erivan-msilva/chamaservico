@@ -44,7 +44,7 @@ class TiposServicoAdminController extends BaseAdminController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$this->verificarCSRF()) {
                 $this->setFlash('error', 'Token de segurança inválido!');
-                $this->redirect('/admin/tipos-servico');
+                $this->redirect('admin/tipos-servico');
                 return;
             }
             
@@ -58,7 +58,7 @@ class TiposServicoAdminController extends BaseAdminController {
             
             if (empty($dados['nome'])) {
                 $this->setFlash('error', 'Nome é obrigatório!');
-                $this->redirect('/admin/tipos-servico');
+                $this->redirect('admin/tipos-servico');
                 return;
             }
             
@@ -68,7 +68,7 @@ class TiposServicoAdminController extends BaseAdminController {
                 $this->setFlash('error', 'Erro ao criar tipo de serviço!');
             }
             
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
         }
     }
     
@@ -78,7 +78,7 @@ class TiposServicoAdminController extends BaseAdminController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$this->verificarCSRF()) {
                 $this->setFlash('error', 'Token de segurança inválido!');
-                $this->redirect('/admin/tipos-servico');
+                $this->redirect('admin/tipos-servico');
                 return;
             }
             
@@ -92,7 +92,7 @@ class TiposServicoAdminController extends BaseAdminController {
             
             if (empty($dados['nome'])) {
                 $this->setFlash('error', 'Nome é obrigatório!');
-                $this->redirect('/admin/tipos-servico');
+                $this->redirect('admin/tipos-servico');
                 return;
             }
             
@@ -102,13 +102,13 @@ class TiposServicoAdminController extends BaseAdminController {
                 $this->setFlash('error', 'Erro ao atualizar tipo de serviço!');
             }
             
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
         }
         
         $tipoServico = $this->buscarTipoServicoPorId($id);
         if (!$tipoServico) {
             $this->setFlash('error', 'Tipo de serviço não encontrado!');
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
             return;
         }
         
@@ -117,13 +117,13 @@ class TiposServicoAdminController extends BaseAdminController {
     
     public function alterarStatus() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
             return;
         }
         
         if (!$this->verificarCSRF()) {
             $this->setFlash('error', 'Token de segurança inválido!');
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
             return;
         }
         
@@ -137,18 +137,18 @@ class TiposServicoAdminController extends BaseAdminController {
             $this->setFlash('error', 'Erro ao alterar status do tipo de serviço!');
         }
         
-        $this->redirect('/admin/tipos-servico');
+        $this->redirect('admin/tipos-servico');
     }
     
     public function excluir() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
             return;
         }
         
         if (!$this->verificarCSRF()) {
             $this->setFlash('error', 'Token de segurança inválido!');
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
             return;
         }
         
@@ -157,7 +157,7 @@ class TiposServicoAdminController extends BaseAdminController {
         // Verificar se há solicitações vinculadas
         if ($this->temSolicitacoesVinculadas($id)) {
             $this->setFlash('error', 'Não é possível excluir: existem solicitações vinculadas a este tipo de serviço!');
-            $this->redirect('/admin/tipos-servico');
+            $this->redirect('admin/tipos-servico');
             return;
         }
         
@@ -167,7 +167,7 @@ class TiposServicoAdminController extends BaseAdminController {
             $this->setFlash('error', 'Erro ao excluir tipo de serviço!');
         }
         
-        $this->redirect('/admin/tipos-servico');
+        $this->redirect('admin/tipos-servico');
     }
     
     public function ordenar() {
