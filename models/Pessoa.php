@@ -1,47 +1,65 @@
 <?php
 require_once 'core/Database.php';
 
+// Classe principal para gerenciar usuários/clientes
 class Pessoa {
     private $db;
     
     public function __construct() {
         $this->db = Database::getInstance();
     }
-    
-    public function salvarTokenRedefinicao($userId, $token, $expiracao = null)
-    {
-        try {
-            if ($expiracao === null) {
-                $expiracao = date('Y-m-d H:i:s', strtotime('+1 hour'));
-            }
-            
-            $sql = "UPDATE tb_pessoa SET token_redefinicao = ?, token_expiracao = ? WHERE id = ?";
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([$token, $expiracao, $userId]);
-        } catch (Exception $e) {
-            error_log("Erro ao salvar token: " . $e->getMessage());
-            return false;
-        }
-    }
 
     /**
      * Verificar se email existe
      */
     public function emailExiste($email) {
-        $sql = "SELECT COUNT(*) FROM tb_pessoa WHERE email = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$email]);
-        return $stmt->fetchColumn() > 0;
+        try {
+            $sql = "SELECT COUNT(*) FROM tb_pessoa WHERE email = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$email]);
+            return $stmt->fetchColumn() > 0;
+        } catch (Exception $e) {
+            error_log("Erro ao verificar email: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
-     * Criar token de redefinição de senha
+     * Buscar pessoa por email
+     */
+    public function buscarPorEmail($email) {
+        try {
+            $sql = "SELECT id, nome, email, tipo, ativo FROM tb_pessoa WHERE email = ? AND ativo = 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$email]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Erro ao buscar pessoa por email: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Criar token de redefinição de senha - usando campos da própria tabela
      */
     public function criarTokenRedefinicao($email, $token, $expiracao) {
         try {
-            $sql = "UPDATE tb_pessoa SET token_redefinicao = ?, token_expiracao = ? WHERE email = ?";
+            // Verificar se as colunas existem, senão criar
+            $this->verificarColunaToken();
+            
+            // Limpar tokens antigos do mesmo email
+            $sql = "UPDATE tb_pessoa SET token_redefinicao = NULL, token_expiracao = NULL WHERE email = ?";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([$token, $expiracao, $email]);
+            $stmt->execute([$email]);
+            
+            // Criar novo token
+            $sql = "UPDATE tb_pessoa SET token_redefinicao = ?, token_expiracao = ? WHERE email = ? AND ativo = 1";
+            $stmt = $this->db->prepare($sql);
+            $result = $stmt->execute([$token, $expiracao, $email]);
+            
+            error_log("Token criado para $email: " . ($result ? 'sucesso' : 'falha'));
+            return $result;
+            
         } catch (Exception $e) {
             error_log("Erro ao criar token: " . $e->getMessage());
             return false;
@@ -53,10 +71,18 @@ class Pessoa {
      */
     public function verificarTokenRedefinicao($token) {
         try {
-            $sql = "SELECT * FROM tb_pessoa WHERE token_redefinicao = ? AND token_expiracao > NOW() AND ativo = 1";
+            $sql = "SELECT id, nome, email, token_redefinicao, token_expiracao 
+                    FROM tb_pessoa 
+                    WHERE token_redefinicao = ? 
+                    AND token_expiracao > NOW() 
+                    AND ativo = 1";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$token]);
-            return $stmt->fetch();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            error_log("Verificando token $token: " . ($result ? 'válido' : 'inválido'));
+            return $result;
+            
         } catch (Exception $e) {
             error_log("Erro ao verificar token: " . $e->getMessage());
             return false;
@@ -68,84 +94,81 @@ class Pessoa {
      */
     public function atualizarSenhaComToken($token, $novaSenha) {
         try {
-            $this->db->getConnection()->beginTransaction();
-            
-            // Verificar token novamente
+            // Verificar se o token é válido
             $usuario = $this->verificarTokenRedefinicao($token);
             if (!$usuario) {
-                $this->db->getConnection()->rollBack();
+                error_log("Token inválido ou expirado: $token");
                 return false;
             }
             
-            // Atualizar senha e limpar token
+            // Hash da nova senha
             $senhaHash = password_hash($novaSenha, PASSWORD_DEFAULT);
-            $sql = "UPDATE tb_pessoa SET senha = ?, token_redefinicao = NULL, token_expiracao = NULL WHERE id = ?";
+            
+            // Atualizar senha e limpar token
+            $sql = "UPDATE tb_pessoa 
+                    SET senha = ?, 
+                        token_redefinicao = NULL, 
+                        token_expiracao = NULL
+                    WHERE id = ?";
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([$senhaHash, $usuario['id']]);
             
-            if ($result) {
-                $this->db->getConnection()->commit();
+            if ($result && $stmt->rowCount() > 0) {
+                error_log("✅ Senha atualizada com sucesso para usuário ID: " . $usuario['id']);
                 return true;
             } else {
-                $this->db->getConnection()->rollBack();
+                error_log("❌ Falha ao atualizar senha para usuário ID: " . $usuario['id']);
                 return false;
             }
             
         } catch (Exception $e) {
-            $this->db->getConnection()->rollBack();
             error_log("Erro ao atualizar senha: " . $e->getMessage());
             return false;
         }
     }
 
-    public function buscarPorEmail($email)
-    {
+    /**
+     * Verificar e criar colunas de token se não existirem
+     */
+    private function verificarColunaToken() {
+        try {
+            // Verificar se as colunas já existem
+            $sql = "SHOW COLUMNS FROM tb_pessoa LIKE 'token_redefinicao'";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() === 0) {
+                // Adicionar as colunas necessárias
+                $alterSql = "ALTER TABLE tb_pessoa 
+                            ADD COLUMN token_redefinicao VARCHAR(255) NULL,
+                            ADD COLUMN token_expiracao DATETIME NULL";
+                $stmt = $this->db->prepare($alterSql);
+                $stmt->execute();
+                error_log("✅ Colunas de token adicionadas à tabela tb_pessoa");
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao verificar/criar colunas de token: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Verificar senha para login
+     */
+    public function verificarSenha($email, $senha) {
         try {
             $sql = "SELECT * FROM tb_pessoa WHERE email = ? AND ativo = 1";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([$email]);
-            return $stmt->fetch();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && password_verify($senha, $user['senha'])) {
+                return $user;
+            }
+            return false;
         } catch (Exception $e) {
-            error_log("Erro ao buscar por email: " . $e->getMessage());
+            error_log("Erro na verificação de senha: " . $e->getMessage());
             return false;
         }
-    }
-
-    private function limparTokensExpirados()
-    {
-        try {
-            $sql = "UPDATE tb_pessoa 
-                    SET token_redefinicao = NULL, token_expiracao = NULL 
-                    WHERE token_expiracao < NOW()";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute();
-        } catch (Exception $e) {
-            error_log("Erro ao limpar tokens: " . $e->getMessage());
-        }
-    }
-
-    private function registrarLogAlteracaoSenha($userId)
-    {
-        try {
-            $sql = "INSERT INTO tb_log_seguranca (usuario_id, acao, ip_address, data_acao) 
-                    VALUES (?, 'redefinicao_senha', ?, NOW())";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$userId, $_SERVER['REMOTE_ADDR'] ?? 'unknown']);
-        } catch (Exception $e) {
-            error_log("Erro ao registrar log: " . $e->getMessage());
-        }
-    }
-
-    public function verificarSenha($email, $senha) {
-        $sql = "SELECT * FROM tb_pessoa WHERE email = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
-        
-        if ($user && password_verify($senha, $user['senha'])) {
-            return $user;
-        }
-        return false;
     }
 
     public function buscarPorTokenRedefinicao($token)
@@ -225,3 +248,4 @@ class Pessoa {
     }
 }
 ?>
+

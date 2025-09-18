@@ -175,5 +175,187 @@ class Database
     {
         throw new Exception("Cannot unserialize singleton");
     }
+    
+    /**
+     * Cria tabela para armazenar tokens de redefinição de senha
+     */
+    private function criarTabelaTokensRedefinicao() {
+        try {
+            $sql = "CREATE TABLE IF NOT EXISTS tb_password_reset_tokens (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                email VARCHAR(255) NOT NULL,
+                token VARCHAR(255) NOT NULL UNIQUE,
+                expires_at DATETIME NOT NULL,
+                used BOOLEAN DEFAULT FALSE,
+                ip_address VARCHAR(45),
+                user_agent TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                used_at DATETIME NULL,
+                INDEX idx_token (token),
+                INDEX idx_email (email),
+                INDEX idx_expires (expires_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+            
+            $this->connection->exec($sql);
+            
+            // Limpar tokens expirados automaticamente
+            $this->limparTokensExpirados();
+            
+        } catch (PDOException $e) {
+            error_log("Erro ao criar tabela de tokens: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Remove tokens expirados do banco
+     */
+    private function limparTokensExpirados() {
+        try {
+            $sql = "DELETE FROM tb_password_reset_tokens 
+                    WHERE expires_at < NOW() OR used = TRUE";
+            $this->connection->exec($sql);
+        } catch (PDOException $e) {
+            error_log("Erro ao limpar tokens expirados: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Gera um token seguro para redefinição de senha
+     */
+    public static function gerarTokenSeguro($email) {
+        try {
+            $db = self::getInstance();
+            
+            // Limitar tentativas por IP (anti-spam)
+            $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+            if (!self::verificarLimiteTokens($email, $ip)) {
+                throw new Exception("Muitas tentativas de redefinição. Tente novamente em 15 minutos.");
+            }
+            
+            // Invalidar tokens anteriores deste email
+            $stmt = $db->prepare("UPDATE tb_password_reset_tokens 
+                                 SET used = TRUE 
+                                 WHERE email = ? AND used = FALSE");
+            $stmt->execute([$email]);
+            
+            // Gerar token criptograficamente seguro
+            $token = bin2hex(random_bytes(32)); // 64 caracteres hexadecimais
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour')); // Expira em 1 hora
+            
+            // Salvar novo token
+            $stmt = $db->prepare(
+                "INSERT INTO tb_password_reset_tokens 
+                (email, token, expires_at, ip_address, user_agent) 
+                VALUES (?, ?, ?, ?, ?)"
+            );
+            
+            $stmt->execute([
+                $email,
+                $token,
+                $expiresAt,
+                $ip,
+                $_SERVER['HTTP_USER_AGENT'] ?? ''
+            ]);
+            
+            return $token;
+            
+        } catch (Exception $e) {
+            error_log("Erro ao gerar token: " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Valida token de redefinição
+     */
+    public static function validarToken($token) {
+        try {
+            $db = self::getInstance();
+            
+            $stmt = $db->prepare(
+                "SELECT email, expires_at, used 
+                 FROM tb_password_reset_tokens 
+                 WHERE token = ?"
+            );
+            $stmt->execute([$token]);
+            $tokenData = $stmt->fetch();
+            
+            if (!$tokenData) {
+                return ['valido' => false, 'erro' => 'Token inválido'];
+            }
+            
+            if ($tokenData['used']) {
+                return ['valido' => false, 'erro' => 'Token já utilizado'];
+            }
+            
+            if (strtotime($tokenData['expires_at']) < time()) {
+                return ['valido' => false, 'erro' => 'Token expirado'];
+            }
+            
+            return [
+                'valido' => true, 
+                'email' => $tokenData['email'],
+                'expires_at' => $tokenData['expires_at']
+            ];
+            
+        } catch (Exception $e) {
+            error_log("Erro ao validar token: " . $e->getMessage());
+            return ['valido' => false, 'erro' => 'Erro interno'];
+        }
+    }
+    
+    /**
+     * Marca token como usado após redefinição bem-sucedida
+     */
+    public static function marcarTokenUsado($token) {
+        try {
+            $db = self::getInstance();
+            
+            $stmt = $db->prepare(
+                "UPDATE tb_password_reset_tokens 
+                 SET used = TRUE, used_at = NOW() 
+                 WHERE token = ?"
+            );
+            
+            return $stmt->execute([$token]);
+            
+        } catch (Exception $e) {
+            error_log("Erro ao marcar token como usado: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Verifica limite de tentativas de redefinição (anti-spam)
+     */
+    private static function verificarLimiteTokens($email, $ip) {
+        try {
+            $db = self::getInstance();
+            
+            // Máximo 3 tentativas por email nas últimas 15 minutos
+            $stmt = $db->prepare(
+                "SELECT COUNT(*) as count 
+                 FROM tb_password_reset_tokens 
+                 WHERE email = ? AND created_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)"
+            );
+            $stmt->execute([$email]);
+            $emailCount = $stmt->fetch()['count'];
+            
+            // Máximo 5 tentativas por IP nas últimas 15 minutos
+            $stmt = $db->prepare(
+                "SELECT COUNT(*) as count 
+                 FROM tb_password_reset_tokens 
+                 WHERE ip_address = ? AND created_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)"
+            );
+            $stmt->execute([$ip]);
+            $ipCount = $stmt->fetch()['count'];
+            
+            return ($emailCount < 3 && $ipCount < 5);
+            
+        } catch (Exception $e) {
+            error_log("Erro ao verificar limite de tokens: " . $e->getMessage());
+            return false; // Em caso de erro, bloquear por segurança
+        }
+    }
 }
 ?>

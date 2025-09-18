@@ -108,33 +108,38 @@ if ($isLocal) {
     define('AMBIENTE', 'producao');
 }
 
-// =====================================
-// CONFIGURAÇÕES DE E-MAIL SMTP
-// =====================================
+// === CONFIGURAÇÕES DE EMAIL ===
+if (!defined('EMAIL_SMTP_HOST')) {
+    define('EMAIL_SMTP_HOST', 'h63.servidorhh.com');
+    define('EMAIL_SMTP_PORT', 587);
+    define('EMAIL_SMTP_USERNAME', 'chamaservico@tds104-senac.online');
+    define('EMAIL_SMTP_PASSWORD', 'Chama@Servico123');
+    define('EMAIL_FROM_EMAIL', 'chamaservico@tds104-senac.online');
+    define('EMAIL_FROM_NAME', 'ChamaServiço - Sistema');
+}
 
-// Configurações SMTP para produção e desenvolvimento
-if (!defined('EMAIL_SMTP_HOST')) define('EMAIL_SMTP_HOST', 'h63.servidorhh.com');
-if (!defined('EMAIL_SMTP_PORT')) define('EMAIL_SMTP_PORT', 587);
-if (!defined('EMAIL_SMTP_USERNAME')) define('EMAIL_SMTP_USERNAME', 'chamaservico@tds104-senac.online');
-if (!defined('EMAIL_SMTP_PASSWORD')) define('EMAIL_SMTP_PASSWORD', 'Chama@Servico123');
-if (!defined('EMAIL_FROM_EMAIL')) define('EMAIL_FROM_EMAIL', 'chamaservico@tds104-senac.online');
-if (!defined('EMAIL_FROM_NAME')) define('EMAIL_FROM_NAME', 'ChamaServiço');
+// === CONFIGURAÇÕES DE AMBIENTE ===
+if (!defined('AMBIENTE')) {
+    define('AMBIENTE', 'desenvolvimento'); // Mudar para 'producao' quando for para produção
+}
 
-// Log da configuração de e-mail
-error_log("📧 Configurações de e-mail carregadas - Host: " . EMAIL_SMTP_HOST . " - Porta: " . EMAIL_SMTP_PORT . " - Ambiente: " . AMBIENTE);
+// === CONFIGURAÇÕES DE BASE URL ===
+if (!defined('BASE_URL')) {
+    if (AMBIENTE === 'producao') {
+        define('BASE_URL', 'https://chamaservico.tds104-senac.online');
+    } else {
+        define('BASE_URL', 'http://localhost/chamaservico');
+    }
+}
 
-// =====================================
-// OUTRAS CONFIGURAÇÕES
-// =====================================
+// === CONFIGURAÇÕES DE SEGURANÇA ===
+if (!defined('SECURE_COOKIES')) {
+    define('SECURE_COOKIES', AMBIENTE === 'producao');
+}
 
-// Configurações de Sessão
-if (!defined('SESSION_TIMEOUT')) define('SESSION_TIMEOUT', 3600);
-if (!defined('SESSION_NAME')) define('SESSION_NAME', 'chamaservico_session');
-
-// Configurações de Segurança
-if (!defined('CSRF_TOKEN_EXPIRY')) define('CSRF_TOKEN_EXPIRY', 3600);
-if (!defined('MAX_LOGIN_ATTEMPTS')) define('MAX_LOGIN_ATTEMPTS', 5);
-if (!defined('LOCKOUT_TIME')) define('LOCKOUT_TIME', 900);
+if (!defined('FORCE_HTTPS')) {
+    define('FORCE_HTTPS', AMBIENTE === 'producao');
+}
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');

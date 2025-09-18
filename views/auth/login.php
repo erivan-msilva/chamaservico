@@ -83,7 +83,7 @@ ob_start();
         <div class="card-body">
             <div class="text-center mb-4">
                 <img src="/assets/img/logochama.png" alt="Logo ChamaServiço" class="logo-chama">
-                <h4 class="fw-bold mb-1">Bem-vindo erivan!</h4>
+                <h4 class="fw-bold mb-1">Bem-vindo !</h4>
                 <p class="text-muted mb-3">Acesse sua conta para usar o sistema</p>
             </div>
             <form method="POST" action="login">
@@ -108,12 +108,16 @@ ob_start();
                     <a href="redefinir-senha" class="link-login small">Esqueceu a senha?</a>
                 </div>
                 <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-login btn-lg">Entrar</button>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+                    </button>
                 </div>
+                
+         
             </form>
             <div class="divider"></div>
             <div class="text-center mb-2">
-                <span class="text-muted">ou</span>
+               
             </div>
             <div class="d-grid mb-2">
                 <a href="registro" class="btn btn-outline-warning btn-lg fw-semibold" style="border-radius:24px;">

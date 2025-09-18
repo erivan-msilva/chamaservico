@@ -1055,13 +1055,20 @@ class Proposta {
         return $proposta;
     }
 
-    // Novo método: Conta propostas por id de solicitação
-    public function contarPropostasPorSolicitacao($solicitacaoId) {
-        $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare("SELECT COUNT(*) as total FROM tb_proposta WHERE solicitacao_id = ?");
-        $stmt->execute([$solicitacaoId]);
-        $row = $stmt->fetch();
-        return $row ? (int)$row['total'] : 0;
+    /**
+     * Contar propostas por solicitação
+     */
+    public function contarPropostasPorSolicitacao($solicitacaoId)
+    {
+        try {
+            $sql = "SELECT COUNT(*) FROM tb_proposta WHERE solicitacao_id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$solicitacaoId]);
+            return $stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("Erro ao contar propostas: " . $e->getMessage());
+            return 0;
+        }
     }
 
     // Novo método: Enviar proposta

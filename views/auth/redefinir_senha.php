@@ -97,33 +97,33 @@ ob_start();
                     <div>
                         <small class="text-muted">
                             <strong>Como funciona:</strong><br>
-                           Digite seu e-mail cadastrado e você receberá um link para criar uma nova senha.
+                            Digite seu e-mail cadastrado e você receberá um link para criar uma nova senha.
                         </small>
                     </div>
                 </div>
             </div>
-            
+
             <form method="POST" action="<?= url('redefinir-senha') ?>">
                 <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                
+
                 <div class="mb-4">
                     <label for="email" class="form-label fw-semibold">E-mail cadastrado</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                        <input type="email" 
-                               class="form-control form-control-lg" 
-                               id="email" 
-                               name="email" 
-                               required 
-                               placeholder="Digite seu e-mail"
-                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+                        <input type="email"
+                            class="form-control form-control-lg"
+                            id="email"
+                            name="email"
+                            required
+                            placeholder="Digite seu e-mail"
+                            value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
                     </div>
                     <div class="form-text">
                         <i class="bi bi-shield-check text-success"></i>
                         Seus dados estão seguros e protegidos
                     </div>
                 </div>
-                
+
                 <div class="d-grid mb-3">
                     <button type="submit" class="btn btn-redefinir btn-lg">
                         <i class="bi bi-send me-2"></i>
@@ -131,9 +131,9 @@ ob_start();
                     </button>
                 </div>
             </form>
-            
+
             <hr class="my-4">
-            
+
             <div class="text-center">
                 <div class="mb-3">
                     <a href="<?= url('login') ?>" class="link-login">
@@ -141,7 +141,7 @@ ob_start();
                         Voltar para o Login
                     </a>
                 </div>
-                
+
                 <div>
                     <span class="text-muted">Não tem uma conta? </span>
                     <a href="<?= url('registro') ?>" class="link-login fw-semibold">
@@ -154,32 +154,32 @@ ob_start();
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Focar no campo email
-    document.getElementById('email').focus();
-    
-    // Validação em tempo real
-    const emailInput = document.getElementById('email');
-    const submitBtn = document.querySelector('button[type="submit"]');
-    
-    emailInput.addEventListener('input', function() {
-        const email = this.value.trim();
-        const isValid = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        
-        if (isValid) {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-            submitBtn.disabled = false;
-        } else if (email.length > 0) {
-            this.classList.remove('is-valid');
-            this.classList.add('is-invalid');
-            submitBtn.disabled = true;
-        } else {
-            this.classList.remove('is-valid', 'is-invalid');
-            submitBtn.disabled = false;
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Focar no campo email
+        document.getElementById('email').focus();
+
+        // Validação em tempo real
+        const emailInput = document.getElementById('email');
+        const submitBtn = document.querySelector('button[type="submit"]');
+
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
+            const isValid = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+            if (isValid) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                submitBtn.disabled = false;
+            } else if (email.length > 0) {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+                submitBtn.disabled = true;
+            } else {
+                this.classList.remove('is-valid', 'is-invalid');
+                submitBtn.disabled = false;
+            }
+        });
     });
-});
 </script>
 
 <?php

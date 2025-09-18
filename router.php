@@ -225,7 +225,13 @@ try {
     $router->post('/registro', 'AuthController', 'store');
     $router->get('/logout', 'AuthController', 'logout');
     
-    // Redefinição de senha
+    // Redefinição de senha - ROTAS CORRETAS
+    $router->get('/esqueci-senha', 'AuthController', 'redefinirSenha');
+    $router->post('/esqueci-senha', 'AuthController', 'redefinirSenha');
+    $router->get('/redefinir-nova', 'AuthController', 'redefinirSenhaNova');
+    $router->post('/redefinir-nova', 'AuthController', 'redefinirSenhaNova');
+    
+    // Rotas alternativas para compatibilidade
     $router->get('/redefinir-senha', 'AuthController', 'redefinirSenha');
     $router->post('/redefinir-senha', 'AuthController', 'redefinirSenha');
     $router->get('/redefinir-senha-nova', 'AuthController', 'redefinirSenhaNova');

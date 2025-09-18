@@ -26,13 +26,13 @@ ob_start();
                                 <i class="bi bi-envelope me-2 text-primary"></i>
                                 Email cadastrado *
                             </label>
-                            <input type="email" 
-                                   class="form-control form-control-lg" 
-                                   id="email" 
-                                   name="email" 
-                                   required 
-                                   placeholder="Digite seu email"
-                                   autocomplete="email">
+                            <input type="email"
+                                class="form-control form-control-lg"
+                                id="email"
+                                name="email"
+                                required
+                                placeholder="Digite seu email"
+                                autocomplete="email">
                         </div>
 
                         <div class="d-grid mb-3">
@@ -47,7 +47,7 @@ ob_start();
                     <div class="text-center">
                         <hr class="my-3">
                         <p class="mb-0">
-                            Lembrou da senha? 
+                            Lembrou da senha?
                             <a href="login" class="text-decoration-none fw-bold">
                                 Fazer Login
                             </a>
@@ -63,4 +63,3 @@ ob_start();
 $content = ob_get_clean();
 include 'views/layouts/app_public.php';
 ?>
-
