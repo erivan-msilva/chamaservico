@@ -87,7 +87,7 @@ ob_start();
                     <div class="text-center">
                         <hr class="my-3">
                         <p class="mb-0">
-                            <a href="/chamaservico/login" class="text-decoration-none fw-bold">
+                            <a href="login" class="text-decoration-none fw-bold">
                                 <i class="bi bi-arrow-left me-1"></i>
                                 Voltar ao Login
                             </a>
