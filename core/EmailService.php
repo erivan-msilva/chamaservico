@@ -1,4 +1,11 @@
 <?php
+require_once __DIR__ . '/config.php';
+
+// Ensure Composer autoloader is included for PHPMailer
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
+
 class EmailService
 {
     private $config;
@@ -6,32 +13,46 @@ class EmailService
 
     public function __construct()
     {
+        // Aguardar que o config seja carregado primeiro
+        if (!defined('EMAIL_SMTP_HOST')) {
+            require_once __DIR__ . '/../config/config.php';
+        }
+
         $this->config = [
             'smtp_host' => EMAIL_SMTP_HOST,
             'smtp_port' => EMAIL_SMTP_PORT,
-            'smtp_secure' => 'tls',
             'smtp_username' => EMAIL_SMTP_USERNAME,
             'smtp_password' => EMAIL_SMTP_PASSWORD,
             'from_email' => EMAIL_FROM_EMAIL,
             'from_name' => EMAIL_FROM_NAME
         ];
 
+        // Log das configurações para debug
+        error_log("📧 EmailService configurado - Host: {$this->config['smtp_host']} - User: {$this->config['smtp_username']} - Ambiente: " . AMBIENTE);
+
         $this->usePHPMailer = $this->verificarPHPMailer();
+        
+        // Log do status do PHPMailer
+        error_log("📧 PHPMailer disponível: " . ($this->usePHPMailer ? 'SIM' : 'NÃO'));
     }
 
     private function verificarPHPMailer()
     {
-        if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-            require_once __DIR__ . '/../vendor/autoload.php';
-            return class_exists('PHPMailer\PHPMailer\PHPMailer');
-        }
+        try {
+            if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+                require_once __DIR__ . '/../vendor/autoload.php';
+                return class_exists('PHPMailer\PHPMailer\PHPMailer');
+            }
 
-        if (file_exists(__DIR__ . '/../controllers/PHPMailer.class.php') && 
-            file_exists(__DIR__ . '/../controllers/SMTP.class.php')) {
-            
-            require_once __DIR__ . '/../controllers/PHPMailer.class.php';
-            require_once __DIR__ . '/../controllers/SMTP.class.php';
-            return class_exists('PHPMailer');
+            if (file_exists(url('controllers/PHPMailer.class.php')) && 
+                file_exists(url('controllers/SMTP.class.php'))) {
+                
+                require_once url('controllers/PHPMailer.class.php');
+                require_once url('controllers/SMTP.class.php');
+                return class_exists('PHPMailer');
+            }
+        } catch (Exception $e) {
+            error_log("Erro ao verificar PHPMailer: " . $e->getMessage());
         }
 
         return false;
@@ -66,7 +87,7 @@ class EmailService
     {
         try {
             if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-                $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+                $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
             } else {
                 $mail = new PHPMailer(true);
             }
@@ -80,9 +101,12 @@ class EmailService
             $mail->Port = $this->config['smtp_port'];
             $mail->CharSet = 'UTF-8';
 
+            // Em produção, não mostrar debug
             if (AMBIENTE === 'desenvolvimento') {
                 $mail->SMTPDebug = 2;
                 $mail->Debugoutput = 'error_log';
+            } else {
+                $mail->SMTPDebug = 0; // Sem debug em produção
             }
 
             $mail->setFrom($this->config['from_email'], $this->config['from_name']);
@@ -100,8 +124,10 @@ class EmailService
             return $result;
 
         } catch (Exception $e) {
-            error_log("❌ Erro PHPMailer: " . $e->getMessage());
+            // Log mais detalhado para produção
+            error_log("❌ Erro PHPMailer para $email: " . $e->getMessage());
             
+            // Em produção, não simular envio em caso de erro
             if (AMBIENTE === 'desenvolvimento') {
                 return $this->simularEnvio($email, $assunto, "Erro: " . $e->getMessage());
             }
@@ -112,27 +138,35 @@ class EmailService
 
     private function simularEnvio($email, $assunto, $conteudo)
     {
-        $logDir = __DIR__ . '/../logs';
-        if (!is_dir($logDir)) {
-            mkdir($logDir, 0755, true);
+        try {
+            $logDir = url('logs');
+            if (!is_dir($logDir)) {
+                if (!mkdir($logDir, 0755, true)) {
+                    error_log("Erro ao criar diretório de logs: $logDir");
+                    return false;
+                }
+            }
+
+            $logFile = $logDir . DIRECTORY_SEPARATOR . 'emails_simulados.log';
+            $timestamp = date('Y-m-d H:i:s');
+            $ambiente = AMBIENTE;
+            
+            $logEntry = "[$timestamp] [$ambiente] EMAIL SIMULADO\n";
+            $logEntry .= "Para: $email\n";
+            $logEntry .= "Assunto: $assunto\n";
+            $logEntry .= "Conteúdo: $conteudo\n";
+            $logEntry .= "Base URL: " . BASE_URL . "\n";
+            $logEntry .= str_repeat("-", 80) . "\n\n";
+
+            file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+            
+            error_log("📧 Email simulado para: $email (arquivo: $logFile)");
+            
+            return true;
+        } catch (Exception $e) {
+            error_log("Erro ao simular envio de email: " . $e->getMessage());
+            return false;
         }
-
-        $logFile = $logDir . '/emails_simulados.log';
-        $timestamp = date('Y-m-d H:i:s');
-        $ambiente = AMBIENTE;
-        
-        $logEntry = "[$timestamp] [$ambiente] EMAIL SIMULADO\n";
-        $logEntry .= "Para: $email\n";
-        $logEntry .= "Assunto: $assunto\n";
-        $logEntry .= "Conteúdo: $conteudo\n";
-        $logEntry .= "Base URL: " . BASE_URL . "\n";
-        $logEntry .= str_repeat("-", 80) . "\n\n";
-
-        file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
-        
-        error_log("📧 Email simulado para: $email (arquivo: $logFile)");
-        
-        return true;
     }
 
     private function gerarTemplateRedefinicao($nome, $link)
@@ -246,21 +280,6 @@ class EmailService
             'ambiente' => AMBIENTE,
             'base_url' => BASE_URL
         ];
-    }
-}
-?>
-    {
-        $status = [
-            'phpmailer_disponivel' => $this->usePHPMailer,
-            'openssl_habilitado' => extension_loaded('openssl'),
-            'curl_habilitado' => extension_loaded('curl'),
-            'modo_operacao' => $this->usePHPMailer ? 'PHPMailer' : 'Simulação',
-            'smtp_configurado' => !empty($this->config['smtp_username']),
-            'ambiente' => AMBIENTE,
-            'base_url' => BASE_URL
-        ];
-
-        return $status;
     }
 }
 ?>

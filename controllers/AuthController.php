@@ -1,14 +1,21 @@
 <?php
 require_once 'models/Pessoa.php';
 require_once 'config/session.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/email.php';
+require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/../core/Validator.php';
+require_once __DIR__ . '/../core/EmailService.php';
 
 class AuthController
 {
     private $model;
+    private $emailService;
 
     public function __construct()
     {
         $this->model = new Pessoa();
+        $this->emailService = new EmailService();
     }
 
     public function login()
@@ -91,7 +98,7 @@ class AuthController
     private function verificarLoginAdmin($email, $senha)
     {
         try {
-            // Usar Database diretamente
+            // CORREÇÃO: Usar Database diretamente em vez de $this->model->db
             require_once 'core/Database.php';
             $db = Database::getInstance();
             
@@ -223,52 +230,70 @@ class AuthController
 
     public function redefinirSenha()
     {
-        // Se já estiver logado, redirecionar
-        if (Session::isLoggedIn()) {
-            $this->redirectToDashboard();
-            exit;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                // Validar CSRF
+                if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                    throw new Exception('Token de segurança inválido');
+                }
+
+                $email = trim($_POST['email'] ?? '');
+
+                // Validações
+                $validator = new Validator();
+                $validator->required('email', $email, 'E-mail é obrigatório')
+                         ->email('email', $email, 'E-mail inválido');
+
+                if ($validator->hasErrors()) {
+                    throw new Exception($validator->getFirstError());
+                }
+
+                // Verificar se o usuário existe
+                if (!$this->model->emailExiste($email)) {
+                    // Por segurança, não revelar se o e-mail existe ou não
+                    Session::setFlash('success', 'Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.');
+                    header('Location: ' . url('redefinir-senha'));
+                    exit;
+                }
+
+                // Gerar token de redefinição
+                $token = bin2hex(random_bytes(32));
+                $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+                // Salvar token no banco
+                if (!$this->model->criarTokenRedefinicao($email, $token, $expiry)) {
+                    throw new Exception('Erro interno. Tente novamente.');
+                }
+
+                // Obter dados do usuário associado ao e-mail
+                $pessoa = $this->model->buscarPorEmail($email);
+
+                // Enviar e-mail usando EmailService
+                $enviado = $this->emailService->enviarEmailRedefinicao($pessoa['email'], $pessoa['nome'], $token);
+
+                if ($enviado) {
+                    Session::setFlash('success', 'E-mail de redefinição enviado com sucesso! Verifique sua caixa de entrada.');
+                    
+                    // Log do envio bem-sucedido
+                    error_log("✅ Email de redefinição enviado para: {$email} - Token: {$token}");
+                } else {
+                    // Falha no envio - mas não revelar detalhes ao usuário
+                    Session::setFlash('success', 'Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.');
+                    
+                    // Log do erro para debug
+                    error_log("❌ Falha ao enviar email de redefinição para: {$email}");
+                }
+
+                header('Location: ' . url('redefinir-senha'));
+                exit;
+
+            } catch (Exception $e) {
+                Session::setFlash('error', $e->getMessage());
+                header('Location: ' . url('redefinir-senha'));
+                exit;
+            }
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = trim($_POST['email'] ?? '');
-            
-            if (empty($email)) {
-                Session::setFlash('error', 'E-mail é obrigatório!', 'danger');
-                header('Location: ' . url('redefinir-senha'));
-                exit;
-            }
-            
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                Session::setFlash('error', 'E-mail inválido!', 'danger');
-                header('Location: ' . url('redefinir-senha'));
-                exit;
-            }
-            
-            // Verificar se o e-mail existe
-            if (!$this->model->emailExiste($email)) {
-                // Por segurança, não revelar se o email existe ou não
-                Session::setFlash('success', 'Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.', 'info');
-                header('Location: ' . url('login'));
-                exit;
-            }
-            
-            // Gerar token de redefinição
-            $token = bin2hex(random_bytes(32));
-            $expiracao = date('Y-m-d H:i:s', strtotime('+1 hour'));
-            
-            if ($this->model->criarTokenRedefinicao($email, $token, $expiracao)) {
-                // Em produção, aqui você enviaria o e-mail
-                // Por enquanto, vamos simular o envio
-                $linkRedefinicao = url('redefinir-senha-nova?token=' . $token);
-                
-                Session::setFlash('success', 'Link de redefinição enviado para seu e-mail! (Simulado: ' . $linkRedefinicao . ')', 'success');
-                header('Location: ' . url('login'));
-                exit;
-            } else {
-                Session::setFlash('error', 'Erro ao gerar link de redefinição!', 'danger');
-            }
-        }
-        
         $title = 'Redefinir Senha - ChamaServiço';
         include 'views/auth/redefinir_senha.php';
     }
