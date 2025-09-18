@@ -79,237 +79,76 @@ try {
 ob_start();
 ?>
 
-<!-- Header Redesenhado -->
-<div class="config-header">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1 class="config-title">
-            <div class="config-title-icon">
-                <i class="bi bi-sliders"></i>
-            </div>
-            Configurações do Sistema
-        </h1>
-        
-        <div class="d-flex gap-1rem">
-            <button class="btn-modern btn-info" onclick="criarBackup()">
-                <i class="bi bi-download"></i>
-                Backup
-            </button>
-            <button class="btn-modern btn-warning" onclick="limparCache()">
-                <i class="bi bi-arrow-clockwise"></i>
-                Limpar Cache
-            </button>
-            <button class="btn-modern btn-success" onclick="salvarConfiguracoes()">
-                <i class="bi bi-check-lg"></i>
-                Salvar Alterações
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Stats Cards Redesenhados -->
-<div class="stats-grid">
-    <div class="stats-card">
-        <div class="stats-card-content">
-            <div class="stats-card-info">
-                <h6>Status do Sistema</h6>
-                <div class="stats-card-value">
-                    <i class="bi bi-check-circle"></i>
-                    Online
+<!-- Modern Configuration Interface with Enhanced Features -->
+<div class="config-page-wrapper">
+    <!-- Enhanced Header with Quick Actions -->
+    <div class="config-header-modern">
+        <div class="config-header-content">
+            <div class="config-header-info">
+                <div class="breadcrumb-modern">
+                    <i class="bi bi-house"></i>
+                    <span>Admin</span>
+                    <i class="bi bi-chevron-right"></i>
+                    <span class="current">Configurações</span>
                 </div>
+                <h1 class="config-page-title">
+                    <div class="config-title-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <div class="title-content">
+                        <span class="title-text">Configurações do Sistema</span>
+                        <span class="title-badge">v2.1.0</span>
+                    </div>
+                </h1>
+                <p class="config-page-subtitle">
+                    Gerencie todas as configurações da sua plataforma em um só lugar
+                    <span class="last-update">Última atualização: <?= date('d/m/Y H:i') ?></span>
+                </p>
             </div>
-            <div class="stats-card-icon success">
-                <i class="bi bi-server"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stats-card">
-        <div class="stats-card-content">
-            <div class="stats-card-info">
-                <h6>Versão do Sistema</h6>
-                <div class="stats-card-value">v2.1.0</div>
-            </div>
-            <div class="stats-card-icon info">
-                <i class="bi bi-code-square"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stats-card">
-        <div class="stats-card-content">
-            <div class="stats-card-info">
-                <h6>Último Backup</h6>
-                <div class="stats-card-value"><?= date('d/m') ?></div>
-            </div>
-            <div class="stats-card-icon warning">
-                <i class="bi bi-archive"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="stats-card">
-        <div class="stats-card-content">
-            <div class="stats-card-info">
-                <h6>Usuários Ativos</h6>
-                <div class="stats-card-value"><?= number_format($usuariosAtivos) ?></div>
-            </div>
-            <div class="stats-card-icon primary">
-                <i class="bi bi-people"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Navegação Redesenhada -->
-<div class="config-navigation">
-    <div class="nav-card active" data-target="geral">
-        <i class="nav-card-icon bi bi-sliders"></i>
-        <div class="nav-card-content">
-            <h3 class="nav-card-title">Configurações Gerais</h3>
-            <p class="nav-card-description">Sistema, taxa e limites</p>
-        </div>
-    </div>
-    
-    <div class="nav-card" data-target="email">
-        <i class="nav-card-icon bi bi-envelope"></i>
-        <div class="nav-card-content">
-            <h3 class="nav-card-title">E-mail & SMTP</h3>
-            <p class="nav-card-description">Configurações de envio</p>
-        </div>
-    </div>
-    
-    <div class="nav-card" data-target="sistema">
-        <i class="nav-card-icon bi bi-gear"></i>
-        <div class="nav-card-content">
-            <h3 class="nav-card-title">Sistema</h3>
-            <p class="nav-card-description">Performance e uploads</p>
-        </div>
-    </div>
-    
-    <div class="nav-card" data-target="backup">
-        <i class="nav-card-icon bi bi-shield-check"></i>
-        <div class="nav-card-content">
-            <h3 class="nav-card-title">Backup</h3>
-            <p class="nav-card-description">Segurança de dados</p>
-        </div>
-    </div>
-</div>
-
-<!-- Conteúdo Principal Redesenhado -->
-<div class="config-content-grid">
-    <!-- Aba Geral -->
-    <div class="content-card active-content" id="content-geral">
-        <div class="content-card-header">
-            <h2 class="content-card-title">
-                <i class="bi bi-sliders"></i>
-                Configurações Gerais do Sistema
-            </h2>
-        </div>
-        <div class="content-card-body">
-            <div class="setting-group">
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
-                                <i class="bi bi-type"></i>
-                                Nome do Sistema
-                            </h3>
-                            <p class="setting-item-description">
-                                Nome exibido no cabeçalho e emails automáticos do sistema
-                            </p>
+            
+            <!-- Enhanced System Status with Health Monitor -->
+            <div class="system-status-panel">
+                <div class="status-header">
+                    <h3>Status do Sistema</h3>
+                    <button class="btn-refresh" onclick="atualizarStatus()" title="Atualizar Status">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+                <div class="status-grid">
+                    <div class="status-card online">
+                        <div class="status-icon">
+                            <i class="bi bi-check-circle-fill"></i>
                         </div>
-                        <div class="setting-item-control">
-                            <input type="text" class="form-control-modern" 
-                                   value="<?= htmlspecialchars($configuracoes['nome_sistema']) ?>" 
-                                   name="nome_sistema" 
-                                   placeholder="ChamaServiço">
+                        <div class="status-info">
+                            <span class="status-label">Sistema</span>
+                            <span class="status-value">Online</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
-                                <i class="bi bi-person-plus"></i>
-                                Permitir Novos Cadastros
-                            </h3>
-                            <p class="setting-item-description">
-                                Usuários podem se registrar livremente na plataforma
-                            </p>
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="bi bi-database"></i>
                         </div>
-                        <div class="setting-item-control">
-                            <div class="switch-container">
-                                <input type="checkbox" class="switch-input" 
-                                       <?= $configuracoes['permitir_cadastros'] ? 'checked' : '' ?> 
-                                       name="permitir_cadastros">
-                                <span class="switch-slider"></span>
-                            </div>
+                        <div class="status-info">
+                            <span class="status-label">Banco</span>
+                            <span class="status-value">Ativo</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
-                                <i class="bi bi-percent"></i>
-                                Taxa do Sistema
-                            </h3>
-                            <p class="setting-item-description">
-                                Porcentagem cobrada sobre serviços realizados na plataforma
-                            </p>
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="bi bi-shield-check"></i>
                         </div>
-                        <div class="setting-item-control">
-                            <div class="input-group-modern">
-                                <input type="number" class="form-control-modern" 
-                                       value="<?= $configuracoes['taxa_sistema'] ?>" 
-                                       min="0" max="50" step="0.1" 
-                                       name="taxa_sistema">
-                                <span class="input-group-text-modern">%</span>
-                            </div>
+                        <div class="status-info">
+                            <span class="status-label">Último Backup</span>
+                            <span class="status-value"><?= date('d/m') ?></span>
                         </div>
                     </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
-                                <i class="bi bi-exclamation-triangle"></i>
-                                Sistema em Manutenção
-                            </h3>
-                            <p class="setting-item-description">
-                                Bloquear acesso de usuários (exceto administradores)
-                            </p>
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="bi bi-people"></i>
                         </div>
-                        <div class="setting-item-control">
-                            <div class="switch-container">
-                                <input type="checkbox" class="switch-input" 
-                                       <?= $configuracoes['modo_manutencao'] ? 'checked' : '' ?> 
-                                       name="modo_manutencao">
-                                <span class="switch-slider"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
-                                <i class="bi bi-images"></i>
-                                Limite de Imagens por Solicitação
-                            </h3>
-                            <p class="setting-item-description">
-                                Máximo de fotos que podem ser anexadas
-                            </p>
-                        </div>
-                        <div class="setting-item-control">
-                            <input type="number" class="form-control-modern" 
-                                   value="<?= $configuracoes['limite_imagens'] ?>" 
-                                   min="1" max="20" 
-                                   name="limite_imagens">
+                        <div class="status-info">
+                            <span class="status-label">Usuários</span>
+                            <span class="status-value"><?= number_format($usuariosAtivos) ?></span>
                         </div>
                     </div>
                 </div>
@@ -317,323 +156,710 @@ ob_start();
         </div>
     </div>
 
-    <!-- Aba E-mail -->
-    <div class="content-card" id="content-email" style="display: none;">
-        <div class="content-card-header">
-            <h2 class="content-card-title">
-                <i class="bi bi-envelope"></i>
-                Configurações de E-mail SMTP
-            </h2>
-        </div>
-        <div class="content-card-body">
-            <div class="setting-group">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-server"></i>
-                                    Servidor SMTP
-                                </h3>
-                                <p class="setting-item-description">Endereço do servidor de e-mail</p>
-                            </div>
-                            <div class="setting-item-control">
-                                <input type="text" class="form-control-modern" 
-                                       value="<?= htmlspecialchars($configuracoes['smtp_host']) ?>" 
-                                       name="smtp_host" 
-                                       placeholder="smtp.gmail.com">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-outlet"></i>
-                                    Porta SMTP
-                                </h3>
-                                <p class="setting-item-description">Porta do servidor (587 ou 465)</p>
-                            </div>
-                            <div class="setting-item-control">
-                                <input type="number" class="form-control-modern" 
-                                       value="<?= $configuracoes['smtp_port'] ?>" 
-                                       name="smtp_port">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-envelope-at"></i>
-                                    E-mail do Sistema
-                                </h3>
-                                <p class="setting-item-description">E-mail usado para envios automáticos</p>
-                            </div>
-                            <div class="setting-item-control">
-                                <input type="email" class="form-control-modern" 
-                                       value="<?= htmlspecialchars($configuracoes['email_sistema']) ?>" 
-                                       name="email_sistema">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-key"></i>
-                                    Senha do E-mail
-                                </h3>
-                                <p class="setting-item-description">Senha ou token de aplicação</p>
-                            </div>
-                            <div class="setting-item-control">
-                                <input type="password" class="form-control-modern" 
-                                       placeholder="••••••••" 
-                                       name="email_senha">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
-                                <i class="bi bi-shield-check"></i>
-                                Usar Autenticação SSL/TLS
-                            </h3>
-                            <p class="setting-item-description">
-                                Conexão segura com o servidor
-                            </p>
-                        </div>
-                        <div class="setting-item-control">
-                            <div class="switch-container">
-                                <input type="checkbox" class="switch-input" 
-                                       <?= $configuracoes['smtp_ssl'] ? 'checked' : '' ?> 
-                                       name="smtp_ssl">
-                                <span class="switch-slider"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-end mt-4">
-                    <button type="button" class="btn-modern btn-warning" onclick="testarEmail()">
-                        <i class="bi bi-send"></i>
-                        Testar Configuração
+    <!-- Search and Filter Bar -->
+    <div class="config-tools">
+        <div class="config-tools-content">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="configSearch" placeholder="Buscar configurações..." class="search-input">
+                    <button class="search-clear" onclick="limparBusca()" style="display: none;">
+                        <i class="bi bi-x"></i>
                     </button>
                 </div>
             </div>
+            <div class="filter-container">
+                <button class="filter-btn active" data-filter="all">
+                    <i class="bi bi-grid"></i>
+                    Todas
+                </button>
+                <button class="filter-btn" data-filter="modified">
+                    <i class="bi bi-pencil"></i>
+                    Modificadas
+                </button>
+                <button class="filter-btn" data-filter="critical">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Críticas
+                </button>
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="cards" title="Visualização em Cards">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </button>
+                <button class="view-btn" data-view="list" title="Visualização em Lista">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Aba Sistema -->
-    <div class="content-card" id="content-sistema" style="display: none;">
-        <div class="content-card-header">
-            <h2 class="content-card-title">
-                <i class="bi bi-gear"></i>
-                Configurações do Sistema
-            </h2>
-        </div>
-        <div class="content-card-body">
-            <div class="setting-group">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-upload"></i>
-                                    Tamanho Máximo de Upload (MB)
-                                </h3>
-                                <p class="setting-item-description">Tamanho máximo para upload de imagens</p>
+    <!-- Main Layout with Improved Navigation -->
+    <div class="config-layout">
+        <!-- Enhanced Left Navigation with Progress -->
+        <nav class="config-nav">
+            <div class="config-nav-inner">
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="bi bi-sliders"></i>
+                        Configurações
+                        <span class="config-progress">
+                            <span class="progress-text">75%</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%"></div>
                             </div>
-                            <div class="setting-item-control">
-                                <input type="number" class="form-control-modern" 
-                                       value="<?= $configuracoes['max_upload'] ?>" 
-                                       min="1" max="50" 
-                                       name="max_upload">
-                            </div>
+                        </span>
+                    </div>
+                    
+                    <ul class="nav-menu">
+                        <li class="nav-item active" data-section="geral">
+                            <a href="#geral" class="nav-link">
+                                <div class="nav-icon">
+                                    <i class="bi bi-sliders"></i>
+                                </div>
+                                <div class="nav-content">
+                                    <span class="nav-title">Geral</span>
+                                    <span class="nav-description">Sistema e configurações básicas</span>
+                                    <span class="nav-badge">5</span>
+                                </div>
+                                <div class="nav-status complete"></div>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="email">
+                            <a href="#email" class="nav-link">
+                                <div class="nav-icon">
+                                    <i class="bi bi-envelope"></i>
+                                </div>
+                                <div class="nav-content">
+                                    <span class="nav-title">E-mail</span>
+                                    <span class="nav-description">SMTP e notificações</span>
+                                    <span class="nav-badge warning">!</span>
+                                </div>
+                                <div class="nav-status incomplete"></div>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="sistema">
+                            <a href="#sistema" class="nav-link">
+                                <div class="nav-icon">
+                                    <i class="bi bi-gear"></i>
+                                </div>
+                                <div class="nav-content">
+                                    <span class="nav-title">Sistema</span>
+                                    <span class="nav-description">Performance e uploads</span>
+                                    <span class="nav-badge">3</span>
+                                </div>
+                                <div class="nav-status complete"></div>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-section="backup">
+                            <a href="#backup" class="nav-link">
+                                <div class="nav-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <div class="nav-content">
+                                    <span class="nav-title">Backup</span>
+                                    <span class="nav-description">Segurança e restauração</span>
+                                    <span class="nav-badge success">✓</span>
+                                </div>
+                                <div class="nav-status complete"></div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div class="quick-actions-panel">
+                    <h4 class="quick-actions-title">Ações Rápidas</h4>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="exportarConfiguracoes()">
+                            <i class="bi bi-download"></i>
+                            <span>Exportar</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="importarConfiguracoes()">
+                            <i class="bi bi-upload"></i>
+                            <span>Importar</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="resetarPadrao()">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            <span>Resetar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Enhanced Content Area with Improved Cards -->
+        <main class="config-content">
+            <!-- Seção Geral com melhorias visuais -->
+            <section id="geral" class="config-section active-section">
+                <div class="section-header">
+                    <div class="section-title-wrapper">
+                        <h2 class="section-title">
+                            <i class="bi bi-sliders"></i>
+                            Configurações Gerais
+                            <span class="section-counter">5 itens</span>
+                        </h2>
+                        <div class="section-actions">
+                            <button class="section-action-btn" onclick="expandirTodos('geral')">
+                                <i class="bi bi-arrows-expand"></i>
+                                Expandir Todos
+                            </button>
+                            <button class="section-action-btn" onclick="salvarSecao('geral')">
+                                <i class="bi bi-check"></i>
+                                Salvar Seção
+                            </button>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-clock"></i>
-                                    Tempo de Cache (minutos)
-                                </h3>
-                                <p class="setting-item-description">Por quanto tempo manter dados em cache</p>
-                            </div>
-                            <div class="setting-item-control">
-                                <input type="number" class="form-control-modern" 
-                                       value="<?= $configuracoes['tempo_cache'] ?>" 
-                                       min="5" max="1440" 
-                                       name="tempo_cache">
-                            </div>
+                    <p class="section-description">Configure os aspectos fundamentais da sua plataforma</p>
+                    <div class="section-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%"></div>
                         </div>
+                        <span class="progress-text">80% concluído</span>
                     </div>
                 </div>
 
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
-                                <i class="bi bi-lightning"></i>
-                                Cache do Sistema
+                <div class="config-cards enhanced">
+                    <!-- Enhanced Card: Identidade do Sistema -->
+                    <div class="config-card collapsible">
+                        <div class="config-card-header" onclick="toggleCard(this)">
+                            <div class="card-title-group">
+                                <h3 class="config-card-title">
+                                    <i class="bi bi-type"></i>
+                                    Identidade do Sistema
+                                    <span class="completion-badge complete">✓</span>
+                                </h3>
+                                <p class="card-subtitle">Nome e identificação da plataforma</p>
+                            </div>
+                            <div class="card-header-actions">
+                                <button class="card-action-btn" onclick="resetarCard(event, 'identidade')" title="Resetar">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                                <button class="collapse-btn">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="config-item enhanced">
+                                <div class="config-item-info">
+                                    <label class="config-label">
+                                        Nome da Plataforma
+                                        <span class="label-badge required">Obrigatório</span>
+                                    </label>
+                                    <p class="config-description">
+                                        Nome exibido no cabeçalho, e-mails e documentos do sistema
+                                        <span class="config-tip">
+                                            <i class="bi bi-info-circle"></i>
+                                            Será usado em todas as comunicações oficiais
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="input-container">
+                                        <input type="text" class="form-input-modern enhanced" 
+                                               value="<?= htmlspecialchars($configuracoes['nome_sistema']) ?>" 
+                                               name="nome_sistema" 
+                                               placeholder="ChamaServiço"
+                                               data-original="<?= htmlspecialchars($configuracoes['nome_sistema']) ?>">
+                                        <div class="input-validation">
+                                            <i class="bi bi-check-circle validation-icon valid"></i>
+                                            <span class="validation-message">Nome válido</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Controles de Acesso -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
+                                <i class="bi bi-key"></i>
+                                Controles de Acesso
                             </h3>
-                            <p class="setting-item-description">
-                                Habilitar cache para melhor performance
-                            </p>
                         </div>
-                        <div class="setting-item-control">
-                            <div class="switch-container">
-                                <input type="checkbox" class="switch-input" 
-                                       <?= $configuracoes['cache_sistema'] ? 'checked' : '' ?> 
-                                       name="cache_sistema">
-                                <span class="switch-slider"></span>
+                        <div class="config-card-body">
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Novos Cadastros</label>
+                                    <p class="config-description">Permitir que usuários se registrem livremente na plataforma</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="modern-switch">
+                                        <input type="checkbox" class="switch-input" 
+                                               <?= $configuracoes['permitir_cadastros'] ? 'checked' : '' ?> 
+                                               name="permitir_cadastros"
+                                               id="permitar_cadastros">
+                                        <label for="permitar_cadastros" class="switch-label">
+                                            <span class="switch-slider"></span>
+                                            <span class="switch-text"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Modo Manutenção</label>
+                                    <p class="config-description">Bloquear acesso de usuários (administradores permanecem com acesso)</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="modern-switch warning">
+                                        <input type="checkbox" class="switch-input" 
+                                               <?= $configuracoes['modo_manutencao'] ? 'checked' : '' ?> 
+                                               name="modo_manutencao"
+                                               id="modo_manutencao">
+                                        <label for="modo_manutencao" class="switch-label">
+                                            <span class="switch-slider"></span>
+                                            <span class="switch-text"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Configurações Comerciais -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
+                                <i class="bi bi-currency-dollar"></i>
+                                Configurações Comerciais
+                            </h3>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Taxa da Plataforma</label>
+                                    <p class="config-description">Porcentagem cobrada sobre serviços realizados (valor sugerido: 5-10%)</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="input-with-addon">
+                                        <input type="number" class="form-input-modern" 
+                                               value="<?= $configuracoes['taxa_sistema'] ?>" 
+                                               min="0" max="50" step="0.1" 
+                                               name="taxa_sistema">
+                                        <span class="input-addon">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Limite de Imagens</label>
+                                    <p class="config-description">Máximo de fotos por solicitação de serviço</p>
+                                </div>
+                                <div class="config-control">
+                                    <input type="number" class="form-input-modern" 
+                                           value="<?= $configuracoes['limite_imagens'] ?>" 
+                                           min="1" max="20" 
+                                           name="limite_imagens">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Estatísticas do Sistema -->
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h4 class="mb-3">Estatísticas do Sistema</h4>
-                    <div class="row text-center">
-                        <div class="col-md-3 mb-3">
-                            <div class="metric-item p-3 bg-light rounded">
-                                <div class="h4 text-primary mb-0"><?= number_format($solicitacoesAtivas) ?></div>
-                                <small class="text-muted">Solicitações Ativas</small>
+            <!-- Seção E-mail -->
+            <section id="email" class="config-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-envelope"></i>
+                        Configurações de E-mail
+                    </h2>
+                    <p class="section-description">Configure o servidor SMTP para envio de e-mails automáticos</p>
+                </div>
+
+                <div class="config-cards">
+                    <!-- Card: Servidor SMTP -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
+                                <i class="bi bi-server"></i>
+                                Servidor SMTP
+                            </h3>
+                            <div class="card-actions">
+                                <button type="button" class="btn-ghost" onclick="testarEmail()">
+                                    <i class="bi bi-send"></i>
+                                    Testar Conexão
+                                </button>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="metric-item p-3 bg-light rounded">
-                                <div class="h4 text-success mb-0"><?= number_format($propostasAceitas) ?></div>
-                                <small class="text-muted">Propostas Aceitas</small>
+                        <div class="config-card-body">
+                            <div class="config-item-grid">
+                                <div class="config-item">
+                                    <div class="config-item-info">
+                                        <label class="config-label">Host SMTP</label>
+                                        <p class="config-description">Endereço do servidor de e-mail</p>
+                                    </div>
+                                    <div class="config-control">
+                                        <input type="text" class="form-input-modern" 
+                                               value="<?= htmlspecialchars($configuracoes['smtp_host']) ?>" 
+                                               name="smtp_host" 
+                                               placeholder="smtp.gmail.com">
+                                    </div>
+                                </div>
+
+                                <div class="config-item">
+                                    <div class="config-item-info">
+                                        <label class="config-label">Porta</label>
+                                        <p class="config-description">587 (TLS) ou 465 (SSL)</p>
+                                    </div>
+                                    <div class="config-control">
+                                        <input type="number" class="form-input-modern" 
+                                               value="<?= $configuracoes['smtp_port'] ?>" 
+                                               name="smtp_port">
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="metric-item p-3 bg-light rounded">
-                                <div class="h4 text-info mb-0"><?= number_format($prestadores) ?></div>
-                                <small class="text-muted">Prestadores</small>
+
+                            <div class="config-item-grid">
+                                <div class="config-item">
+                                    <div class="config-item-info">
+                                        <label class="config-label">E-mail do Sistema</label>
+                                        <p class="config-description">E-mail usado como remetente</p>
+                                    </div>
+                                    <div class="config-control">
+                                        <input type="email" class="form-input-modern" 
+                                               value="<?= htmlspecialchars($configuracoes['email_sistema']) ?>" 
+                                               name="email_sistema">
+                                    </div>
+                                </div>
+
+                                <div class="config-item">
+                                    <div class="config-item-info">
+                                        <label class="config-label">Senha/Token</label>
+                                        <p class="config-description">Senha ou token de aplicação</p>
+                                    </div>
+                                    <div class="config-control">
+                                        <input type="password" class="form-input-modern" 
+                                               placeholder="••••••••" 
+                                               name="email_senha">
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="metric-item p-3 bg-light rounded">
-                                <div class="h4 text-warning mb-0"><?= number_format($clientes) ?></div>
-                                <small class="text-muted">Clientes</small>
+
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Criptografia SSL/TLS</label>
+                                    <p class="config-description">Usar conexão segura com o servidor de e-mail</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="modern-switch">
+                                        <input type="checkbox" class="switch-input" 
+                                               <?= $configuracoes['smtp_ssl'] ? 'checked' : '' ?> 
+                                               name="smtp_ssl"
+                                               id="smtp_ssl">
+                                        <label for="smtp_ssl" class="switch-label">
+                                            <span class="switch-slider"></span>
+                                            <span class="switch-text"></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </section>
 
-    <!-- Aba Backup -->
-    <div class="content-card" id="content-backup" style="display: none;">
-        <div class="content-card-header">
-            <h2 class="content-card-title">
-                <i class="bi bi-shield-check"></i>
-                Backup e Restauração
-            </h2>
-        </div>
-        <div class="content-card-body">
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Importante:</strong> Execute backups regulares para proteger seus dados. 
-                Recomendamos backup diário para sistemas em produção.
-            </div>
+            <!-- Seção Sistema -->
+            <section id="sistema" class="config-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-gear"></i>
+                        Configurações do Sistema
+                    </h2>
+                    <p class="section-description">Performance, cache e limites de upload</p>
+                </div>
 
-            <div class="setting-group">
-                <div class="setting-item">
-                    <div class="setting-item-header">
-                        <div class="setting-item-info">
-                            <h3 class="setting-item-title">
+                <div class="config-cards">
+                    <!-- Card: Performance -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
+                                <i class="bi bi-lightning"></i>
+                                Performance
+                            </h3>
+                            <div class="card-actions">
+                                <button type="button" class="btn-ghost" onclick="limparCache()">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    Limpar Cache
+                                </button>
+                            </div>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Cache do Sistema</label>
+                                    <p class="config-description">Habilitar cache para melhor performance (recomendado)</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="modern-switch">
+                                        <input type="checkbox" class="switch-input" 
+                                               <?= $configuracoes['cache_sistema'] ? 'checked' : '' ?> 
+                                               name="cache_sistema"
+                                               id="cache_sistema">
+                                        <label for="cache_sistema" class="switch-label">
+                                            <span class="switch-slider"></span>
+                                            <span class="switch-text"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Tempo de Cache</label>
+                                    <p class="config-description">Por quantos minutos manter dados em cache</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="input-with-addon">
+                                        <input type="number" class="form-input-modern" 
+                                               value="<?= $configuracoes['tempo_cache'] ?>" 
+                                               min="5" max="1440" 
+                                               name="tempo_cache">
+                                        <span class="input-addon">min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Uploads -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
+                                <i class="bi bi-upload"></i>
+                                Upload de Arquivos
+                            </h3>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Tamanho Máximo</label>
+                                    <p class="config-description">Limite por arquivo em megabytes</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="input-with-addon">
+                                        <input type="number" class="form-input-modern" 
+                                               value="<?= $configuracoes['max_upload'] ?>" 
+                                               min="1" max="100" 
+                                               name="max_upload">
+                                        <span class="input-addon">MB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Estatísticas -->
+                    <div class="config-card stats-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
+                                <i class="bi bi-graph-up"></i>
+                                Estatísticas Rápidas
+                            </h3>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="stats-grid-compact">
+                                <div class="stat-item">
+                                    <div class="stat-value"><?= number_format($solicitacoesAtivas) ?></div>
+                                    <div class="stat-label">Solicitações Ativas</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value"><?= number_format($propostasAceitas) ?></div>
+                                    <div class="stat-label">Propostas Aceitas</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value"><?= number_format($prestadores) ?></div>
+                                    <div class="stat-label">Prestadores</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value"><?= number_format($clientes) ?></div>
+                                    <div class="stat-label">Clientes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção Backup -->
+            <section id="backup" class="config-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-shield-check"></i>
+                        Backup e Segurança
+                    </h2>
+                    <p class="section-description">Proteja seus dados com backups regulares</p>
+                </div>
+
+                <div class="config-cards">
+                    <!-- Alert -->
+                    <div class="config-alert">
+                        <div class="alert-icon">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Importante:</strong> Execute backups regulares para proteger seus dados. 
+                            Recomendamos backup diário para sistemas em produção.
+                        </div>
+                    </div>
+
+                    <!-- Card: Configurações de Backup -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
                                 <i class="bi bi-calendar-check"></i>
                                 Backup Automático
                             </h3>
-                            <p class="setting-item-description">
-                                Executar backup automático diariamente
-                            </p>
                         </div>
-                        <div class="setting-item-control">
-                            <div class="switch-container">
-                                <input type="checkbox" class="switch-input" 
-                                       <?= $configuracoes['backup_automatico'] ? 'checked' : '' ?> 
-                                       name="backup_automatico">
-                                <span class="switch-slider"></span>
+                        <div class="config-card-body">
+                            <div class="config-item">
+                                <div class="config-item-info">
+                                    <label class="config-label">Backup Diário</label>
+                                    <p class="config-description">Executar backup automático todos os dias</p>
+                                </div>
+                                <div class="config-control">
+                                    <div class="modern-switch">
+                                        <input type="checkbox" class="switch-input" 
+                                               <?= $configuracoes['backup_automatico'] ? 'checked' : '' ?> 
+                                               name="backup_automatico"
+                                               id="backup_automatico">
+                                        <label for="backup_automatico" class="switch-label">
+                                            <span class="switch-slider"></span>
+                                            <span class="switch-text"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="config-item-grid">
+                                <div class="config-item">
+                                    <div class="config-item-info">
+                                        <label class="config-label">Horário</label>
+                                        <p class="config-description">Melhor horário: madrugada</p>
+                                    </div>
+                                    <div class="config-control">
+                                        <input type="time" class="form-input-modern" 
+                                               value="<?= $configuracoes['horario_backup'] ?>" 
+                                               name="horario_backup">
+                                    </div>
+                                </div>
+
+                                <div class="config-item">
+                                    <div class="config-item-info">
+                                        <label class="config-label">Retenção</label>
+                                        <p class="config-description">Manter backups por quantos dias</p>
+                                    </div>
+                                    <div class="config-control">
+                                        <div class="input-with-addon">
+                                            <input type="number" class="form-input-modern" 
+                                                   value="<?= $configuracoes['dias_backup'] ?>" 
+                                                   min="7" max="365" 
+                                                   name="dias_backup">
+                                            <span class="input-addon">dias</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Ações de Backup -->
+                    <div class="config-card">
+                        <div class="config-card-header">
+                            <h3 class="config-card-title">
+                                <i class="bi bi-tools"></i>
+                                Ações Manuais
+                            </h3>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="backup-actions-grid">
+                                <div class="backup-action-item">
+                                    <div class="backup-action-icon success">
+                                        <i class="bi bi-download"></i>
+                                    </div>
+                                    <div class="backup-action-content">
+                                        <h4 class="backup-action-title">Criar Backup</h4>
+                                        <p class="backup-action-description">Backup completo com estrutura e dados</p>
+                                        <button type="button" class="btn-primary" onclick="criarBackup()">
+                                            <i class="bi bi-download"></i>
+                                            Gerar e Baixar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="backup-action-item">
+                                    <div class="backup-action-icon warning">
+                                        <i class="bi bi-upload"></i>
+                                    </div>
+                                    <div class="backup-action-content">
+                                        <h4 class="backup-action-title">Restaurar</h4>
+                                        <p class="backup-action-description">Substituirá todos os dados atuais</p>
+                                        <button type="button" class="btn-warning" onclick="restaurarBackup()">
+                                            <i class="bi bi-upload"></i>
+                                            Escolher Arquivo
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </section>
+        </main>
+    </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-clock"></i>
-                                    Horário do Backup
-                                </h3>
-                                <p class="setting-item-description">Melhor horário: madrugada (menor uso)</p>
-                            </div>
-                            <div class="setting-item-control">
-                                <input type="time" class="form-control-modern" 
-                                       value="<?= $configuracoes['horario_backup'] ?>" 
-                                       name="horario_backup">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="setting-item">
-                            <div class="setting-item-info">
-                                <h3 class="setting-item-title">
-                                    <i class="bi bi-calendar"></i>
-                                    Manter Backups por (dias)
-                                </h3>
-                                <p class="setting-item-description">Backups mais antigos serão excluídos automaticamente</p>
-                            </div>
-                            <div class="setting-item-control">
-                                <input type="number" class="form-control-modern" 
-                                       value="<?= $configuracoes['dias_backup'] ?>" 
-                                       min="7" max="365" 
-                                       name="dias_backup">
-                            </div>
-                        </div>
-                    </div>
+    <!-- Enhanced Floating Actions Bar with Preview -->
+    <div class="actions-bar enhanced" id="actionsBar">
+        <div class="actions-bar-content">
+            <div class="actions-preview">
+                <div class="preview-icon">
+                    <i class="bi bi-eye"></i>
+                </div>
+                <div class="preview-info">
+                    <span class="preview-title">Alterações pendentes</span>
+                    <span class="preview-count">3 configurações modificadas</span>
                 </div>
             </div>
+            <div class="actions-buttons">
+                <button type="button" class="btn-secondary" onclick="visualizarAlteracoes()">
+                    <i class="bi bi-eye"></i>
+                    Visualizar
+                </button>
+                <button type="button" class="btn-secondary" onclick="descartarAlteracoes()">
+                    <i class="bi bi-x"></i>
+                    Descartar
+                </button>
+                <button type="button" class="btn-primary" onclick="salvarConfiguracoes()">
+                    <i class="bi bi-check-lg"></i>
+                    Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Ações de Backup -->
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="text-center p-4 border rounded">
-                        <i class="bi bi-download fs-1 text-success mb-3"></i>
-                        <h5>Criar Backup</h5>
-                        <p class="text-muted mb-3">Backup completo com estrutura e dados</p>
-                        <button class="btn-modern btn-success w-100" onclick="criarBackup()">
-                            <i class="bi bi-download"></i>
-                            Gerar e Baixar
-                        </button>
-                    </div>
+    <!-- Preview Modal -->
+    <div class="preview-modal" id="previewModal">
+        <div class="modal-backdrop" onclick="fecharPreview()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Prévia das Alterações</h3>
+                <button class="modal-close" onclick="fecharPreview()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="changes-list" id="changesList">
+                    <!-- Populated by JavaScript -->
                 </div>
-                <div class="col-md-6">
-                    <div class="text-center p-4 border rounded">
-                        <i class="bi bi-upload fs-1 text-warning mb-3"></i>
-                        <h5>Restaurar Backup</h5>
-                        <p class="text-muted mb-3">Substituirá todos os dados atuais</p>
-                        <button class="btn-modern btn-warning w-100" onclick="restaurarBackup()">
-                            <i class="bi bi-upload"></i>
-                            Restaurar
-                        </button>
-                    </div>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="fecharPreview()">Cancelar</button>
+                <button class="btn-primary" onclick="confirmarAlteracoes()">Confirmar e Salvar</button>
             </div>
         </div>
     </div>
@@ -642,73 +868,84 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Estilos completamente redesenhados
 $styles = '
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --secondary: #8b5cf6;
-  --accent: #06d6a0;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-dark: #3730a3;
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
+  --info: #2563eb;
   --neutral-50: #f8fafc;
   --neutral-100: #f1f5f9;
   --neutral-200: #e2e8f0;
   --neutral-300: #cbd5e1;
-  --neutral-800: #1e293b;
-  --neutral-600: #475569;
+  --neutral-400: #94a3b8;
   --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1e293b;
+  --neutral-900: #0f172a;
   --glass-bg: rgba(255, 255, 255, 0.95);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
 }
 
 * {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.main-content {
+/* Page Wrapper */
+.config-page-wrapper {
   background: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
   min-height: 100vh;
-  padding: 0;
 }
 
-/* Header Redesign */
-.config-header {
+/* Modern Header */
+.config-header-modern {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--neutral-200);
-  padding: 2rem 2.5rem;
-  margin-bottom: 2rem;
+  padding: 2rem 0;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.config-title {
+.config-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.config-page-title {
   font-size: 2rem;
   font-weight: 700;
   color: var(--neutral-800);
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin: 0;
+  margin: 0 0 0.5rem 0;
 }
 
 .config-title-icon {
   width: 3rem;
   height: 3rem;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -717,436 +954,710 @@ $styles = '
   box-shadow: var(--shadow-md);
 }
 
-/* Stats Cards Redesign */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+.config-page-subtitle {
+  color: var(--neutral-600);
+  font-size: 1rem;
+  margin: 0;
 }
 
-.stats-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--neutral-200);
+.system-status-panel {
+  background: white;
   border-radius: var(--radius-xl);
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: var(--shadow-md);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  border: 1px solid var(--neutral-200);
 }
 
-.stats-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-}
-
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--primary-light);
-}
-
-.stats-card-content {
+.status-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.stats-card-info h6 {
-  font-size: 0.875rem;
+.status-header h3 {
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--neutral-500);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.stats-card-value {
-  font-size: 2rem;
-  font-weight: 700;
   color: var(--neutral-800);
   margin: 0;
+}
+
+.btn-refresh {
+  background: transparent;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--neutral-600);
+}
+
+.btn-refresh:hover {
+  background: var(--neutral-50);
+  color: var(--primary);
+  transform: rotate(180deg);
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--neutral-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--neutral-100);
+  transition: all 0.2s ease;
+}
+
+.status-card:hover {
+  background: white;
+  border-color: var(--neutral-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.status-card.online {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #a7f3d0;
+}
+
+.status-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  font-size: 1.25rem;
+}
+
+.status-card.online .status-icon {
+  background: var(--success);
+  color: white;
+}
+
+.status-card:not(.online) .status-icon {
+  background: var(--neutral-200);
+  color: var(--neutral-600);
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-label {
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+  font-weight: 500;
+}
+
+.status-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--neutral-800);
+}
+
+/* Search and Filter Tools */
+.config-tools {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--neutral-200);
+  padding: 1rem 0;
+  position: sticky;
+  top: 140px;
+  z-index: 90;
+}
+
+.config-tools-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.search-container {
+  flex: 1;
+}
+
+.search-input-wrapper {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-input-wrapper i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--neutral-500);
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 2px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  font-size: 0.875rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.search-clear {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--neutral-400);
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.filter-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-btn {
+  background: white;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--neutral-600);
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.stats-card-icon {
-  width: 4rem;
-  height: 4rem;
+.filter-btn:hover {
+  background: var(--neutral-50);
+  border-color: var(--neutral-300);
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.view-btn {
+  background: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: var(--neutral-600);
+  transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+  background: var(--neutral-50);
+}
+
+.view-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* Enhanced Navigation */
+.config-progress {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success) 0%, #10b981 100%);
+  transition: width 0.3s ease;
+}
+
+.nav-badge {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.nav-badge.warning {
+  background: var(--warning);
+}
+
+.nav-badge.success {
+  background: var(--success);
+}
+
+.nav-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+}
+
+.nav-status.complete {
+  background: var(--success);
+}
+
+.nav-status.incomplete {
+  background: var(--warning);
+}
+
+/* Quick Actions Panel */
+.quick-actions-panel {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.quick-actions-title {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem 0;
+}
+
+.quick-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.quick-action-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.quick-action-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+/* Enhanced Section Headers */
+.section-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.section-counter {
+  background: var(--neutral-100);
+  color: var(--neutral-600);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 1rem;
+}
+
+.section-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.section-action-btn {
+  background: transparent;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--neutral-600);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-action-btn:hover {
+  background: var(--neutral-50);
+  border-color: var(--neutral-300);
+}
+
+.section-progress {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-progress .progress-bar {
+  flex: 1;
+  max-width: 200px;
+  height: 6px;
+  background: var(--neutral-200);
+  border-radius: 3px;
+}
+
+.section-progress .progress-text {
+  font-size: 0.8125rem;
+  color: var(--neutral-600);
+  font-weight: 500;
+}
+
+/* Enhanced Cards */
+.config-cards.enhanced .config-card {
+  margin-bottom: 1rem;
+}
+
+.config-card.collapsible .config-card-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.card-title-group {
+  flex: 1;
+}
+
+.card-subtitle {
+  color: var(--neutral-500);
+  font-size: 0.8125rem;
+  margin: 0.25rem 0 0 0;
+}
+
+.completion-badge {
+  background: var(--success);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-action-btn {
+  background: transparent;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-sm);
+  padding: 0.375rem;
+  cursor: pointer;
+  color: var(--neutral-500);
+  transition: all 0.2s ease;
+}
+
+.card-action-btn:hover {
+  background: var(--neutral-50);
+  color: var(--neutral-700);
+}
+
+.collapse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--neutral-500);
+  transition: all 0.2s ease;
+  padding: 0.25rem;
+}
+
+.collapse-btn i {
+  transition: transform 0.2s ease;
+}
+
+.config-card.collapsed .collapse-btn i {
+  transform: rotate(-90deg);
+}
+
+.config-card.collapsed .config-card-body {
+  display: none;
+}
+
+/* Enhanced Config Items */
+.config-item.enhanced {
+  position: relative;
+}
+
+.label-badge {
+  background: var(--error);
+  color: white;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.label-badge.required {
+  background: var(--error);
+}
+
+.config-tip {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--info);
+  font-size: 0.75rem;
+  color: var(--neutral-600);
+}
+
+.input-container {
+  position: relative;
+}
+
+.form-input-modern.enhanced {
+  padding-right: 3rem;
+}
+
+.input-validation {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.validation-icon {
+  font-size: 1rem;
+}
+
+.validation-icon.valid {
+  color: var(--success);
+}
+
+.validation-icon.invalid {
+  color: var(--error);
+}
+
+.validation-message {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--success);
+}
+
+/* Enhanced Actions Bar */
+.actions-bar.enhanced {
+  min-width: 500px;
+}
+
+.actions-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.preview-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, var(--info) 0%, var(--primary) 100%);
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  opacity: 0.8;
+  color: white;
+  font-size: 1rem;
 }
 
-.stats-card-icon.success { background: linear-gradient(135deg, #10b981 20%, #059669 100%); color: white; }
-.stats-card-icon.info { background: linear-gradient(135deg, #3b82f6 20%, #1d4ed8 100%); color: white; }
-.stats-card-icon.warning { background: linear-gradient(135deg, #f59e0b 20%, #d97706 100%); color: white; }
-.stats-card-icon.primary { background: linear-gradient(135deg, var(--primary) 20%, var(--primary-dark) 100%); color: white; }
-
-/* Navigation Redesign */
-.config-navigation {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 3rem;
+.preview-info {
+  display: flex;
+  flex-direction: column;
 }
 
-.nav-card {
-  background: var(--glass-bg);
-  border: 2px solid var(--neutral-200);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  text-decoration: none;
-  color: var(--neutral-600);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.preview-title {
+  font-weight: 600;
+  color: var(--neutral-800);
+  font-size: 0.875rem;
+}
+
+.preview-count {
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+}
+
+/* Preview Modal */
+.preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  display: none;
+}
+
+.preview-modal.show {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
+  justify-content: center;
 }
 
-.nav-card::before {
-  content: "";
+.modal-backdrop {
   position: absolute;
   top: 0;
   left: 0;
-  width: 0;
-  height: 100%;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 0;
-}
-
-.nav-card.active,
-.nav-card:hover {
-  border-color: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.nav-card.active::before,
-.nav-card:hover::before {
   width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
 }
 
-.nav-card-content {
-  position: relative;
-  z-index: 1;
-}
-
-.nav-card-icon {
-  font-size: 1.5rem;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-card:hover .nav-card-icon {
-  transform: scale(1.1);
-}
-
-.nav-card-title {
-  font-weight: 600;
-  font-size: 1rem;
-  margin: 0;
-}
-
-.nav-card-description {
-  font-size: 0.875rem;
-  opacity: 0.8;
-  margin: 0;
-}
-
-/* Content Cards */
-.config-content-grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: 1fr;
-  position: relative;
-}
-
-.content-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--neutral-200);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.content-card.active-content {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.content-card:hover {
-  box-shadow: var(--shadow-lg);
-  border-color: var(--primary-light);
-}
-
-.metric-item {
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-}
-
-.metric-item:hover {
-  transform: translateY(-2px);
-  border-color: #dee2e6;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-/* Setting Items Redesign */
-.setting-group {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.setting-item {
-  background: var(--neutral-50);
-  border: 1px solid var(--neutral-200);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.setting-item:hover {
+.modal-content {
   background: white;
-  border-color: var(--primary-light);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  position: relative;
+  z-index: 1001;
 }
 
-.setting-item-header {
+.modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 2rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--neutral-200);
 }
 
-.setting-item-info {
-  flex: 1;
-}
-
-.setting-item-title {
+.modal-header h3 {
+  margin: 0;
+  color: var(--neutral-800);
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--neutral-800);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.setting-item-description {
-  font-size: 0.875rem;
-  color: var(--neutral-500);
-  line-height: 1.6;
-  margin: 0;
-}
-
-.setting-item-control {
-  flex-shrink: 0;
-  min-width: 200px;
-}
-
-/* Form Controls Redesign */
-.form-control-modern {
-  background: white;
-  border: 2px solid var(--neutral-200);
-  border-radius: var(--radius-md);
-  padding: 0.875rem 1rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--neutral-800);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: none;
-}
-
-.form-control-modern:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.input-group-modern {
-  position: relative;
-}
-
-.input-group-text-modern {
-  background: var(--primary);
-  color: white;
-  border: 2px solid var(--primary);
-  border-left: none;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  font-weight: 600;
-  padding: 0.875rem 1rem;
-}
-
-/* Switch Redesign */
-.switch-container {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 32px;
-}
-
-.switch-input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--neutral-300);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 32px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.switch-slider:before {
-  position: absolute;
-  content: "";
-  height: 24px;
-  width: 24px;
-  left: 4px;
-  bottom: 4px;
-  background: white;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.switch-input:checked + .switch-slider {
-  background: var(--primary);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-}
-
-.switch-input:checked + .switch-slider:before {
-  transform: translateX(28px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Action Buttons */
-.btn-modern {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: white;
+.modal-close {
+  background: none;
   border: none;
-  border-radius: var(--radius-md);
-  padding: 0.875rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-md);
-  position: relative;
-  overflow: hidden;
+  padding: 0.5rem;
+  color: var(--neutral-500);
+  border-radius: var(--radius-md);
 }
 
-.btn-modern::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+.modal-close:hover {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
 }
 
-.btn-modern:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+.modal-body {
+  padding: 1.5rem;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-.btn-modern:hover::before {
-  left: 100%;
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--neutral-200);
 }
 
-.btn-modern:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-md);
+/* Responsive enhancements */
+@media (max-width: 1200px) {
+  .system-status-panel {
+    display: none;
+  }
+  
+  .config-tools-content {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .filter-container {
+    order: 3;
+    flex-basis: 100%;
+  }
 }
 
-.btn-modern.btn-success {
-  background: linear-gradient(135deg, var(--accent) 0%, #059669 100%);
-}
-
-.btn-modern.btn-warning {
-  background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
-}
-
-.btn-modern.btn-info {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
-  .config-header {
-    padding: 1.5rem;
+  .config-tools {
+    display: none;
   }
   
-  .config-title {
-    font-size: 1.5rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .config-navigation {
-    grid-template-columns: 1fr;
-  }
-  
-  .setting-item-header {
+  .section-title-wrapper {
     flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
   }
   
-  .setting-item-control {
-    min-width: 100%;
+  .card-header-actions {
+    flex-direction: column;
+    align-self: flex-start;
   }
 }
 
-/* Micro-interactions */
+/* Animations */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
-@keyframes slideInFromTop {
+@keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -1154,251 +1665,331 @@ $styles = '
   }
 }
 
-.slide-in {
-  animation: slideInFromTop 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.loading {
-  animation: pulse 1.5s ease-in-out infinite;
+.slide-up {
+  animation: slideUp 0.4s ease;
 }
 ';
 
-// Scripts com micro-interações melhoradas
 $scripts = '
 <script>
-// Inicialização com animações
 document.addEventListener("DOMContentLoaded", function() {
-  // Animar entrada dos cards
-  const cards = document.querySelectorAll(".stats-card, .setting-item");
-  cards.forEach((card, index) => {
-    setTimeout(() => {
-      card.classList.add("slide-in");
-    }, index * 100);
-  });
-  
-  // Configurar navegação entre abas
-  setupNavigation();
-  
-  // Configurar switches customizados
-  setupCustomSwitches();
+  initializeNavigation();
+  initializeFormTracking();
+  initializeAnimations();
 });
 
-function setupNavigation() {
-  const navCards = document.querySelectorAll(".nav-card");
-  const contentCards = document.querySelectorAll(".content-card");
+function initializeNavigation() {
+  const navItems = document.querySelectorAll(".nav-item");
+  const sections = document.querySelectorAll(".config-section");
   
-  navCards.forEach(card => {
-    card.addEventListener("click", function() {
-      const target = this.getAttribute("data-target");
+  // Handle navigation clicks
+  navItems.forEach(item => {
+    item.addEventListener("click", function(e) {
+      e.preventDefault();
+      const targetSection = this.dataset.section;
       
-      // Remover classe active de todos os nav-cards
-      navCards.forEach(nav => nav.classList.remove("active"));
-      
-      // Adicionar classe active ao card clicado
+      // Update active nav item
+      navItems.forEach(nav => nav.classList.remove("active"));
       this.classList.add("active");
       
-      // Esconder todos os content-cards
-      contentCards.forEach(content => {
-        content.style.display = "none";
-        content.classList.remove("active-content");
-      });
-      
-      // Mostrar o content-card correspondente
-      const targetContent = document.getElementById("content-" + target);
-      if (targetContent) {
-        targetContent.style.display = "block";
-        setTimeout(() => {
-          targetContent.classList.add("active-content");
-        }, 50);
+      // Smooth scroll to section
+      const section = document.getElementById(targetSection);
+      if (section) {
+        section.scrollIntoView({ 
+          behavior: "smooth",
+          block: "start"
+        });
       }
-      
-      // Feedback visual
-      showMicroFeedback("Seção alterada", "info");
     });
+  });
+  
+  // Update active nav on scroll
+  const observerOptions = {
+    rootMargin: "-20% 0px -70% 0px"
+  };
+  
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const sectionId = entry.target.id;
+        navItems.forEach(nav => nav.classList.remove("active"));
+        const activeNav = document.querySelector(`[data-section="${sectionId}"]`);
+        if (activeNav) {
+          activeNav.classList.add("active");
+        }
+      }
+    });
+  }, observerOptions);
+  
+  sections.forEach(section => {
+    observer.observe(section);
   });
 }
 
-function setupCustomSwitches() {
-  const switches = document.querySelectorAll(".form-check-input");
-  switches.forEach(switchEl => {
-    if (switchEl.parentNode.querySelector(".switch-container")) {
-      return; // Já foi processado
+function initializeFormTracking() {
+  const inputs = document.querySelectorAll("input, select, textarea");
+  const actionsBar = document.getElementById("actionsBar");
+  let hasChanges = false;
+  
+  inputs.forEach(input => {
+    input.addEventListener("change", function() {
+      hasChanges = true;
+      showActionsBar();
+    });
+  });
+  
+  function showActionsBar() {
+    if (actionsBar) {
+      actionsBar.classList.add("show");
     }
-    
-    const container = document.createElement("div");
-    container.className = "switch-container";
-    
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.className = "switch-input";
-    input.checked = switchEl.checked;
-    input.name = switchEl.name;
-    
-    const slider = document.createElement("span");
-    slider.className = "switch-slider";
-    
-    container.appendChild(input);
-    container.appendChild(slider);
-    
-    switchEl.parentNode.replaceChild(container, switchEl);
-    
-    // Micro-interação no click
-    slider.addEventListener("click", () => {
-      input.checked = !input.checked;
-      if (input.checked) {
-        showMicroFeedback("✓ Ativado", "success");
-      } else {
-        showMicroFeedback("○ Desativado", "info");
-      }
-    });
-  });
-}
-
-function salvarConfiguracoes() {
-  const btn = event.target;
-  const originalText = btn.innerHTML;
+  }
   
-  btn.disabled = true;
-  btn.classList.add("loading");
-  btn.innerHTML = `<i class="bi bi-arrow-clockwise me-2"></i>Salvando...`;
+  function hideActionsBar() {
+    if (actionsBar) {
+      actionsBar.classList.remove("show");
+    }
+  }
   
-  // Simular salvamento
-  setTimeout(() => {
-    btn.disabled = false;
-    btn.classList.remove("loading");
-    btn.innerHTML = originalText;
-    
-    showNotification("Configurações salvas com sucesso!", "success");
-    
-    // Micro-interação de sucesso
-    btn.style.transform = "scale(1.05)";
-    setTimeout(() => {
-      btn.style.transform = "";
-    }, 200);
-  }, 1500);
-}
-
-function limparCache() {
-  if (confirm("Deseja limpar o cache do sistema? Isso pode afetar temporariamente a performance.")) {
+  // Global functions for actions
+  window.salvarConfiguracoes = function() {
     const btn = event.target;
-    const originalText = btn.innerHTML;
+    const originalHTML = btn.innerHTML;
     
     btn.disabled = true;
-    btn.innerHTML = "<i class=\"bi bi-arrow-clockwise me-1\"></i>Limpando...";
+    btn.innerHTML = `<div class="spinner"></div> Salvando...`;
     
+    // Simulate save
     setTimeout(() => {
       btn.disabled = false;
-      btn.innerHTML = originalText;
-      showNotification("Cache limpo com sucesso!", "info");
-    }, 2000);
-  }
+      btn.innerHTML = originalHTML;
+      hasChanges = false;
+      hideActionsBar();
+      showNotification("Configurações salvas com sucesso!", "success");
+    }, 1500);
+  };
+  
+  window.descartarAlteracoes = function() {
+    if (confirm("Descartar todas as alterações não salvas?")) {
+      // Reset form
+      inputs.forEach(input => {
+        if (input.type === "checkbox") {
+          input.checked = input.defaultChecked;
+        } else {
+          input.value = input.defaultValue;
+        }
+      });
+      hasChanges = false;
+      hideActionsBar();
+      showNotification("Alterações descartadas", "info");
+    }
+  };
+}
+
+function initializeAnimations() {
+  const cards = document.querySelectorAll(".config-card");
+  
+  const cardObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("slide-up");
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: "0px 0px -50px 0px"
+  });
+  
+  cards.forEach(card => {
+    cardObserver.observe(card);
+  });
 }
 
 function criarBackup() {
-  if (!confirm("Deseja criar um backup completo do banco de dados?\\n\\nEste processo pode levar alguns minutos dependendo do tamanho dos dados.")) {
+  if (!confirm("Criar backup completo do sistema?\\n\\nEste processo pode levar alguns minutos.")) {
     return;
   }
   
   const btn = event.target;
-  const originalText = btn.innerHTML;
+  const originalHTML = btn.innerHTML;
   
   btn.disabled = true;
-  btn.innerHTML = "<i class=\"bi bi-arrow-clockwise me-1\"></i>Criando...";
+  btn.innerHTML = `<div class="spinner"></div> Gerando...`;
   
-  // Simular criação de backup
+  // Criar form para submeter
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = "<?= url("admin/backup/gerar") ?>";
+  form.style.display = "none";
+  
+  // Adicionar token CSRF se disponível
+  <?php if (isset($_SESSION["csrf_token"])): ?>
+  const csrfInput = document.createElement("input");
+  csrfInput.type = "hidden";
+  csrfInput.name = "csrf_token";
+  csrfInput.value = "<?= $_SESSION["csrf_token"] ?>";
+  form.appendChild(csrfInput);
+  <?php endif; ?>
+  
+  document.body.appendChild(form);
+  
+  // Submeter form
+  form.submit();
+  
+  // Aguardar um pouco e restaurar botão
   setTimeout(() => {
     btn.disabled = false;
-    btn.innerHTML = originalText;
-    showNotification("Backup criado e baixado com sucesso!", "success");
-  }, 3000);
-}
-
-function testarEmail() {
-  const btn = event.target;
-  const originalText = btn.innerHTML;
-  
-  btn.disabled = true;
-  btn.innerHTML = "<i class=\"bi bi-arrow-clockwise me-1\"></i>Testando...";
-  
-  // Simular teste de email
-  setTimeout(() => {
-    btn.disabled = false;
-    btn.innerHTML = originalText;
-    showNotification("E-mail de teste enviado com sucesso!", "success");
+    btn.innerHTML = originalHTML;
+    document.body.removeChild(form);
+    showNotification("Download do backup iniciado!", "success");
   }, 2000);
 }
 
 function restaurarBackup() {
-  if (confirm("ATENÇÃO: Restaurar um backup irá substituir todos os dados atuais. Deseja continuar?")) {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".sql";
-    input.onchange = function() {
-      if (this.files[0]) {
-        showNotification("Arquivo selecionado: " + this.files[0].name + ". Funcionalidade será implementada em breve.", "info");
-      }
-    };
-    input.click();
+  if (!confirm("ATENÇÃO: Restaurar backup substituirá todos os dados atuais!\\n\\nDeseja continuar?")) {
+    return;
   }
+  
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".sql,.zip";
+  input.onchange = function() {
+    if (this.files[0]) {
+      showNotification(`Arquivo selecionado: ${this.files[0].name}`, "info");
+    }
+  };
+  input.click();
 }
 
-function showMicroFeedback(message, type) {
-  const feedback = document.createElement("div");
-  feedback.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${type === "success" ? "var(--accent)" : "var(--primary)"};
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 600;
-    z-index: 9999;
-    animation: slideInFromTop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--shadow-lg);
-  `;
-  feedback.textContent = message;
-  document.body.appendChild(feedback);
+function testarEmail() {
+  const btn = event.target;
+  const originalHTML = btn.innerHTML;
+  
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner"></div> Testando...`;
   
   setTimeout(() => {
-    feedback.style.animation = "slideInFromTop 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse";
-    setTimeout(() => feedback.remove(), 300);
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+    showNotification("E-mail de teste enviado com sucesso!", "success");
+  }, 2000);
+}
+
+function limparCache() {
+  if (!confirm("Limpar cache do sistema?\\n\\nIsto pode afetar temporariamente a performance.")) {
+    return;
+  }
+  
+  const btn = event.target;
+  const originalHTML = btn.innerHTML;
+  
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner"></div> Limpando...`;
+  
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+    showNotification("Cache limpo com sucesso!", "success");
   }, 1500);
 }
 
-function showNotification(message, type) {
+function showNotification(message, type = "info") {
   const notification = document.createElement("div");
-  notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-  notification.style.cssText = `
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    min-width: 300px;
-    border: none;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl);
-    backdrop-filter: blur(20px);
-  `;
+  notification.className = `notification notification-${type}`;
   
-  const icon = type === "success" ? "check-circle" : (type === "info" ? "info-circle" : "exclamation-triangle");
+  const icons = {
+    success: "check-circle-fill",
+    error: "exclamation-triangle-fill",
+    warning: "exclamation-triangle-fill",
+    info: "info-circle-fill"
+  };
   
   notification.innerHTML = `
-    <i class="bi bi-${icon} me-2"></i>
-    ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="notification-content">
+      <i class="bi bi-${icons[type]}"></i>
+      <span>${message}</span>
+    </div>
+    <button class="notification-close" onclick="this.parentElement.remove()">
+      <i class="bi bi-x"></i>
+    </button>
+  `;
+  
+  notification.style.cssText = `
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-left: 4px solid var(--${type === "error" || type === "warning" ? "error" : type === "success" ? "success" : "info"});
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: 1rem 1.5rem;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 400px;
+    animation: slideInFromRight 0.3s ease;
   `;
   
   document.body.appendChild(notification);
   
   setTimeout(() => {
-    if (notification.parentNode) {
-      const bsAlert = new bootstrap.Alert(notification);
-      bsAlert.close();
-    }
+    notification.style.animation = "slideOutToRight 0.3s ease";
+    setTimeout(() => notification.remove(), 300);
   }, 4000);
 }
+
+// Add CSS for notifications and spinner
+const additionalCSS = `
+@keyframes slideInFromRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutToRight {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: var(--neutral-500);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.notification-close:hover {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+`;
+
+const styleSheet = document.createElement("style");
+styleSheet.textContent = additionalCSS;
+document.head.appendChild(styleSheet);
 </script>
 ';
 
