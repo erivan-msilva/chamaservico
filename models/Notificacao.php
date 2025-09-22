@@ -81,7 +81,8 @@ class Notificacao
     {
         $sql = "UPDATE tb_notificacao SET lida = 1 WHERE id = ? AND pessoa_id = ?";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([$notificacaoId, $userId]);
+        $stmt->execute([$notificacaoId, $userId]);
+        return $stmt->rowCount() > 0; // <-- só retorna true se realmente alterou algo
     }
 
     /**

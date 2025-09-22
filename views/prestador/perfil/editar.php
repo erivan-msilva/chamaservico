@@ -108,14 +108,17 @@ ob_start();
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="cpf" class="form-label fw-semibold">CPF</label>
-                                                <input type="text" class="form-control" id="cpf" name="cpf"
+                                                <input type="text"
+                                                       class="form-control<?= !empty($usuario['cpf']) ? ' bg-light' : '' ?>"
+                                                       id="cpf"
+                                                       name="cpf"
                                                        value="<?= htmlspecialchars($usuario['cpf'] ?? '') ?>"
                                                        placeholder="000.000.000-00"
-                                                       <?= !empty($usuario['cpf']) ? 'readonly' : '' ?>>
+                                                       <?= !empty($usuario['cpf']) ? 'readonly tabindex="-1"' : '' ?>>
                                                 <?php if (!empty($usuario['cpf'])): ?>
                                                     <div class="form-text text-warning">
                                                         <i class="bi bi-exclamation-triangle me-1"></i>
-                                                        CPF não pode ser alterado por questões de segurança
+                                                        CPF não pode ser alterado por questões de segurança.
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
@@ -124,13 +127,16 @@ ob_start();
                                         <div class="row mb-4">
                                             <div class="col-md-6">
                                                 <label for="dt_nascimento" class="form-label fw-semibold">Data de Nascimento</label>
-                                                <input type="date" class="form-control" id="dt_nascimento" name="dt_nascimento"
-                                                       value="<?= $usuario['dt_nascimento'] ?? '' ?>"
-                                                       <?= !empty($usuario['dt_nascimento']) ? 'readonly' : '' ?>>
+                                                <input type="date"
+                                                       class="form-control<?= !empty($usuario['dt_nascimento']) ? ' bg-light' : '' ?>"
+                                                       id="dt_nascimento"
+                                                       name="dt_nascimento"
+                                                       value="<?= htmlspecialchars($usuario['dt_nascimento'] ?? '') ?>"
+                                                       <?= !empty($usuario['dt_nascimento']) ? 'readonly tabindex="-1"' : '' ?>>
                                                 <?php if (!empty($usuario['dt_nascimento'])): ?>
                                                     <div class="form-text text-warning">
                                                         <i class="bi bi-exclamation-triangle me-1"></i>
-                                                        Data de nascimento não pode ser alterada
+                                                        Data de nascimento não pode ser alterada.
                                                     </div>
                                                 <?php endif; ?>
                                             </div>

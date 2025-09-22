@@ -13,7 +13,7 @@ if (!isset($_SESSION['admin_id'])) {
 $title = 'Configurações do Sistema - Admin';
 $currentPage = 'configuracoes';
 
-// Buscar configurações atuais (exemplo)
+
 $configuracoes = [
     'nome_sistema' => 'ChamaServiço',
     'permitir_cadastros' => true,

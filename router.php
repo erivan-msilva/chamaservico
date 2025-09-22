@@ -259,11 +259,14 @@ try {
     $router->post('/cliente/propostas/aceitar', 'ClientePropostaController', 'aceitar');
     $router->post('/cliente/propostas/recusar', 'ClientePropostaController', 'recusar');
     
-    // NOVO: Serviços do Cliente
+    // Rotas do cliente - serviços
+    $router->get('/cliente/servicos', 'ClienteServicoController', 'index');
+    $router->get('/cliente/servicos/andamento', 'ClienteServicoController', 'andamento');
     $router->get('/cliente/servicos/concluidos', 'ClienteServicoController', 'concluidos');
+    $router->get('/cliente/servicos/cancelados', 'ClienteServicoController', 'cancelados');
+    $router->get('/cliente/servicos/detalhes', 'ClienteServicoController', 'detalhes');
     $router->get('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliar');
     $router->post('/cliente/servicos/avaliar', 'ClienteServicoController', 'avaliar');
-    $router->post('/cliente/servicos/confirmar-conclusao', 'ClienteServicoController', 'confirmarConclusao');
 
     // ========================================
     // ÁREA DO PRESTADOR - ROTAS COMPLETAS
@@ -300,12 +303,14 @@ try {
     $router->get('/cliente/perfil', 'PerfilController', 'index');
     $router->post('/cliente/perfil', 'PerfilController', 'atualizar');
     $router->get('/cliente/perfil/editar', 'PerfilController', 'editar');
+    $router->post('/cliente/perfil/editar', 'PerfilController', 'editar'); // <-- ADICIONADO
     $router->post('/cliente/perfil/foto', 'PerfilController', 'atualizarFoto');
     
     // Prestador - Perfil  
     $router->get('/prestador/perfil', 'PerfilController', 'index');
     $router->post('/prestador/perfil', 'PerfilController', 'atualizar');
     $router->get('/prestador/perfil/editar', 'PerfilController', 'editar');
+    $router->post('/prestador/perfil/editar', 'PerfilController', 'editar');
     $router->post('/prestador/perfil/foto', 'PerfilController', 'atualizarFoto');
 
     // Endereços - CORRIGIDO: Usar o mesmo método para GET e POST
@@ -321,8 +326,13 @@ try {
     // NOTIFICAÇÕES
     // ========================================
     $router->get('/notificacoes', 'NotificacaoController', 'index');
-    $router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarLida');
+    $router->post('/notificacoes', 'NotificacaoController', 'index');
+    $router->get('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarComoLida');
+    $router->post('/notificacoes/marcar-lida', 'NotificacaoController', 'marcarComoLida');
+    $router->post('/notificacoes/deletar', 'NotificacaoController', 'deletar');
     $router->get('/notificacoes/contador', 'NotificacaoController', 'contador');
+    $router->post('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas');
+
     
     // ========================================
     // API E AJAX

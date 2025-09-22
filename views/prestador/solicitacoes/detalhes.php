@@ -24,12 +24,12 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                             <?= htmlspecialchars($solicitacao['titulo']) ?>
                         </h5>
                         <div class="d-flex gap-2">
-                            <?php 
+                            <?php
                             $urgenciaColors = ['baixa' => 'success', 'media' => 'warning', 'alta' => 'danger'];
                             $urgenciaIcons = ['baixa' => '🟢', 'media' => '🟡', 'alta' => '🔴'];
                             ?>
                             <span class="badge bg-<?= $urgenciaColors[$solicitacao['urgencia']] ?>">
-                                <?= $urgenciaIcons[$solicitacao['urgencia']] ?> 
+                                <?= $urgenciaIcons[$solicitacao['urgencia']] ?>
                                 <?= ucfirst($solicitacao['urgencia']) ?>
                             </span>
                         </div>
@@ -66,16 +66,16 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                             <i class="bi bi-geo-alt me-1"></i>Local do Serviço
                         </h6>
                         <p class="mb-0">
-                            <?= htmlspecialchars($solicitacao['logradouro']) ?>, 
+                            <?= htmlspecialchars($solicitacao['logradouro']) ?>,
                             <?= htmlspecialchars($solicitacao['numero']) ?>
                             <?php if ($solicitacao['complemento']): ?>
                                 , <?= htmlspecialchars($solicitacao['complemento']) ?>
                             <?php endif; ?>
                         </p>
                         <p class="mb-0">
-                            <?= htmlspecialchars($solicitacao['bairro']) ?> - 
-                            <?= htmlspecialchars($solicitacao['cidade']) ?>, 
-                            <?= htmlspecialchars($solicitacao['estado']) ?> - 
+                            <?= htmlspecialchars($solicitacao['bairro']) ?> -
+                            <?= htmlspecialchars($solicitacao['cidade']) ?>,
+                            <?= htmlspecialchars($solicitacao['estado']) ?> -
                             <small class="text-muted">CEP: <?= htmlspecialchars($solicitacao['cep']) ?></small>
                         </p>
                     </div>
@@ -90,9 +90,10 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                                 <?php foreach ($solicitacao['imagens'] as $imagem): ?>
                                     <div class="col-md-3">
                                         <div class="position-relative">
-                                            <img src="<?= url('uploads/solicitacoes/' . htmlspecialchars($imagem['caminho_imagem'])) ?>"
-                                                 class="img-fluid rounded" alt="Imagem da solicitação"
-                                                 style="height: 120px; object-fit: cover; width: 100%;">
+                                         
+                                            <img src="/uploads/solicitacoes/<?= htmlspecialchars($imagem['caminho_imagem']) ?>"
+                                                class="img-fluid rounded" alt="Imagem da solicitacao"
+                                                style="height: 120px; object-fit: cover; width: 100%;">
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -119,7 +120,7 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                                 <?php endif; ?>
                             </div>
                         </div>
-                        
+
                         <?php
                         // Adicionar esta lógica no início do arquivo após receber $outrasPropostas
                         $outrasPropostasMsg = '';
@@ -136,7 +137,7 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                             <strong>Outras propostas:</strong> <?= $outrasPropostasMsg ?>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-4">
                         <!-- Formulário de Proposta -->
                         <?php if (!$jaEnviouProposta): ?>
@@ -148,31 +149,31 @@ if (isset($solicitacao['id']) && isset($_SESSION['user_id'])) {
                                     <form method="POST" action="<?= url('prestador/solicitacoes/proposta') ?>">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="solicitacao_id" value="<?= $solicitacao['id'] ?>">
-                                        
+
                                         <div class="mb-3">
                                             <label for="valor" class="form-label">Valor da Proposta *</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">R$</span>
-                                                <input type="number" class="form-control" id="valor" name="valor" 
-                                                       step="0.01" min="1" required placeholder="0,00">
+                                                <input type="number" class="form-control" id="valor" name="valor"
+                                                    step="0.01" min="1" required placeholder="0,00">
                                             </div>
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <label for="prazo_execucao" class="form-label">Prazo de Execução *</label>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" id="prazo_execucao" 
-                                                       name="prazo_execucao" min="1" required placeholder="5">
+                                                <input type="number" class="form-control" id="prazo_execucao"
+                                                    name="prazo_execucao" min="1" required placeholder="5">
                                                 <span class="input-group-text">dia(s)</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <label for="descricao" class="form-label">Descrição da Proposta *</label>
-                                            <textarea class="form-control" id="descricao" name="descricao" 
-                                                      rows="4" required placeholder="Descreva como você fará o serviço, materiais inclusos, garantia, etc."></textarea>
+                                            <textarea class="form-control" id="descricao" name="descricao"
+                                                rows="4" required placeholder="Descreva como você fará o serviço, materiais inclusos, garantia, etc."></textarea>
                                         </div>
-                                        
+
                                         <button type="submit" class="btn btn-success w-100">
                                             <i class="bi bi-send me-1"></i>Enviar Proposta
                                         </button>

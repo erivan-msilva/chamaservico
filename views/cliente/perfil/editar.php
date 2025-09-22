@@ -1,12 +1,16 @@
 <?php
+// Define o título da página
 $title = 'Editar Perfil Cliente - ChamaServiço';
+
+// Inicia o buffer de saída
 ob_start();
 ?>
 
+<!-- Container principal -->
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <!-- Header -->
+            <!-- Cabeçalho da página -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-primary fw-bold">
                     <i class="bi bi-person-gear me-2"></i>Editar Perfil Cliente
@@ -22,13 +26,14 @@ ob_start();
             </div>
 
             <div class="row">
-                <!-- Sidebar com foto e navegação -->
+                <!-- Sidebar com foto do perfil e navegação -->
                 <div class="col-lg-3 mb-4">
-                    <!-- Card da foto do perfil -->
+                    <!-- Card para exibir a foto do perfil -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body text-center">
                             <div class="mb-3">
                                 <?php
+                                // Verifica se existe uma foto de perfil e se o arquivo é válido
                                 $fotoPerfil = $usuario['foto_perfil'] ?? '';
                                 if ($fotoPerfil) {
                                     $fotoPerfil = basename($fotoPerfil);
@@ -37,16 +42,19 @@ ob_start();
                                 ?>
                                 <div class="position-relative d-inline-block">
                                     <?php if ($fotoPerfil && $arquivoExiste): ?>
+                                        <!-- Exibe a foto do perfil, se disponível -->
                                         <img src="<?= url('uploads/perfil/' . htmlspecialchars($fotoPerfil)) ?>"
                                             class="rounded-circle border border-3 border-primary"
                                             style="width: 120px; height: 120px; object-fit: cover;"
                                             alt="Foto do perfil">
                                     <?php else: ?>
+                                        <!-- Exibe um ícone padrão se não houver foto -->
                                         <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-3 border-primary"
                                             style="width: 120px; height: 120px;">
                                             <i class="bi bi-person text-secondary" style="font-size: 3rem;"></i>
                                         </div>
                                     <?php endif; ?>
+                                    <!-- Botão para abrir o modal de upload de foto -->
                                     <div class="position-absolute bottom-0 end-0">
                                         <button type="button" class="btn btn-primary btn-sm rounded-circle"
                                             data-bs-toggle="modal" data-bs-target="#modalFoto">
@@ -55,12 +63,13 @@ ob_start();
                                     </div>
                                 </div>
                             </div>
+                            <!-- Exibe o nome e email do usuário -->
                             <h5 class="mb-1"><?= htmlspecialchars($usuario['nome']) ?></h5>
                             <p class="text-muted small"><?= htmlspecialchars($usuario['email']) ?></p>
                         </div>
                     </div>
 
-                    <!-- Navegação das seções -->
+                    <!-- Menu de navegação das seções -->
                     <div class="list-group shadow-sm">
                         <a href="#dadosPessoais" class="list-group-item list-group-item-action active"
                             data-bs-toggle="list">
@@ -81,12 +90,13 @@ ob_start();
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <div class="tab-content">
-                                <!-- Dados Pessoais -->
+                                <!-- Seção de Dados Pessoais -->
                                 <div class="tab-pane fade show active" id="dadosPessoais">
                                     <h4 class="mb-4 text-primary">
                                         <i class="bi bi-person me-2"></i>Dados Pessoais do Cliente
                                     </h4>
 
+                                    <!-- Formulário para edição de dados pessoais -->
                                     <form method="POST" action="<?= url('cliente/perfil/editar') ?>" id="formDadosPessoais">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="dados_pessoais">
@@ -112,10 +122,15 @@ ob_start();
                                                         <small class="text-muted">(não pode ser alterado)</small>
                                                     <?php endif; ?>
                                                 </label>
-                                                <input type="text" class="form-control" id="cpf" name="cpf"
+                                                <input type="text" class="form-control"
+                                                    id="cpf"
+                                                    name="cpf"
                                                     value="<?= $usuario['cpf'] ? preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $usuario['cpf']) : '' ?>"
-                                                    placeholder="000.000.000-00" maxlength="14"
-                                                    <?= !empty($usuario['cpf']) ? 'readonly style="background-color: #f8f9fa;"' : '' ?> disabled>
+                                                    placeholder="000.000.000-00"
+                                                    maxlength="14"
+                                                    <?php if (!empty($usuario['cpf'])): ?>
+                                                    readonly style="background-color: #f8f9fa;"
+                                                    <?php endif; ?>>
                                                 <?php if (!empty($usuario['cpf'])): ?>
                                                     <div class="form-text text-warning">
                                                         <i class="bi bi-lock me-1"></i>CPF não pode ser alterado por questões de segurança.
@@ -138,9 +153,13 @@ ob_start();
                                                         <small class="text-muted">(não pode ser alterada)</small>
                                                     <?php endif; ?>
                                                 </label>
-                                                <input type="date" class="form-control" id="dt_nascimento" name="dt_nascimento"
+                                                <input type="date" class="form-control"
+                                                    id="dt_nascimento"
+                                                    name="dt_nascimento"
                                                     value="<?= $usuario['dt_nascimento'] ?? '' ?>"
-                                                    <?= !empty($usuario['dt_nascimento']) ? 'readonly style="background-color: #f8f9fa;"' : '' ?> disabled>
+                                                    <?php if (!empty($usuario['dt_nascimento'])): ?>
+                                                    readonly style="background-color: #f8f9fa;"
+                                                    <?php endif; ?>>
                                                 <?php if (!empty($usuario['dt_nascimento'])): ?>
                                                     <div class="form-text text-warning">
                                                         <i class="bi bi-lock me-1"></i>Data de nascimento não pode ser alterada por questões de segurança.
@@ -169,12 +188,13 @@ ob_start();
                                     </form>
                                 </div>
 
-                                <!-- Alterar Senha -->
+                                <!-- Seção de Alterar Senha -->
                                 <div class="tab-pane fade" id="seguranca">
                                     <h4 class="mb-4 text-primary">
                                         <i class="bi bi-shield-lock me-2"></i>Alterar Senha
                                     </h4>
 
+                                    <!-- Formulário para alteração de senha -->
                                     <form method="POST" action="<?= url('cliente/perfil/editar') ?>" id="formSenha">
                                         <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                                         <input type="hidden" name="acao" value="alterar_senha">
@@ -234,7 +254,7 @@ ob_start();
     </div>
 </div>
 
-<!-- Modal Upload Foto -->
+<!-- Modal para upload de foto de perfil -->
 <div class="modal fade" id="modalFoto" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -246,6 +266,7 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <!-- Formulário para upload de foto -->
                 <form method="POST" action="<?= url('cliente/perfil/editar') ?>" enctype="multipart/form-data" id="formFoto">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="acao" value="upload_foto">
@@ -281,9 +302,10 @@ ob_start();
 </div>
 
 <?php
+// Scripts JavaScript para funcionalidades da página
 $scripts = '
 <script>
-// Toggle visibilidade da senha
+// Alterna a visibilidade da senha
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById("toggleIcon_" + inputId);
@@ -299,7 +321,7 @@ function togglePassword(inputId) {
     }
 }
 
-// Validação de confirmação de senha
+// Valida se as senhas coincidem
 function validarSenhas() {
     const novaSenha = document.getElementById("nova_senha").value;
     const confirmarSenha = document.getElementById("confirmar_senha").value;
@@ -311,45 +333,45 @@ function validarSenhas() {
     }
     
     if (novaSenha === confirmarSenha) {
-        statusDiv.innerHTML = "<span class=\\"text-success\\"><i class=\\"bi bi-check-circle me-1\\"></i>Senhas coincidem</span>";
+        statusDiv.innerHTML = "<span class=\"text-success\"><i class=\"bi bi-check-circle me-1\"></i>Senhas coincidem</span>";
     } else {
-        statusDiv.innerHTML = "<span class=\\"text-danger\\"><i class=\\"bi bi-x-circle me-1\\"></i>Senhas não coincidem</span>";
+        statusDiv.innerHTML = "<span class=\"text-danger\"><i class=\"bi bi-x-circle me-1\"></i>Senhas não coincidem</span>";
     }
 }
 
-// Máscara para CPF
+// Aplica máscara ao campo CPF
 function mascaraCPF(input) {
-    let value = input.value.replace(/\\D/g, "");
-    value = value.replace(/(\\d{3})(\\d)/, "$1.$2");
-    value = value.replace(/(\\d{3})(\\d)/, "$1.$2");
-    value = value.replace(/(\\d{3})(\\d{1,2})/, "$1-$2");
+    let value = input.value.replace(/\D/g, "");
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d{1,2})/, "$1-$2");
     input.value = value;
 }
 
-// Máscara para telefone
+// Aplica máscara ao campo telefone
 function mascaraTelefone(input) {
-    let value = input.value.replace(/\\D/g, "");
-    value = value.replace(/(\\d{2})(\\d)/, "($1) $2");
-    value = value.replace(/(\\d{4,5})(\\d{4})/, "$1-$2");
+    let value = input.value.replace(/\D/g, "");
+    value = value.replace(/(\d{2})(\d)/, "($1) $2");
+    value = value.replace(/(\d{4,5})(\d{4})/, "$1-$2");
     input.value = value;
 }
 
-// Preview da foto - CORRIGIDO
+// Exibe preview da foto selecionada
 function previewFoto(input) {
     const file = input.files[0];
     const previewDiv = document.getElementById("imagemPreview");
     const previewImg = document.getElementById("previewImg");
     
     if (file) {
-        // Validar tamanho do arquivo
-        if (file.size > 2 * 1024 * 1024) { // 2MB
+        // Valida o tamanho do arquivo (máximo 2MB)
+        if (file.size > 2 * 1024 * 1024) {
             alert("Arquivo muito grande! Máximo 2MB.");
             input.value = "";
             previewDiv.classList.add("d-none");
             return;
         }
         
-        // Validar tipo do arquivo
+        // Valida o tipo do arquivo
         const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
         if (!allowedTypes.includes(file.type)) {
             alert("Formato não permitido! Use JPG ou PNG.");
@@ -369,7 +391,7 @@ function previewFoto(input) {
     }
 }
 
-// Spinner nos formulários - MELHORADO
+// Adiciona spinner aos botões de formulário durante o envio
 function addSpinnerToForm(formId, buttonId) {
     const form = document.getElementById(formId);
     if (form) {
@@ -387,14 +409,15 @@ function addSpinnerToForm(formId, buttonId) {
     }
 }
 
-// Event listeners
+// Configurações e eventos ao carregar a página
 document.addEventListener("DOMContentLoaded", function() {
-    // Aplicar máscaras
-    document.getElementById("cpf").addEventListener("input", function() {
-        if (!this.readOnly) {
+    // Aplica máscaras aos campos de CPF e telefone
+    const cpfInput = document.getElementById("cpf");
+    if (cpfInput && !cpfInput.readOnly) {
+        cpfInput.addEventListener("input", function() {
             mascaraCPF(this);
-        }
-    });
+        });
+    }
     
     document.getElementById("telefone").addEventListener("input", function() {
         mascaraTelefone(this);
@@ -404,10 +427,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("nova_senha").addEventListener("input", validarSenhas);
     document.getElementById("confirmar_senha").addEventListener("input", validarSenhas);
     
-    // Validação de idade
-    document.getElementById("dt_nascimento").addEventListener("change", validarIdade);
-    
-    // Preview da foto - CORRIGIDO
+    // Preview da foto
     const fotoInput = document.getElementById("foto_perfil");
     if (fotoInput) {
         fotoInput.addEventListener("change", function() {
@@ -415,7 +435,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Spinners nos formulários
+    // Adiciona spinners aos formulários
     addSpinnerToForm("formDadosPessoais", "btnSalvarDados");
     addSpinnerToForm("formSenha", "btnAlterarSenha");
     addSpinnerToForm("formFoto", "btnUploadFoto");
@@ -436,6 +456,6 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 ';
 
+// Finaliza o buffer e inclui o layout principal
 $content = ob_get_clean();
 include 'views/layouts/app.php';
-?>

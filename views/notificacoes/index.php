@@ -4,7 +4,6 @@ ob_start();
 ?>
 
 <div class="container-fluid">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="h3 mb-1">
@@ -26,7 +25,6 @@ ob_start();
         </div>
     </div>
 
-    <!-- Estatísticas -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="card border-0 shadow-sm">
@@ -39,7 +37,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
@@ -51,7 +49,7 @@ ob_start();
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
@@ -65,7 +63,6 @@ ob_start();
         </div>
     </div>
 
-    <!-- Filtros -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
@@ -79,7 +76,7 @@ ob_start();
                         <option value="servico_concluido" <?= ($_GET['tipo'] ?? '') === 'servico_concluido' ? 'selected' : '' ?>>Serviço Concluído</option>
                     </select>
                 </div>
-                
+
                 <div class="col-md-4">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
@@ -88,7 +85,7 @@ ob_start();
                         <option value="lidas" <?= ($_GET['status'] ?? '') === 'lidas' ? 'selected' : '' ?>>Lidas</option>
                     </select>
                 </div>
-                
+
                 <div class="col-md-4 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="bi bi-funnel me-1"></i>
@@ -103,7 +100,6 @@ ob_start();
         </div>
     </div>
 
-    <!-- Lista de Notificações -->
     <div class="row">
         <?php if (empty($notificacoes)): ?>
             <div class="col-12">
@@ -125,7 +121,7 @@ ob_start();
             </div>
         <?php else: ?>
             <?php foreach ($notificacoes as $notificacao): ?>
-                <div class="col-12 mb-3">
+                <div class="col-12 mb-3" id="notificacao-<?= $notificacao['id'] ?>">
                     <div class="card border-0 shadow-sm <?= $notificacao['lida'] ? '' : 'border-start border-primary border-3' ?>">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
@@ -148,17 +144,17 @@ ob_start();
                                             <span class="badge bg-warning ms-2">Nova</span>
                                         <?php endif; ?>
                                     </div>
-                                    
+
                                     <p class="mb-2 <?= $notificacao['lida'] ? 'text-muted' : '' ?>">
                                         <?= nl2br(htmlspecialchars($notificacao['mensagem'])) ?>
                                     </p>
-                                    
+
                                     <small class="text-muted">
                                         <i class="bi bi-clock me-1"></i>
                                         <?= date('d/m/Y H:i', strtotime($notificacao['data_notificacao'])) ?>
                                     </small>
                                 </div>
-                                
+
                                 <div class="dropdown">
                                     <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
                                         <i class="bi bi-three-dots-vertical"></i>
@@ -187,47 +183,174 @@ ob_start();
     </div>
 </div>
 
-<!-- Formulários ocultos para ações -->
-<form id="formMarcarLida" method="POST" action="notificacoes/marcar-lida" style="display: none;">
+<form id="formMarcarLida" style="display: none;">
     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-    <input type="hidden" name="notificacao_id" id="notificacao_id_lida">
 </form>
 
-<form id="formDeletarNotificacao" method="POST" action="notificacoes/deletar" style="display: none;">
+<form id="formDeletarNotificacao" style="display: none;">
     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-    <input type="hidden" name="notificacao_id" id="notificacao_id_deletar">
 </form>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-labelledby="modalConfirmarExclusaoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalConfirmarExclusaoLabel"><i class="bi bi-trash me-2"></i>Confirmar Exclusão</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir esta notificação? Esta ação não poderá ser desfeita.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de sucesso ao marcar como lida -->
+<div class="modal fade" id="modalMensagemLida" tabindex="-1" aria-labelledby="modalMensagemLidaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-success">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalMensagemLidaLabel"><i class="bi bi-check-circle me-2"></i>Notificação</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        Notificação marcada como lida com sucesso!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts Bootstrap centralizado -->
+<div aria-live="polite" aria-atomic="true"
+     class="position-fixed top-50 start-50 translate-middle p-3"
+     style="z-index: 1080; min-width: 300px;">
+    <div id="toastContainer" class="toast-container justify-content-center align-items-center"></div>
+</div>
 
 <script>
-async function marcarComoLida(notificacaoId) {
-    try {
-        const formData = new FormData();
-        formData.append('notificacao_id', notificacaoId);
+    async function marcarComoLida(notificacaoId) {
+        try {
+            const formData = new FormData();
+            const csrfToken = document.querySelector('#formMarcarLida input[name="csrf_token"]').value;
 
-        const response = await fetch('notificacoes/marcar-lida', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.sucesso) {
-            location.reload();
-        } else {
-            alert('Erro ao marcar como lida: ' + data.erro);
+            formData.append('notificacao_id', notificacaoId);
+            formData.append('csrf_token', csrfToken);
+
+            const response = await fetch('notificacoes/marcar-lida', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.sucesso) {
+                const cardContainer = document.getElementById('notificacao-' + notificacaoId);
+                if (cardContainer) {
+                    const card = cardContainer.querySelector('.card');
+                    const titulo = cardContainer.querySelector('h6');
+                    const mensagem = cardContainer.querySelector('p');
+                    const novaBadge = cardContainer.querySelector('.badge.bg-warning');
+                    const menuButton = cardContainer.querySelector('.dropdown-item[onclick^="marcarComoLida"]');
+
+                    card.classList.remove('border-start', 'border-primary', 'border-3');
+                    if (novaBadge) novaBadge.remove();
+                    titulo.classList.remove('fw-bold');
+                    titulo.classList.add('text-muted');
+                    mensagem.classList.add('text-muted');
+                    if (menuButton) menuButton.closest('li').remove();
+                }
+                // Exibe modal de sucesso
+                const modal = new bootstrap.Modal(document.getElementById('modalMensagemLida'));
+                modal.show();
+            } else {
+                alert('Erro ao marcar como lida: ' + (data.erro || 'Erro desconhecido.'));
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            alert('Ocorreu um erro de comunicação. Tente novamente.');
         }
-    } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao marcar como lida');
     }
-}
 
-function deletarNotificacao(notificacaoId) {
-    if (confirm('Tem certeza que deseja excluir esta notificação?')) {
-        document.getElementById('notificacao_id_deletar').value = notificacaoId;
-        document.getElementById('formDeletarNotificacao').submit();
+    // Toast Bootstrap 5
+    function mostrarToast(mensagem, tipo = 'sucesso') {
+        const toastId = 'toast_' + Date.now();
+        const cor = tipo === 'sucesso' ? 'bg-success text-white' : 'bg-danger text-white';
+        const icone = tipo === 'sucesso'
+            ? '<i class="bi bi-check-circle-fill me-2"></i>'
+            : '<i class="bi bi-x-circle-fill me-2"></i>';
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center ${cor}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3500">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${icone}${mensagem}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+                </div>
+            </div>
+        `;
+        const container = document.getElementById('toastContainer');
+        container.insertAdjacentHTML('beforeend', toastHtml);
+        const toastEl = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+        toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
     }
-}
+
+    // Variável global para guardar o ID da notificação a excluir
+    let notificacaoParaExcluir = null;
+
+    // Função chamada ao clicar em "Excluir"
+    function deletarNotificacao(notificacaoId) {
+        notificacaoParaExcluir = notificacaoId;
+        const modal = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
+        modal.show();
+    }
+
+    // Evento do botão de confirmação do modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnConfirmar = document.getElementById('btnConfirmarExclusao');
+        btnConfirmar.addEventListener('click', async function() {
+            if (!notificacaoParaExcluir) return;
+            try {
+                const formData = new FormData();
+                const csrfToken = document.querySelector('#formDeletarNotificacao input[name="csrf_token"]').value;
+                formData.append('notificacao_id', notificacaoParaExcluir);
+                formData.append('csrf_token', csrfToken);
+
+                const response = await fetch('notificacoes/deletar', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    const notificacaoRemover = document.getElementById('notificacao-' + notificacaoParaExcluir);
+                    if (notificacaoRemover) {
+                        notificacaoRemover.style.transition = 'opacity 0.5s ease';
+                        notificacaoRemover.style.opacity = '0';
+                        setTimeout(() => notificacaoRemover.remove(), 500);
+                    }
+                    mostrarToast('Notificação excluída com sucesso!', 'sucesso');
+                } else {
+                    mostrarToast('Erro ao excluir notificação: ' + (data.erro || 'Erro desconhecido.'), 'erro');
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                mostrarToast('Ocorreu um erro de comunicação. Tente novamente.', 'erro');
+            }
+            notificacaoParaExcluir = null;
+            bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusao')).hide();
+        });
+    });
 </script>
 
 <?php
