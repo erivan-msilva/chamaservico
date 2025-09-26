@@ -5,282 +5,327 @@ ob_start();
 
 <!-- CSS Customizado Melhorado -->
 <style>
-/* Estilos Existentes */
-.timeline {
-    position: relative;
-    padding-left: 2rem;
-}
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 0.5rem;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, #007bff, #28a745);
-}
-.timeline-item {
-    position: relative;
-    margin-bottom: 1.5rem;
-    padding-left: 1rem;
-    transition: all 0.3s ease;
-}
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -0.6rem;
-    top: 0.2rem;
-    width: 0.8rem;
-    height: 0.8rem;
-    border-radius: 50%;
-    background: #6c757d;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.1);
-}
-.timeline-item.active::before {
-    background: #28a745;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
-    transform: scale(1.2);
-}
-.timeline-item:hover {
-    transform: translateX(5px);
-}
+    /* Estilos Existentes */
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
 
-/* Status do Prestador - NOVO */
-.prestador-avatar {
-    position: relative;
-    display: inline-block;
-}
-.status-indicator {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 3px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    z-index: 10;
-}
-.status-online {
-    background-color: #28a745;
-    animation: pulse-online 2s infinite;
-}
-.status-offline {
-    background-color: #6c757d;
-}
-@keyframes pulse-online {
-    0% { transform: scale(1); box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 0 0 rgba(40, 167, 69, 0.7); }
-    50% { transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 0 8px rgba(40, 167, 69, 0); }
-    100% { transform: scale(1); box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 0 0 rgba(40, 167, 69, 0); }
-}
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #007bff, #28a745);
+    }
 
-/* Avaliações Interativas - NOVO */
-.rating-container {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-}
-.rating-tooltip {
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-.rating-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.9);
-}
-.rating-container:hover .rating-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(-5px);
-}
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+        padding-left: 1rem;
+        transition: all 0.3s ease;
+    }
 
-/* Estatísticas com Ícones - NOVO */
-.stat-item {
-    position: relative;
-    padding: 1rem;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: 1px solid #e9ecef;
-}
-.stat-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border-color: #007bff;
-}
-.stat-icon {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    opacity: 0.4;
-    font-size: 1.3rem;
-    transition: all 0.3s ease;
-}
-.stat-item:hover .stat-icon {
-    opacity: 0.8;
-    transform: scale(1.2);
-}
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -0.6rem;
+        top: 0.2rem;
+        width: 0.8rem;
+        height: 0.8rem;
+        border-radius: 50%;
+        background: #6c757d;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.1);
+    }
 
-/* Abas Melhoradas - NOVO */
-.nav-tabs {
-    background-color: #f8f9fa;
-    border-radius: 8px 8px 0 0;
-    padding: 0.5rem 0.5rem 0;
-    border: none;
-    box-shadow: inset 0 -1px 0 #dee2e6;
-}
-.nav-tabs .nav-link {
-    color: #6c757d;
-    font-weight: 500;
-    padding: 1rem 1.5rem;
-    border: none;
-    border-radius: 6px 6px 0 0;
-    margin-right: 0.25rem;
-    transition: all 0.3s ease;
-    position: relative;
-    background: transparent;
-}
-.nav-tabs .nav-link:hover {
-    color: #495057;
-    background-color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.nav-tabs .nav-link.active {
-    color: #007bff;
-    background-color: white;
-    border-bottom: 3px solid #007bff;
-    font-weight: 600;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
+    .timeline-item.active::before {
+        background: #28a745;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        transform: scale(1.2);
+    }
 
-/* Animação de Fade nas Abas - NOVO */
-.tab-pane {
-    opacity: 0;
-    transform: translateY(15px);
-    transition: all 0.4s ease;
-}
-.tab-pane.show.active {
-    opacity: 1;
-    transform: translateY(0);
-}
+    .timeline-item:hover {
+        transform: translateX(5px);
+    }
 
-/* Botões de Ação Melhorados - NOVO */
-.action-button {
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-.action-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.3);
-    transition: all 0.6s ease;
-    transform: translate(-50%, -50%);
-}
-.action-button:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-.action-button:hover::before {
-    width: 300px;
-    height: 300px;
-}
-.btn-success.action-button:hover {
-    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
-}
+    /* Status do Prestador - NOVO */
+    .prestador-avatar {
+        position: relative;
+        display: inline-block;
+    }
 
-/* Card Responsivo */
-.chat-container {
-    max-height: 300px;
-    overflow-y: auto;
-}
-.message {
-    margin-bottom: 1rem;
-}
-.message.own {
-    text-align: right;
-}
-.message-bubble {
-    display: inline-block;
-    padding: 0.75rem 1rem;
-    border-radius: 1rem;
-    max-width: 70%;
-}
-.message.own .message-bubble {
-    background: #007bff;
-    color: white;
-}
-.message:not(.own) .message-bubble {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-}
-.image-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.5rem;
-}
-.image-gallery img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.image-gallery img:hover {
-    transform: scale(1.05);
-}
-.prestador-card-highlight {
-    border: 2px solid #007bff;
-    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.15);
-    transition: all 0.3s ease;
-}
-.prestador-card-highlight:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 1rem 2rem rgba(0, 123, 255, 0.2);
-}
+    .status-indicator {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+    }
 
-/* Modal Melhorado */
-.modal-content {
-    border: none;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-}
-.confirmation-summary {
-    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
-    border: 2px solid #28a745;
-    border-radius: 10px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
+    .status-online {
+        background-color: #28a745;
+        animation: pulse-online 2s infinite;
+    }
+
+    .status-offline {
+        background-color: #6c757d;
+    }
+
+    @keyframes pulse-online {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+
+        50% {
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(40, 167, 69, 0);
+        }
+
+        100% {
+            transform: scale(1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(40, 167, 69, 0);
+        }
+    }
+
+    /* Avaliações Interativas - NOVO */
+    .rating-container {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .rating-tooltip {
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .rating-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .rating-container:hover .rating-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(-5px);
+    }
+
+    /* Estatísticas com Ícones - NOVO */
+    .stat-item {
+        position: relative;
+        padding: 1rem;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid #e9ecef;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        border-color: #007bff;
+    }
+
+    .stat-icon {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        opacity: 0.4;
+        font-size: 1.3rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover .stat-icon {
+        opacity: 0.8;
+        transform: scale(1.2);
+    }
+
+    /* Abas Melhoradas - NOVO */
+    .nav-tabs {
+        background-color: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+        padding: 0.5rem 0.5rem 0;
+        border: none;
+        box-shadow: inset 0 -1px 0 #dee2e6;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+        padding: 1rem 1.5rem;
+        border: none;
+        border-radius: 6px 6px 0 0;
+        margin-right: 0.25rem;
+        transition: all 0.3s ease;
+        position: relative;
+        background: transparent;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #495057;
+        background-color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #007bff;
+        background-color: white;
+        border-bottom: 3px solid #007bff;
+        font-weight: 600;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animação de Fade nas Abas - NOVO */
+    .tab-pane {
+        opacity: 0;
+        transform: translateY(15px);
+        transition: all 0.4s ease;
+    }
+
+    .tab-pane.show.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Botões de Ação Melhorados - NOVO */
+    .action-button {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .action-button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transition: all 0.6s ease;
+        transform: translate(-50%, -50%);
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-button:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-success.action-button:hover {
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    }
+
+    /* Card Responsivo */
+    .chat-container {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .message {
+        margin-bottom: 1rem;
+    }
+
+    .message.own {
+        text-align: right;
+    }
+
+    .message-bubble {
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        max-width: 70%;
+    }
+
+    .message.own .message-bubble {
+        background: #007bff;
+        color: white;
+    }
+
+    .message:not(.own) .message-bubble {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .image-gallery img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .image-gallery img:hover {
+        transform: scale(1.05);
+    }
+
+    .prestador-card-highlight {
+        border: 2px solid #007bff;
+        box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .prestador-card-highlight:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 1rem 2rem rgba(0, 123, 255, 0.2);
+    }
+
+    /* Modal Melhorado */
+    .modal-content {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .confirmation-summary {
+        background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+        border: 2px solid #28a745;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
 </style>
 
 <div class="row justify-content-center">
@@ -343,10 +388,9 @@ ob_start();
 
                         <!-- Status da Proposta -->
                         <div class="text-center mt-3">
-                            <span class="badge fs-6 px-3 py-2 bg-<?= 
-                                ($proposta['status'] ?? 'pendente') === 'aceita' ? 'success' : 
-                                (($proposta['status'] ?? 'pendente') === 'recusada' ? 'danger' : 'warning') 
-                            ?>">
+                            <span class="badge fs-6 px-3 py-2 bg-<?=
+                                                                    ($proposta['status'] ?? 'pendente') === 'aceita' ? 'success' : (($proposta['status'] ?? 'pendente') === 'recusada' ? 'danger' : 'warning')
+                                                                    ?>">
                                 <?php
                                 $statusLabels = [
                                     'pendente' => '⏳ Aguardando sua Resposta',
@@ -379,7 +423,7 @@ ob_start();
                                     if ($fotoPrestador && file_exists("propostas/uploads/perfil/" . basename($fotoPrestador))):
                                     ?>
                                         <img src="uploads/perfil/<?= htmlspecialchars(basename($fotoPrestador)) ?>"
-                                            class="rounded-circle" width="100" height="100" 
+                                            class="rounded-circle" width="100" height="100"
                                             style="object-fit: cover; border: 3px solid #007bff;" alt="Foto do prestador">
                                     <?php else: ?>
                                         <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
@@ -390,13 +434,13 @@ ob_start();
                                     <!-- Status Indicator -->
                                     <div class="status-indicator status-online" title="Prestador Online"></div>
                                 </div>
-                                
+
                                 <!-- Avaliação Interativa -->
                                 <div class="rating-container mb-1">
                                     <div class="text-warning">
-                                        <?php 
+                                        <?php
                                         $avaliacao = floatval($proposta['prestador_avaliacao'] ?? 0);
-                                        for($i = 1; $i <= 5; $i++): 
+                                        for ($i = 1; $i <= 5; $i++):
                                         ?>
                                             <i class="bi bi-star<?= $i <= $avaliacao ? '-fill' : '' ?>"></i>
                                         <?php endfor; ?>
@@ -408,15 +452,15 @@ ob_start();
                                 </div>
                                 <small class="text-muted">(<?= $proposta['prestador_total_avaliacoes'] ?? 0 ?> avaliações)</small>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <h4 class="mb-2 text-primary"><?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?></h4>
-                                
+
                                 <div class="mb-2">
                                     <i class="bi bi-telephone text-success me-2"></i>
                                     <span><?= htmlspecialchars($proposta['prestador_telefone'] ?? 'Não informado') ?></span>
                                 </div>
-                                
+
                                 <div class="mb-2">
                                     <i class="bi bi-envelope text-info me-2"></i>
                                     <span><?= htmlspecialchars($proposta['prestador_email'] ?? 'Não informado') ?></span>
@@ -447,27 +491,27 @@ ob_start();
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-3">
                                 <!-- Botões de Contato -->
                                 <div class="d-grid gap-2">
                                     <?php if (!empty($proposta['prestador_telefone']) && $proposta['prestador_telefone'] !== 'Não informado'): ?>
-                                        <a href="tel:<?= preg_replace('/\D/', '', $proposta['prestador_telefone']) ?>" 
-                                           class="btn btn-success btn-sm">
+                                        <a href="tel:<?= preg_replace('/\D/', '', $proposta['prestador_telefone']) ?>"
+                                            class="btn btn-success btn-sm">
                                             <i class="bi bi-telephone me-1"></i>Ligar
                                         </a>
                                     <?php endif; ?>
-                                    
+
                                     <?php if (!empty($proposta['prestador_email']) && $proposta['prestador_email'] !== 'Não informado'): ?>
-                                        <a href="mailto:<?= htmlspecialchars($proposta['prestador_email']) ?>" 
-                                           class="btn btn-outline-primary btn-sm">
+                                        <a href="mailto:<?= htmlspecialchars($proposta['prestador_email']) ?>"
+                                            class="btn btn-outline-primary btn-sm">
                                             <i class="bi bi-envelope me-1"></i>Email
                                         </a>
                                     <?php endif; ?>
-                                    
+
                                     <?php if (!empty($proposta['prestador_whatsapp'])): ?>
-                                        <a href="https://wa.me/55<?= preg_replace('/\D/', '', $proposta['prestador_whatsapp']) ?>?text=Olá! Vi sua proposta no ChamaServiço..." 
-                                           class="btn btn-success btn-sm" target="_blank">
+                                        <a href="https://wa.me/55<?= preg_replace('/\D/', '', $proposta['prestador_whatsapp']) ?>?text=Olá! Vi sua proposta no ChamaServiço..."
+                                            class="btn btn-success btn-sm" target="_blank">
                                             <i class="bi bi-whatsapp me-1"></i>WhatsApp
                                         </a>
                                     <?php endif; ?>
@@ -520,15 +564,15 @@ ob_start();
                                             <br><small class="text-muted"><?= date('d/m/Y às H:i', strtotime($proposta['data_proposta'])) ?></small>
                                         </div>
                                         <?php if ($proposta['status'] === 'aceita'): ?>
-                                        <div class="timeline-item active">
-                                            <strong>Proposta Aceita</strong>
-                                            <br><small class="text-muted"><?= date('d/m/Y às H:i', strtotime($proposta['data_aceite'] ?? 'now')) ?></small>
-                                        </div>
+                                            <div class="timeline-item active">
+                                                <strong>Proposta Aceita</strong>
+                                                <br><small class="text-muted"><?= date('d/m/Y às H:i', strtotime($proposta['data_aceite'] ?? 'now')) ?></small>
+                                            </div>
                                         <?php elseif ($proposta['status'] === 'recusada'): ?>
-                                        <div class="timeline-item">
-                                            <strong>Proposta Recusada</strong>
-                                            <br><small class="text-muted"><?= date('d/m/Y às H:i', strtotime($proposta['data_recusa'] ?? 'now')) ?></small>
-                                        </div>
+                                            <div class="timeline-item">
+                                                <strong>Proposta Recusada</strong>
+                                                <br><small class="text-muted"><?= date('d/m/Y às H:i', strtotime($proposta['data_recusa'] ?? 'now')) ?></small>
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -548,12 +592,12 @@ ob_start();
                                             </div>
                                             <hr>
                                             <div class="text-center">
-                                                <a href="cliente/propostas/comparar?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>" 
-                                                   class="btn btn-outline-primary me-2">
+                                                <a href="cliente/propostas/comparar?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>"
+                                                    class="btn btn-outline-primary me-2">
                                                     <i class="bi bi-bar-chart me-1"></i>Comparar Propostas
                                                 </a>
-                                                <a href="cliente/propostas/recebidas?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>" 
-                                                   class="btn btn-outline-secondary">
+                                                <a href="cliente/propostas/recebidas?solicitacao_id=<?= $proposta['solicitacao_id'] ?? 0 ?>"
+                                                    class="btn btn-outline-secondary">
                                                     <i class="bi bi-list me-1"></i>Ver Todas as Propostas
                                                 </a>
                                             </div>
@@ -579,13 +623,12 @@ ob_start();
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <p><strong>Tipo de Serviço:</strong><br>
-                                           <span class="text-primary fs-5"><?= htmlspecialchars($proposta['tipo_servico_nome'] ?? 'Não informado') ?></span>
+                                            <span class="text-primary fs-5"><?= htmlspecialchars($proposta['tipo_servico_nome'] ?? 'Não informado') ?></span>
                                         </p>
                                         <p><strong>Urgência:</strong><br>
-                                            <span class="badge fs-6 bg-<?= 
-                                                ($proposta['urgencia'] ?? 'media') === 'alta' ? 'danger' : 
-                                                (($proposta['urgencia'] ?? 'media') === 'media' ? 'warning' : 'info') 
-                                            ?>">
+                                            <span class="badge fs-6 bg-<?=
+                                                                        ($proposta['urgencia'] ?? 'media') === 'alta' ? 'danger' : (($proposta['urgencia'] ?? 'media') === 'media' ? 'warning' : 'info')
+                                                                        ?>">
                                                 <?= ucfirst($proposta['urgencia'] ?? 'média') ?>
                                             </span>
                                         </p>
@@ -593,14 +636,14 @@ ob_start();
                                     <div class="col-md-6">
                                         <?php if (!empty($proposta['orcamento_estimado'])): ?>
                                             <p><strong>Orçamento Estimado:</strong><br>
-                                               <span class="text-success fs-5">R$ <?= number_format($proposta['orcamento_estimado'], 2, ',', '.') ?></span>
+                                                <span class="text-success fs-5">R$ <?= number_format($proposta['orcamento_estimado'], 2, ',', '.') ?></span>
                                             </p>
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                                
+
                                 <hr>
-                                
+
                                 <!-- Descrição da Solicitação -->
                                 <div class="mb-4">
                                     <h6><strong>Descrição da Solicitação:</strong></h6>
@@ -611,18 +654,18 @@ ob_start();
 
                                 <!-- Imagens da Solicitação -->
                                 <?php if (!empty($proposta['imagens_solicitacao'])): ?>
-                                <div class="mb-4">
-                                    <h6><i class="bi bi-images me-2"></i>Imagens da Solicitação</h6>
-                                    <div class="image-gallery">
-                                        <?php foreach($proposta['imagens_solicitacao'] as $imagem): ?>
-                                            <img src="uploads/solicitacoes/<?= htmlspecialchars($imagem) ?>" 
-                                                 alt="Imagem da solicitação" 
-                                                 data-bs-toggle="modal" 
-                                                 data-bs-target="#modalImagem"
-                                                 onclick="mostrarImagem('<?= htmlspecialchars($imagem) ?>')">
-                                        <?php endforeach; ?>
+                                    <div class="mb-4">
+                                        <h6><i class="bi bi-images me-2"></i>Imagens da Solicitação</h6>
+                                        <div class="image-gallery">
+                                            <?php foreach ($proposta['imagens_solicitacao'] as $imagem): ?>
+                                                <img src="uploads/solicitacoes/<?= htmlspecialchars($imagem) ?>"
+                                                    alt="Imagem da solicitação"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalImagem"
+                                                    onclick="mostrarImagem('<?= htmlspecialchars($imagem) ?>')">
+                                            <?php endforeach; ?>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endif; ?>
                             </div>
 
@@ -639,7 +682,7 @@ ob_start();
                                             <?= htmlspecialchars(trim(($proposta['bairro'] ?? '') . ' - ' . ($proposta['cidade'] ?? '') . '/' . ($proposta['estado'] ?? ''), ' - /')) ?><br>
                                             <small class="text-muted">CEP: <?= htmlspecialchars($proposta['cep'] ?? 'Não informado') ?></small>
                                         </address>
-                                        
+
                                         <button class="btn btn-primary" onclick="abrirMapa()">
                                             <i class="bi bi-geo-alt me-2"></i>Ver no Google Maps
                                         </button>
@@ -706,71 +749,72 @@ ob_start();
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="cliente/propostas/aceitar">
-                <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
-                    <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?>">
-                    
-                    <!-- Resumo da Decisão MELHORADO -->
-                    <div class="confirmation-summary">
-                        <div class="text-center">
-                            <h5 class="text-success mb-3">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                Você está prestes a aceitar esta proposta
-                            </h5>
-                            <div class="bg-white rounded p-3 shadow-sm">
-                                <h6 class="mb-2">Resumo da Contratação:</h6>
-                                <p class="mb-1">
-                                    <strong>Serviço:</strong> <?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Serviço') ?>
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Prestador:</strong> <?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>
-                                </p>
-                                <div class="row text-center mt-3">
-                                    <div class="col-6">
-                                        <h4 class="text-success mb-0">R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?></h4>
-                                        <small class="text-muted">Valor Total</small>
-                                    </div>
-                                    <div class="col-6">
-                                        <h4 class="text-primary mb-0"><?= ($proposta['prazo_execucao'] ?? 0) ?> dia(s)</h4>
-                                        <small class="text-muted">Prazo</small>
+          
+                <form method="POST" action="<?= url('cliente/propostas/aceitar') ?>">
+                    <div class="modal-body">
+                        <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                        <input type="hidden" name="proposta_id" value="<?= $proposta['id'] ?>">
+
+                        <!-- Resumo da Decisão MELHORADO -->
+                        <div class="confirmation-summary">
+                            <div class="text-center">
+                                <h5 class="text-success mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    Você está prestes a aceitar esta proposta
+                                </h5>
+                                <div class="bg-white rounded p-3 shadow-sm">
+                                    <h6 class="mb-2">Resumo da Contratação:</h6>
+                                    <p class="mb-1">
+                                        <strong>Serviço:</strong> <?= htmlspecialchars($proposta['solicitacao_titulo'] ?? 'Serviço') ?>
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Prestador:</strong> <?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>
+                                    </p>
+                                    <div class="row text-center mt-3">
+                                        <div class="col-6">
+                                            <h4 class="text-success mb-0">R$ <?= number_format($proposta['valor'] ?? 0, 2, ',', '.') ?></h4>
+                                            <small class="text-muted">Valor Total</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h4 class="text-primary mb-0"><?= ($proposta['prazo_execucao'] ?? 0) ?> dia(s)</h4>
+                                            <small class="text-muted">Prazo</small>
+                                        </div>
                                     </div>
                                 </div>
+                                <p class="mt-3 mb-0 text-dark">
+                                    <strong>Confirma a contratação de <?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>?</strong>
+                                </p>
                             </div>
-                            <p class="mt-3 mb-0 text-dark">
-                                <strong>Confirma a contratação de <?= htmlspecialchars($proposta['prestador_nome'] ?? 'Prestador') ?>?</strong>
-                            </p>
+                        </div>
+
+                        <!-- ...existing code... -->
+
+                        <div class="alert alert-warning">
+                            <h6><i class="bi bi-info-circle me-2"></i>Atenção - Esta ação não pode ser desfeita!</h6>
+                            <ul class="mb-0 small">
+                                <li>✅ O prestador será <strong>notificado imediatamente</strong></li>
+                                <li>✅ Outras propostas serão automaticamente recusadas</li>
+                                <li>✅ O status mudará para "Serviço Contratado"</li>
+                                <li>✅ Você receberá os dados de contato completos</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="confirmarTermos" required>
+                            <label class="form-check-label fw-bold" for="confirmarTermos">
+                                Confirmo que li e concordo com os termos desta contratação
+                            </label>
                         </div>
                     </div>
-                    
-                    <!-- ...existing code... -->
-                    
-                    <div class="alert alert-warning">
-                        <h6><i class="bi bi-info-circle me-2"></i>Atenção - Esta ação não pode ser desfeita!</h6>
-                        <ul class="mb-0 small">
-                            <li>✅ O prestador será <strong>notificado imediatamente</strong></li>
-                            <li>✅ Outras propostas serão automaticamente recusadas</li>
-                            <li>✅ O status mudará para "Serviço Contratado"</li>
-                            <li>✅ Você receberá os dados de contato completos</li>
-                        </ul>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success btn-lg action-button">
+                            <i class="bi bi-check-circle me-1"></i>Sim, Contratar Serviço
+                        </button>
                     </div>
-
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" id="confirmarTermos" required>
-                        <label class="form-check-label fw-bold" for="confirmarTermos">
-                            Confirmo que li e concordo com os termos desta contratação
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-1"></i>Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-success btn-lg action-button">
-                        <i class="bi bi-check-circle me-1"></i>Sim, Contratar Serviço
-                    </button>
-                </div>
-            </form>
+                </form>
         </div>
     </div>
 </div>
@@ -792,7 +836,7 @@ ob_start();
                     <div class="mb-3">
                         <label for="motivo_recusa" class="form-label">Motivo da recusa (opcional):</label>
                         <textarea class="form-control" id="motivo_recusa" name="motivo_recusa" rows="3"
-                                  placeholder="Explique o motivo da recusa para ajudar o prestador a melhorar suas propostas..."></textarea>
+                            placeholder="Explique o motivo da recusa para ajudar o prestador a melhorar suas propostas..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

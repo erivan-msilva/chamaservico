@@ -256,6 +256,7 @@ try {
     $router->get('/cliente/propostas/recebidas', 'ClientePropostaController', 'recebidas');
     $router->get('/cliente/propostas/comparar', 'ClientePropostaController', 'comparar');
     $router->get('/cliente/propostas/detalhes', 'ClientePropostaController', 'detalhes');
+    $router->get('/cliente/propostas/aceitar', 'ClientePropostaController', 'aceitar');
     $router->post('/cliente/propostas/aceitar', 'ClientePropostaController', 'aceitar');
     $router->post('/cliente/propostas/recusar', 'ClientePropostaController', 'recusar');
     
@@ -332,8 +333,8 @@ try {
     $router->post('/notificacoes/deletar', 'NotificacaoController', 'deletar');
     $router->get('/notificacoes/contador', 'NotificacaoController', 'contador');
     $router->post('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas');
+    $router->get('/notificacoes/marcar-todas-lidas', 'NotificacaoController', 'marcarTodasComoLidas'); 
 
-    
     // ========================================
     // API E AJAX
     // ========================================

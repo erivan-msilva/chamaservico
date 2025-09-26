@@ -537,6 +537,7 @@ ob_start();
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="<?= url('cliente/propostas/aceitar') ?>">
+                
                 <div class="modal-body">
                     <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                     <input type="hidden" name="proposta_id" id="propostaIdAceitar">
