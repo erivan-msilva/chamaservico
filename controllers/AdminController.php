@@ -34,7 +34,7 @@ class AdminController {
     
     public function index() {
         $authController = new AuthAdminController();
-        $authController->index();
+        $authController->login(); // Chama o método de login, que existe
     }
     
     public function login() {

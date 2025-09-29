@@ -3,7 +3,7 @@
 # #Thumbs.db
 
 # # Arquivos de configuração local
-# config/local.php
+config/config.php
 # config/database_local.php
 
 # # Uploads de usuários
@@ -11,6 +11,7 @@
 # uploads/solicitacoes/*
 # !uploads/perfil/.gitkeep
 # !uploads/solicitacoes/.gitkeep
+
 
 # # Logs
 # logs/

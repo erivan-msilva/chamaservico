@@ -162,10 +162,7 @@ ob_start();
             </button>
         </div>
         
-        <!-- Botão Modo Comparação -->
-        <button type="button" class="btn btn-outline-info" id="btn-comparacao" onclick="toggleModoComparacao()">
-            <i class="bi bi-check2-square me-1"></i>Comparar
-        </button>
+
         
         <!-- Nova Solicitação -->
         <a href="<?= url('cliente/solicitacoes/criar') ?>" class="btn btn-primary">

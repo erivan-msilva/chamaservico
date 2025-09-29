@@ -384,7 +384,7 @@ try {
     $router->post('/admin/configuracoes/testar-email', 'AdminController', 'testarEmail'); // NOVO
     $router->post('/admin/configuracoes/gerar-backup', 'AdminController', 'gerarBackup'); // NOVO
     $router->get('/admin/tipos-servico', 'AdminController', 'tiposServico');
-    $router->post('/admin/tipos-servico/salvar', 'AdminController', 'tiposServicoSalvar'); // NOVO
+    $router->post('/admin/tipos-servico/criar', 'AdminController', 'tiposServicoSalvar'); // <-- CORRIGIDO: usar AdminController e método tiposServicoSalvar
     $router->post('/admin/tipos-servico/ativar', 'AdminController', 'tiposServicoAtivar'); // NOVO
     $router->post('/admin/tipos-servico/desativar', 'AdminController', 'tiposServicoDesativar'); // NOVO
     $router->get('/admin/relatorios', 'AdminController', 'relatorios');

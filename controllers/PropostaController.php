@@ -31,7 +31,7 @@ class PropostaController
 
         if (!$propostaId) {
             Session::setFlash('error', 'Proposta não informada!', 'danger');
-            header('Location: prestador/propostas');
+            header('Location: /prestador/propostas');
             exit;
         }
 
@@ -39,7 +39,7 @@ class PropostaController
 
         if (!$proposta) {
             Session::setFlash('error', 'Proposta não encontrada!', 'danger');
-            header('Location: prestador/propostas');
+            header('Location: /prestador/propostas');
             exit;
         }
 
@@ -59,7 +59,7 @@ class PropostaController
                 Session::setFlash('error', 'Erro ao cancelar proposta!', 'danger');
             }
         }
-        header('Location: prestador/propostas');
+        header('Location: /prestador/propostas');
         exit;
     }
 
@@ -88,7 +88,7 @@ class PropostaController
 
         if (!$servico) {
             Session::setFlash('error', 'Serviço não encontrado!', 'danger');
-            header('Location: prestador/servicos/andamento');
+            header('Location: /prestador/servicos/andamento');
             exit;
         }
 
@@ -98,7 +98,49 @@ class PropostaController
     // Atualizar status do serviço
     public function atualizarStatus()
     {
-        // Implemente a lógica de atualização de status conforme necessário
-        // ...
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $propostaId = $_POST['proposta_id'] ?? 0;
+            $prestadorId = Session::getUserId();
+            $novoStatus = $_POST['novo_status'] ?? ''; // <-- CORRIGIDO: usar 'novo_status' ao invés de 'status'
+
+            if ($this->model->atualizarStatusServico($propostaId, $prestadorId, $novoStatus)) {
+                Session::setFlash('success', 'Status do serviço atualizado com sucesso!', 'success');
+            } else {
+                Session::setFlash('error', 'Erro ao atualizar status do serviço!', 'danger');
+            }
+        }
+        header('Location: /prestador/servicos/andamento');
+        exit;
     }
+
+    // Avaliar serviço
+    public function avaliar()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $propostaId = $_POST['proposta_id'] ?? 0;
+            $prestadorId = Session::getUserId();
+            $avaliacao = $_POST['avaliacao'] ?? 0;
+            $comentario = trim($_POST['comentario'] ?? '');
+
+            if ($avaliacao < 1 || $avaliacao > 5) {
+                Session::setFlash('error', 'A avaliação deve ser entre 1 e 5 estrelas.', 'danger');
+                header('Location: /prestador/servicos/detalhes?id=' . $propostaId);
+                exit;
+            }
+
+            // CORREÇÃO: Verifique se o método existe antes de chamar
+            if (method_exists($this->model, 'avaliarServico')) {
+                if ($this->model->avaliarServico($propostaId, $prestadorId, $avaliacao, $comentario)) {
+                    Session::setFlash('success', 'Serviço avaliado com sucesso!', 'success');
+                } else {
+                    Session::setFlash('error', 'Erro ao avaliar serviço!', 'danger');
+                }
+            } else {
+                Session::setFlash('error', 'Método avaliarServico não implementado no model Proposta.', 'danger');
+            }
+        }
+        header('Location: /prestador/servicos/andamento');
+        exit;
+    }
+
 }

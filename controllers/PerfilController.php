@@ -209,6 +209,10 @@ class PerfilController
     {
         $userId = Session::getUserId();
 
+        // Use a model Endereco
+        require_once 'models/Endereco.php';
+        $enderecoModel = new Endereco();
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
                 Session::setFlash('error', 'Token de segurança inválido!', 'danger');
@@ -228,26 +232,40 @@ class PerfilController
 
             switch ($acao) {
                 case 'editar':
-                    $this->editarEndereco($userId);
+                    $this->editarEndereco($userId, $enderecoModel);
                     break;
                 case 'excluir':
-                    $this->excluirEndereco($userId);
+                    $this->excluirEndereco($userId, $enderecoModel);
                     break;
                 case 'definir_principal':
-                    $this->definirEnderecoPrincipal($userId);
+                    $this->definirEnderecoPrincipal($userId, $enderecoModel);
                     break;
                 default:
-                    $this->processarAdicionarEndereco($userId);
+                    $this->processarAdicionarEndereco($userId, $enderecoModel);
                     break;
             }
         }
 
         // Buscar endereços apenas para exibição (GET)
-        $enderecos = $this->model->buscarEnderecosPorUsuario($userId);
+        $enderecos = $enderecoModel->buscarPorPessoa($userId);
         include 'views/cliente/perfil/enderecos.php';
     }
 
-    private function processarAdicionarEndereco($userId)
+    // Adicione este método privado para validação dos dados do endereço
+    private function validarDadosEndereco($dados) {
+        $required = ['cep', 'logradouro', 'numero', 'bairro', 'cidade', 'estado'];
+        foreach ($required as $field) {
+            if (empty($dados[$field])) {
+                return "Campo '{$field}' é obrigatório";
+            }
+        }
+        if (strlen($dados['estado']) !== 2) {
+            return 'Estado deve ter 2 caracteres';
+        }
+        return null;
+    }
+
+    private function processarAdicionarEndereco($userId, $enderecoModel)
     {
         $dados = [
             'pessoa_id' => $userId,
@@ -261,84 +279,52 @@ class PerfilController
             'principal' => isset($_POST['principal']) ? 1 : 0
         ];
 
-        // Validações básicas
-        if (
-            empty($dados['cep']) || empty($dados['logradouro']) || empty($dados['numero']) ||
-            empty($dados['bairro']) || empty($dados['cidade']) || empty($dados['estado'])
-        ) {
-
-            $message = 'Todos os campos obrigatórios devem ser preenchidos!';
-
-            // Para requisições AJAX, retornar JSON
+        $erroValidacao = $this->validarDadosEndereco($dados);
+        if ($erroValidacao) {
+            $message = $erroValidacao;
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $message]);
+                echo json_encode(['sucesso' => false, 'mensagem' => $message]);
                 exit;
             }
-
             Session::setFlash('error', $message, 'danger');
             return;
         }
 
-        // Verificar se já existe um endereço idêntico para evitar duplicatas
-        if ($this->model->verificarEnderecoExistente($userId, $dados)) {
-            $message = 'Este endereço já está cadastrado!';
-
-            // Para requisições AJAX, retornar JSON
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $message]);
-                exit;
-            }
-
-            Session::setFlash('error', $message, 'warning');
-            return;
-        }
-
-        $enderecoId = $this->model->adicionarEndereco($dados);
+        $enderecoId = $enderecoModel->criar($dados);
 
         if ($enderecoId) {
             $message = 'Endereço adicionado com sucesso!';
-
-            // Para requisições AJAX, retornar o novo endereço
+            $novoEndereco = $enderecoModel->buscarPorId($enderecoId);
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                // Buscar o endereço recém-criado
-                $novoEndereco = $this->model->buscarEnderecoPorId($enderecoId);
-
                 header('Content-Type: application/json');
                 echo json_encode([
-                    'success' => true,
-                    'message' => $message,
+                    'sucesso' => true,
+                    'mensagem' => $message,
                     'endereco' => $novoEndereco
                 ]);
                 exit;
             }
-
             Session::setFlash('success', $message, 'success');
         } else {
             $message = 'Erro ao adicionar endereço!';
-
-            // Para requisições AJAX, retornar JSON
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $message]);
+                echo json_encode(['sucesso' => false, 'mensagem' => $message]);
                 exit;
             }
-
             Session::setFlash('error', $message, 'danger');
         }
 
-        // Para requisições normais, redirecionar
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
             header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }
 
-    private function editarEndereco($userId)
+    private function editarEndereco($userId, $enderecoModel)
     {
         $enderecoId = $_POST['endereco_id'] ?? 0;
-
         $dados = [
             'cep' => preg_replace('/\D/', '', $_POST['cep']),
             'logradouro' => trim($_POST['logradouro']),
@@ -350,114 +336,115 @@ class PerfilController
             'principal' => isset($_POST['principal']) ? 1 : 0
         ];
 
-        if ($this->model->editarEndereco($enderecoId, $userId, $dados)) {
-            $message = 'Endereço atualizado com sucesso!';
-
-            // Para requisições AJAX
+        $erroValidacao = $this->validarDadosEndereco($dados);
+        if ($erroValidacao) {
+            $message = $erroValidacao;
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                $enderecoAtualizado = $this->model->buscarEnderecoPorId($enderecoId);
+                header('Content-Type: application/json');
+                echo json_encode(['sucesso' => false, 'mensagem' => $message]);
+                exit;
+            }
+            Session::setFlash('error', $message, 'danger');
+            return;
+        }
+
+        $result = $enderecoModel->atualizar($enderecoId, $dados);
+
+        if ($result) {
+            $message = 'Endereço atualizado com sucesso!';
+            $enderecoAtualizado = $enderecoModel->buscarPorId($enderecoId);
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 header('Content-Type: application/json');
                 echo json_encode([
-                    'success' => true,
-                    'message' => $message,
+                    'sucesso' => true,
+                    'mensagem' => $message,
                     'endereco' => $enderecoAtualizado
                 ]);
                 exit;
             }
-
             Session::setFlash('success', $message, 'success');
         } else {
             $message = 'Erro ao atualizar endereço!';
-
-            // Para requisições AJAX
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $message]);
+                echo json_encode(['sucesso' => false, 'mensagem' => $message]);
                 exit;
             }
-
             Session::setFlash('error', $message, 'danger');
         }
 
-        // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
             header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }
 
-    private function excluirEndereco($userId)
+    private function excluirEndereco($userId, $enderecoModel)
     {
         $enderecoId = $_POST['endereco_id'] ?? 0;
 
-        if ($this->model->excluirEndereco($enderecoId, $userId)) {
-            $message = 'Endereço removido com sucesso!';
+        $result = $enderecoModel->deletar($enderecoId);
 
-            // Para requisições AJAX
+        if ($result) {
+            $message = 'Endereço removido com sucesso!';
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'message' => $message, 'endereco_id' => $enderecoId]);
+                echo json_encode(['sucesso' => true, 'mensagem' => $message, 'endereco_id' => $enderecoId]);
                 exit;
             }
-
             Session::setFlash('success', $message, 'success');
         } else {
             $message = 'Erro ao remover endereço!';
-
-            // Para requisições AJAX
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $message]);
+                echo json_encode(['sucesso' => false, 'mensagem' => $message]);
                 exit;
             }
-
             Session::setFlash('error', $message, 'danger');
         }
 
-        // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
             header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }
 
-    private function definirEnderecoPrincipal($userId)
+    private function definirEnderecoPrincipal($userId, $enderecoModel)
     {
         $enderecoId = $_POST['endereco_id'] ?? 0;
 
-        if ($this->model->definirEnderecoPrincipal($enderecoId, $userId)) {
-            $message = 'Endereço principal definido com sucesso!';
+        $result = $enderecoModel->definirComoPrincipal($enderecoId, $userId);
 
-            // Para requisições AJAX, retornar todos os endereços atualizados
+        if ($result) {
+            $message = 'Endereço principal definido com sucesso!';
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                $enderecos = $this->model->buscarEnderecosPorUsuario($userId);
+                $enderecos = $enderecoModel->buscarPorPessoa($userId);
                 header('Content-Type: application/json');
                 echo json_encode([
-                    'success' => true,
-                    'message' => $message,
+                    'sucesso' => true,
+                    'mensagem' => $message,
                     'enderecos' => $enderecos
                 ]);
                 exit;
             }
-
             Session::setFlash('success', $message, 'success');
         } else {
             $message = 'Erro ao definir endereço principal!';
-
-            // Para requisições AJAX
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $message]);
+                echo json_encode(['sucesso' => false, 'mensagem' => $message]);
                 exit;
             }
-
             Session::setFlash('error', $message, 'danger');
         }
 
-        // Para requisições normais
         if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
             header('Location: ' . url('perfil/enderecos'));
             exit;
         }
     }
 }
+?>
+
+
+   

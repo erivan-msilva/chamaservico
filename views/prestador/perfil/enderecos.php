@@ -220,6 +220,27 @@ $enderecos = $enderecoModel->buscarPorPessoa($prestadorId);
     </div>
 </div>
 
+<!-- Modal de confirmação de exclusão (Bootstrap 5) -->
+<div class="modal fade" id="modalConfirmarExclusao" tabindex="-1" aria-labelledby="modalConfirmarExclusaoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalConfirmarExclusaoLabel">
+            <i class="bi bi-trash me-2"></i>Confirmar Exclusão
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir este endereço? Esta ação não poderá ser desfeita.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarExclusaoEndereco">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // CORREÇÃO: Mover funções para escopo global antes do DOMContentLoaded
 let alertContainer;
@@ -258,8 +279,22 @@ async function definirPrincipal(enderecoId) {
 }
 
 async function excluirEndereco(enderecoId) {
-    if (!confirm('Tem certeza que deseja excluir este endereço?')) return;
+    // Exibe modal Bootstrap antes de excluir
+    window.enderecoParaExcluir = enderecoId;
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmarExclusao'));
+    modal.show();
+}
 
+// Função chamada pelo botão de confirmação do modal
+async function confirmarExclusaoEndereco() {
+    if (!window.enderecoParaExcluir) return;
+    await excluirEnderecoAjax(window.enderecoParaExcluir);
+    window.enderecoParaExcluir = null;
+    bootstrap.Modal.getInstance(document.getElementById('modalConfirmarExclusao')).hide();
+}
+
+// Função AJAX para excluir
+async function excluirEnderecoAjax(enderecoId) {
     try {
         const formData = new FormData();
         formData.append('csrf_token', '<?= Session::generateCSRFToken() ?>');
@@ -275,13 +310,25 @@ async function excluirEndereco(enderecoId) {
         });
 
         if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-        
-        const data = await response.json();
-        if (data.sucesso) {
-            showGlobalAlert('success', data.mensagem || 'Endereço excluído com sucesso!');
+
+        // Tenta garantir que é JSON
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            showGlobalAlert('danger', 'Erro de resposta do servidor. Tente novamente.');
+            return;
+        }
+
+        // Fallback para diferentes chaves
+        const sucesso = data.sucesso ?? data.success;
+        const mensagem = data.mensagem ?? data.message ?? 'Erro ao excluir endereço';
+
+        if (sucesso) {
+            showGlobalAlert('success', mensagem || 'Endereço excluído com sucesso!');
             setTimeout(() => location.reload(), 1500);
         } else {
-            showGlobalAlert('danger', data.mensagem || 'Erro ao excluir endereço');
+            showGlobalAlert('danger', mensagem);
         }
     } catch (error) {
         console.error('Erro:', error);
@@ -423,6 +470,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Erro ao buscar CEP:", error);
                 showGlobalAlert("danger", "Erro ao consultar CEP");
             });
+    }
+
+    // Adiciona evento ao botão de confirmação do modal
+    const btnConfirmarExclusao = document.getElementById('btnConfirmarExclusaoEndereco');
+    if (btnConfirmarExclusao) {
+        btnConfirmarExclusao.addEventListener('click', confirmarExclusaoEndereco);
     }
 });
 </script>

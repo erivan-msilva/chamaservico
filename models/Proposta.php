@@ -1183,5 +1183,53 @@ class Proposta {
             error_log("Erro ao criar notificação de recusa automática: " . $e->getMessage());
         }
     }
+
+    /**
+     * Avaliar serviço - grava avaliação do cliente para o serviço prestado
+     * @param int $propostaId
+     * @param int $prestadorId
+     * @param int $avaliacao (nota de 1 a 5)
+     * @param string $comentario
+     * @return bool
+     */
+    public function avaliarServico($propostaId, $prestadorId, $avaliacao, $comentario = '')
+    {
+        try {
+            // Buscar a solicitação relacionada à proposta
+            $sqlSolicitacao = "SELECT s.id as solicitacao_id, s.cliente_id
+                               FROM tb_proposta p
+                               JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                               WHERE p.id = ? AND p.prestador_id = ?";
+            $stmt = $this->db->prepare($sqlSolicitacao);
+            $stmt->execute([$propostaId, $prestadorId]);
+            $dados = $stmt->fetch();
+
+            if (!$dados) {
+                return false;
+            }
+
+            // Verifica se já existe avaliação para esta solicitação e prestador
+            $sqlExiste = "SELECT COUNT(*) FROM tb_avaliacao WHERE solicitacao_id = ? AND avaliado_id = ?";
+            $stmtExiste = $this->db->prepare($sqlExiste);
+            $stmtExiste->execute([$dados['solicitacao_id'], $prestadorId]);
+            if ($stmtExiste->fetchColumn() > 0) {
+                return false; // Já avaliado
+            }
+
+            // Insere avaliação
+            $sql = "INSERT INTO tb_avaliacao (solicitacao_id, avaliado_id, nota, comentario, data_avaliacao)
+                    VALUES (?, ?, ?, ?, NOW())";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                $dados['solicitacao_id'],
+                $prestadorId,
+                $avaliacao,
+                $comentario
+            ]);
+        } catch (Exception $e) {
+            error_log("Erro ao avaliar serviço: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>

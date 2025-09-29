@@ -69,8 +69,8 @@ class SolicitacaoController
             'cliente_id' => Session::getUserId(),
             'tipo_servico_id' => $_POST['tipo_servico_id'] ?? null,
             'endereco_id' => $_POST['endereco_id'] ?? null,
-            'titulo' => trim($_POST['titulo'] ?? ''),
-            'descricao' => trim($_POST['descricao'] ?? ''),
+            'titulo' =>  ucfirst(trim($_POST['titulo'] ?? '')),
+            'descricao' => ucfirst(trim($_POST['descricao'] ?? '')),
             'orcamento_estimado' => $_POST['orcamento_estimado'] ?? null,
             'data_atendimento' => $_POST['data_atendimento'] ?? null,
             'urgencia' => $_POST['urgencia'] ?? ''
@@ -200,8 +200,8 @@ class SolicitacaoController
     {
         $dados = [
             'tipo_servico_id' => $_POST['tipo_servico_id'],
-            'titulo' => trim($_POST['titulo']),
-            'descricao' => trim($_POST['descricao']),
+            'titulo' =>  ucfirst(trim($_POST['titulo'])),
+            'descricao' => ucfirst(trim($_POST['descricao'])),
             'orcamento_estimado' => !empty($_POST['orcamento_estimado']) ? $_POST['orcamento_estimado'] : null,
             'data_atendimento' => !empty($_POST['data_atendimento']) ? $_POST['data_atendimento'] : null,
             'urgencia' => $_POST['urgencia']

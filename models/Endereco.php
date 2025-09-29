@@ -262,8 +262,7 @@ class Endereco
         $stmt->execute([$enderecoId]);
         return $stmt->fetchColumn() > 0;
     }
-}
-?>
+
     // Estatísticas de endereços
     public function obterEstatisticas() {
         $sql = "SELECT 
@@ -285,4 +284,5 @@ class Endereco
         return $stmt->fetch();
     }
 }
+// Nenhuma alteração necessária. Esta é a classe recomendada para operações de endereço.
 ?>

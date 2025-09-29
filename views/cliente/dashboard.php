@@ -44,13 +44,11 @@ ob_start();
                         <div class="col">
                             <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">Total de Solicitações</h6>
                             <h2 class="mb-0 fw-bold text-dark"><?= $estatisticas['total_solicitacoes'] ?></h2>
-                            <p class="text-success mb-0 small">
-                                <i class="bi bi-arrow-up"></i> +12% este mês
-                            </p>
+
                         </div>
                         <div class="col-auto">
-                            <div class="bg-primary bg-opacity-10 p-3 rounded-3">
-                                <i class="bi bi-list-ul text-primary" style="font-size: 1.75rem;"></i>
+                            <div class="bg-body bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-list-ul text-info" style="font-size: 1.75rem; background:  #3c8fe9ff;"></i>
                             </div>
                         </div>
                     </div>
@@ -66,9 +64,7 @@ ob_start();
                         <div class="col">
                             <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">Aguardando Propostas</h6>
                             <h2 class="mb-0 fw-bold text-dark"><?= $estatisticas['aguardando_propostas'] ?></h2>
-                            <p class="text-warning mb-0 small">
-                                <i class="bi bi-clock"></i> Pendentes
-                            </p>
+
                         </div>
                         <div class="col-auto">
                             <div class="bg-warning bg-opacity-10 p-3 rounded-3">
@@ -88,9 +84,7 @@ ob_start();
                         <div class="col">
                             <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">Em Andamento</h6>
                             <h2 class="mb-0 fw-bold text-dark"><?= $estatisticas['em_andamento'] ?></h2>
-                            <p class="text-info mb-0 small">
-                                <i class="bi bi-gear"></i> Ativo
-                            </p>
+
                         </div>
                         <div class="col-auto">
                             <div class="bg-info bg-opacity-10 p-3 rounded-3">
@@ -110,9 +104,7 @@ ob_start();
                         <div class="col">
                             <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">Concluídos</h6>
                             <h2 class="mb-0 fw-bold text-dark"><?= $estatisticas['concluidas'] ?></h2>
-                            <p class="text-success mb-0 small">
-                                <i class="bi bi-check-circle"></i> Finalizados
-                            </p>
+
                         </div>
                         <div class="col-auto">
                             <div class="bg-success bg-opacity-10 p-3 rounded-3">
@@ -128,7 +120,7 @@ ob_start();
 
     <!-- Gráficos -->
     <div class="row g-4 mb-5">
-        <div class="col-lg-5">
+        <div class="col-lg-12">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="mb-0 fw-bold">
@@ -142,20 +134,6 @@ ob_start();
             </div>
         </div>
 
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-bar-chart me-2 text-success"></i>Serviços por Categoria
-                    </h5>
-                    <p class="text-muted small mb-0">Últimos 6 meses</p>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center" style="min-height: 300px;">
-                    <canvas id="categoryChart" style="max-height: 280px;"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Seção de Dados Recentes -->
     <div class="row g-4 mb-5">
@@ -340,10 +318,10 @@ $scripts = '
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Gráfico de Status (Pizza)
+    // Gráfico de Status (barras)
     const ctxStatus = document.getElementById("statusChart").getContext("2d");
     const statusChart = new Chart(ctxStatus, {
-        type: "doughnut",
+        type: "bar",
         data: {
             labels: ["Aguardando Propostas", "Em Andamento", "Concluídos"],
             datasets: [{
@@ -357,8 +335,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     "#17A2B8", 
                     "#28A745"
                 ],
-                borderWidth: 0,
-                cutout: "60%"
+                borderRadius: 4,
+                borderSkipped: false
             }]
         },
         options: {
@@ -366,13 +344,20 @@ document.addEventListener("DOMContentLoaded", function() {
             maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    position: "bottom",
-                    labels: {
-                        padding: 20,
-                        usePointStyle: true,
-                        font: {
-                            size: 12
-                        }
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    display: false,
+                    beginAtZero: true,
+                    grid: {
+                        color: "#f8f9fa"
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
             }
@@ -425,7 +410,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 </script>';
-
 $content = ob_get_clean();
 include 'views/layouts/app.php';
 ?>
