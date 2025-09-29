@@ -51,12 +51,12 @@ ob_start();
                                         <small><?= date('d/m/Y', strtotime($servico['data_solicitacao'])) ?></small>
                                     </div>
                                 </div>
-                                
+
                                 <div class="card-body">
                                     <h5 class="card-title text-truncate" title="<?= htmlspecialchars($servico['titulo']) ?>">
                                         <?= htmlspecialchars($servico['titulo']) ?>
                                     </h5>
-                                    
+
                                     <div class="mb-3">
                                         <span class="badge bg-light text-dark">
                                             <i class="bi bi-tools me-1"></i>
@@ -89,18 +89,11 @@ ob_start();
                                     <?php if ($servico['avaliacao_id']): ?>
                                         <div class="alert alert-info border-0 py-2 mb-3">
                                             <div class="d-flex align-items-center">
-                                                <i class="bi bi-star-fill text-warning me-2"></i>
-                                                <div>
-                                                    <small class="fw-bold">Avaliado</small><br>
-                                                    <div class="text-warning">
-                                                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                                                            <?php if ($i <= $servico['avaliacao_nota']): ?>
-                                                                <i class="bi bi-star-fill"></i>
-                                                            <?php else: ?>
-                                                                <i class="bi bi-star"></i>
-                                                            <?php endif; ?>
-                                                        <?php endfor; ?>
-                                                    </div>
+                                                <small class="fw-bold me-2">Avaliado:</small>
+                                                <div class="text-warning">
+                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                        <i class="bi <?= ($i <= $servico['avaliacao_nota']) ? 'bi-star-fill' : 'bi-star' ?>"></i>
+                                                    <?php endfor; ?>
                                                 </div>
                                             </div>
                                         </div>
@@ -117,16 +110,16 @@ ob_start();
                                 <div class="card-footer bg-transparent border-0 pt-0">
                                     <div class="d-grid gap-2">
                                         <?php if (!$servico['avaliacao_id']): ?>
-                                            <a href="<?= url('cliente/servicos/avaliar?id=' . $servico['id']) ?>" 
-                                               class="btn btn-warning btn-sm">
+                                            <a href="<?= url('cliente/servicos/avaliar?id=' . $servico['id']) ?>"
+                                                class="btn btn-warning btn-sm">
                                                 <i class="bi bi-star me-1"></i>
                                                 Avaliar Serviço
                                             </a>
                                         <?php endif; ?>
-                                        
-                                        <button type="button" class="btn btn-outline-primary btn-sm" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#modalDetalhes<?= $servico['id'] ?>">
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalDetalhes<?= $servico['id'] ?>">
                                             <i class="bi bi-eye me-1"></i>
                                             Ver Detalhes
                                         </button>
@@ -153,7 +146,7 @@ ob_start();
                                                 <p><strong>Título:</strong> <?= htmlspecialchars($servico['titulo']) ?></p>
                                                 <p><strong>Tipo:</strong> <?= htmlspecialchars($servico['tipo_servico_nome']) ?></p>
                                                 <p><strong>Descrição:</strong><br><?= nl2br(htmlspecialchars($servico['descricao'])) ?></p>
-                                                <p><strong>Urgência:</strong> 
+                                                <p><strong>Urgência:</strong>
                                                     <?php
                                                     $urgenciaClass = ['baixa' => 'success', 'media' => 'warning', 'alta' => 'danger'];
                                                     $urgenciaText = ['baixa' => 'Baixa', 'media' => 'Média', 'alta' => 'Alta'];
@@ -169,14 +162,14 @@ ob_start();
                                                 <?php if ($servico['prestador_telefone']): ?>
                                                     <p><strong>Telefone:</strong> <?= htmlspecialchars($servico['prestador_telefone']) ?></p>
                                                 <?php endif; ?>
-                                                
+
                                                 <h6 class="text-primary mt-3">Localização</h6>
                                                 <p>
                                                     <?= htmlspecialchars($servico['logradouro']) ?>, <?= htmlspecialchars($servico['numero']) ?><br>
                                                     <?= htmlspecialchars($servico['bairro']) ?><br>
                                                     <?= htmlspecialchars($servico['cidade']) ?>/<?= htmlspecialchars($servico['estado']) ?>
                                                 </p>
-                                                
+
                                                 <h6 class="text-success mt-3">Financeiro</h6>
                                                 <p><strong>Valor Pago:</strong> R$ <?= number_format($servico['valor_pago'], 2, ',', '.') ?></p>
                                             </div>
@@ -208,8 +201,8 @@ ob_start();
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                                         <?php if (!$servico['avaliacao_id']): ?>
-                                            <a href="<?= url('cliente/servicos/avaliar?id=' . $servico['id']) ?>" 
-                                               class="btn btn-warning">
+                                            <a href="<?= url('cliente/servicos/avaliar?id=' . $servico['id']) ?>"
+                                                class="btn btn-warning">
                                                 <i class="bi bi-star me-1"></i>
                                                 Avaliar Agora
                                             </a>
@@ -242,7 +235,9 @@ ob_start();
                     <div class="col-md-4">
                         <div class="card border-0 bg-warning text-white">
                             <div class="card-body text-center">
-                                <h3><?= count(array_filter($servicosConcluidos, function($s) { return $s['avaliacao_id']; })) ?></h3>
+                                <h3><?= count(array_filter($servicosConcluidos, function ($s) {
+                                        return $s['avaliacao_id'];
+                                    })) ?></h3>
                                 <p class="mb-0">Serviços Avaliados</p>
                             </div>
                         </div>

@@ -155,24 +155,15 @@ ob_start();
                                     </small>
                                 </div>
 
-                                <div class="dropdown">
-                                    <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots-vertical"></i>
+                                <div class="d-flex flex-column gap-2 ms-3">
+                                    <?php if (!$notificacao['lida']): ?>
+                                        <button class="btn btn-outline-success btn-sm" onclick="marcarComoLida(<?= $notificacao['id'] ?>)">
+                                            <i class="bi bi-check"></i> Marcar como lida
+                                        </button>
+                                    <?php endif; ?>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deletarNotificacao(<?= $notificacao['id'] ?>)">
+                                        <i class="bi bi-trash"></i> Excluir
                                     </button>
-                                    <ul class="dropdown-menu">
-                                        <?php if (!$notificacao['lida']): ?>
-                                            <li>
-                                                <button class="dropdown-item" onclick="marcarComoLida(<?= $notificacao['id'] ?>)">
-                                                    <i class="bi bi-check me-2"></i>Marcar como lida
-                                                </button>
-                                            </li>
-                                        <?php endif; ?>
-                                        <li>
-                                            <button class="dropdown-item text-danger" onclick="deletarNotificacao(<?= $notificacao['id'] ?>)">
-                                                <i class="bi bi-trash me-2"></i>Excluir
-                                            </button>
-                                        </li>
-                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -258,24 +249,52 @@ ob_start();
                     const titulo = cardContainer.querySelector('h6');
                     const mensagem = cardContainer.querySelector('p');
                     const novaBadge = cardContainer.querySelector('.badge.bg-warning');
-                    const menuButton = cardContainer.querySelector('.dropdown-item[onclick^="marcarComoLida"]');
-
+                    const btnMarcarLida = cardContainer.querySelector('.btn-outline-success');
                     card.classList.remove('border-start', 'border-primary', 'border-3');
                     if (novaBadge) novaBadge.remove();
                     titulo.classList.remove('fw-bold');
                     titulo.classList.add('text-muted');
                     mensagem.classList.add('text-muted');
-                    if (menuButton) menuButton.closest('li').remove();
+                    if (btnMarcarLida) btnMarcarLida.remove();
                 }
-                // Exibe modal de sucesso
-                const modal = new bootstrap.Modal(document.getElementById('modalMensagemLida'));
-                modal.show();
+                mostrarToast('Notificação marcada como lida!', 'sucesso');
             } else {
-                alert('Erro ao marcar como lida: ' + (data.erro || 'Erro desconhecido.'));
+                mostrarToast('Erro ao marcar como lida: ' + (data.erro || 'Erro desconhecido.'), 'erro');
             }
         } catch (error) {
             console.error('Erro na requisição:', error);
-            alert('Ocorreu um erro de comunicação. Tente novamente.');
+            mostrarToast('Ocorreu um erro de comunicação. Tente novamente.', 'erro');
+        }
+    }
+
+    async function deletarNotificacao(notificacaoId) {
+        try {
+            const formData = new FormData();
+            const csrfToken = document.querySelector('#formDeletarNotificacao input[name="csrf_token"]').value;
+            formData.append('notificacao_id', notificacaoId);
+            formData.append('csrf_token', csrfToken);
+
+            const response = await fetch('notificacoes/deletar', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.sucesso) {
+                const notificacaoRemover = document.getElementById('notificacao-' + notificacaoId);
+                if (notificacaoRemover) {
+                    notificacaoRemover.style.transition = 'opacity 0.5s ease';
+                    notificacaoRemover.style.opacity = '0';
+                    setTimeout(() => notificacaoRemover.remove(), 500);
+                }
+                mostrarToast('Notificação excluída com sucesso!', 'sucesso');
+            } else {
+                mostrarToast('Erro ao excluir notificação: ' + (data.erro || 'Erro desconhecido.'), 'erro');
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            mostrarToast('Ocorreu um erro de comunicação. Tente novamente.', 'erro');
         }
     }
 

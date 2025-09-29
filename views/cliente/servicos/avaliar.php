@@ -34,7 +34,7 @@ ob_start();
                                     Prestador
                                 </h6>
                                 <p class="mb-1"><?= htmlspecialchars($servico['prestador_nome']) ?></p>
-                                <small class="text-muted">Valor: R$ <?= number_format($servico['valor_aceito'], 2, ',', '.') ?></small>
+                                <small class="text-muted">Valor: R$ <?= number_format($servico['valor_aceito'] ?? 0.0, 2, ',', '.') ?></small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -44,8 +44,8 @@ ob_start();
                                     Local do Serviço
                                 </h6>
                                 <p class="mb-0 small">
-                                    <?= htmlspecialchars($servico['logradouro']) ?>, <?= htmlspecialchars($servico['numero']) ?><br>
-                                    <?= htmlspecialchars($servico['bairro']) ?> - <?= htmlspecialchars($servico['cidade']) ?>/<?= htmlspecialchars($servico['estado']) ?>
+                                    <?= htmlspecialchars($servico['logradouro'] ?? '') ?>, <?= htmlspecialchars($servico['numero'] ?? '') ?><br>
+                                    <?= htmlspecialchars($servico['bairro'] ?? '') ?> - <?= htmlspecialchars($servico['cidade'] ?? '') ?>/<?= htmlspecialchars($servico['estado'] ?? '') ?>
                                 </p>
                             </div>
                         </div>

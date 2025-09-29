@@ -232,5 +232,3 @@ class UsuariosAdminController extends BaseAdminController {
     }
 }
 ?>
-}
-?>
