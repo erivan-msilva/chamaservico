@@ -21,7 +21,7 @@ class Usuario
         }
     }
 
-    // Método para cadastrar usuário com senha hashada
+    // Método para cadastrar usuário com senha hash
     public function cadastrar($dados)
     {
         $sql = "INSERT INTO {$this->table} (nome, email, senha, cpf, telefone, dt_nascimento, tipo, ativo, data_cadastro)

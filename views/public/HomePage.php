@@ -1,3 +1,59 @@
+<?php
+require_once 'core/Database.php';
+$db = Database::getInstance();
+
+// Profissionais cadastrados (prestador ou ambos)
+$stmt = $db->prepare("SELECT COUNT(*) FROM tb_pessoa WHERE (tipo = 'prestador' OR tipo = 'ambos') AND ativo = 1");
+$stmt->execute();
+$totalProfissionais = (int)($stmt->fetchColumn() ?? 0);
+
+// Serviços realizados (total de solicitações)
+$stmt = $db->prepare("SELECT COUNT(*) FROM tb_solicita_servico");
+$stmt->execute();
+$totalServicos = (int)($stmt->fetchColumn() ?? 0);
+
+// Satisfação dos clientes (média das notas)
+$stmt = $db->prepare("SELECT AVG(nota) FROM tb_avaliacao");
+$stmt->execute();
+$mediaSatisfacao = $stmt->fetchColumn();
+$mediaSatisfacao = is_numeric($mediaSatisfacao) ? round($mediaSatisfacao * 20, 0) : 0;
+
+// Cidades atendidas (distintas em tb_endereco)
+$stmt = $db->prepare("SELECT COUNT(DISTINCT cidade) FROM tb_endereco");
+$stmt->execute();
+$totalCidades = (int)($stmt->fetchColumn() ?? 0);
+
+// Serviços mais procurados (top 8 tipo_servico_id em tb_solicita_servico)
+$stmt = $db->prepare("
+    SELECT ts.nome, COUNT(s.id) as total
+    FROM tb_solicita_servico s
+    JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+    GROUP BY ts.id
+    ORDER BY total DESC
+    LIMIT 8
+");
+$stmt->execute();
+$servicosMaisProcurados = $stmt->fetchAll();
+
+// Buscar comentários reais da tb_avaliacao para depoimentos
+$stmt = $db->prepare("
+    SELECT a.nota, a.comentario, a.data_avaliacao, 
+           c.nome as cliente_nome, 
+           p.nome as prestador_nome,
+           ts.nome as tipo_servico_nome
+    FROM tb_avaliacao a
+    LEFT JOIN tb_solicita_servico s ON a.solicitacao_id = s.id
+    LEFT JOIN tb_pessoa c ON s.cliente_id = c.id
+    LEFT JOIN tb_proposta pr ON s.id = pr.solicitacao_id AND pr.prestador_id = a.avaliado_id
+    LEFT JOIN tb_pessoa p ON pr.prestador_id = p.id
+    LEFT JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id
+    WHERE a.comentario IS NOT NULL AND a.comentario != ''
+    ORDER BY a.data_avaliacao DESC
+    LIMIT 3
+");
+$stmt->execute();
+$depoimentos = $stmt->fetchAll();
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -269,8 +325,8 @@
         /* Stats Section */
         .stats-section {
             padding: 4rem 0;
-            background: var(--gradient-primary);
-            color: white;
+            background: #2563eb;
+            color: #fff;
         }
 
         .stat-item {
@@ -278,10 +334,8 @@
         }
 
         .stat-number {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
         }
 
         .stat-label {
@@ -668,25 +722,25 @@
             <div class="row text-center">
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
-                        <span class="stat-number">50K+</span>
+                        <span class="stat-number"><?= number_format($totalProfissionais) ?></span>
                         <div class="stat-label">Profissionais Cadastrados</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
-                        <span class="stat-number">200K+</span>
+                        <span class="stat-number"><?= number_format($totalServicos) ?></span>
                         <div class="stat-label">Serviços Realizados</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
-                        <span class="stat-number">98%</span>
+                        <span class="stat-number"><?= $mediaSatisfacao ?>%</span>
                         <div class="stat-label">Satisfação dos Clientes</div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
                     <div class="stat-item" data-aos="fade-up" data-aos-delay="400">
-                        <span class="stat-number">500+</span>
+                        <span class="stat-number"><?= number_format($totalCidades) ?></span>
                         <div class="stat-label">Cidades Atendidas</div>
                     </div>
                 </div>
@@ -694,36 +748,20 @@
         </div>
     </section>
 
-    <!-- Services Section -->
-    <section class="services-section" id="servicos">
+    <!-- Serviços Mais Procurados -->
+    <section class="py-5" id="servicos">
         <div class="container">
-            <div class="text-center mb-5" data-aos="fade-up">
-                <h2 class="display-5 fw-bold mb-3">Serviços Mais Procurados</h2>
-                <p class="lead text-muted">Encontre profissionais para qualquer tipo de serviço</p>
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">Serviços Mais Procurados</h2>
+                <p class="lead text-muted">Veja os tipos de serviço mais buscados na plataforma</p>
             </div>
-
-            <div class="row g-4">
-                <?php
-                $servicos = [
-                    ['icon' => 'tools', 'name' => 'Encanador', 'count' => '2.5k+ profissionais'],
-                    ['icon' => 'lightning-charge', 'name' => 'Eletricista', 'count' => '3.1k+ profissionais'],
-                    ['icon' => 'house-gear', 'name' => 'Diarista', 'count' => '4.2k+ profissionais'],
-                    ['icon' => 'brush', 'name' => 'Pintor', 'count' => '1.8k+ profissionais'],
-                    ['icon' => 'hammer', 'name' => 'Pedreiro', 'count' => '2.1k+ profissionais'],
-                    ['icon' => 'tree', 'name' => 'Jardineiro', 'count' => '1.3k+ profissionais'],
-                    ['icon' => 'laptop', 'name' => 'Técnico TI', 'count' => '900+ profissionais'],
-                    ['icon' => 'wrench-adjustable', 'name' => 'Mecânico', 'count' => '1.1k+ profissionais']
-                ];
-
-                foreach ($servicos as $index => $servico):
-                ?>
-                    <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="<?= ($index + 1) * 100 ?>">
-                        <div class="service-card">
-                            <div class="service-icon">
-                                <i class="bi bi-<?= $servico['icon'] ?>"></i>
-                            </div>
-                            <h4 class="service-name"><?= $servico['name'] ?></h4>
-                            <p class="service-count"><?= $servico['count'] ?></p>
+            <div class="row">
+                <?php foreach ($servicosMaisProcurados as $servico): ?>
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="service-card shadow-sm">
+                            <div class="service-icon"><i class="bi bi-tools"></i></div>
+                            <h5 class="mb-1"><?= htmlspecialchars($servico['nome'] ?? '-') ?></h5>
+                            <small class="text-muted"><?= number_format($servico['total'] ?? 0) ?> solicitações</small>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -736,75 +774,50 @@
         <div class="container">
             <div class="text-center mb-5" data-aos="fade-up">
                 <h2 class="display-5 fw-bold mb-3">O Que Dizem Nossos Usuários</h2>
-                <p class="lead text-muted">Milhares de pessoas já confiam na nossa plataforma</p>
+                <p class="lead text-muted">Varias pessoas já confiam na nossa plataforma</p>
             </div>
 
             <div class="row g-4">
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="testimonial-card">
-                        <div class="stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                        <p class="testimonial-text">
-                            "Encontrei um eletricista excelente em menos de 2 horas! O profissional era pontual, educado e resolveu meu problema rapidamente."
-                        </p>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">MS</div>
-                            <div class="testimonial-info">
-                                <h5>Maria Silva</h5>
-                                <small>Cliente desde 2023</small>
+                <?php if (!empty($depoimentos)): ?>
+                    <?php foreach ($depoimentos as $index => $dep): ?>
+                        <div class="col-lg-4" data-aos="fade-up" data-aos-delay="<?= ($index + 1) * 100 ?>">
+                            <div class="testimonial-card">
+                                <div class="stars">
+                                    <?php
+                                    $nota = (int)($dep['nota'] ?? 5);
+                                    for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="bi bi-star<?= $i <= $nota ? '-fill' : '' ?>"></i>
+                                    <?php endfor; ?>
+                                </div>
+                                <p class="testimonial-text">
+                                    "<?= htmlspecialchars($dep['comentario']) ?>"
+                                </p>
+                                <div class="testimonial-author">
+                                    <div class="testimonial-avatar">
+                                        <?= strtoupper(mb_substr($dep['cliente_nome'] ?? $dep['prestador_nome'] ?? 'US', 0, 2)) ?>
+                                    </div>
+                                    <div class="testimonial-info">
+                                        <h5>
+                                            <?= htmlspecialchars($dep['cliente_nome'] ?? $dep['prestador_nome'] ?? 'Usuário') ?>
+                                        </h5>
+                                        <small>
+                                            <?= htmlspecialchars($dep['tipo_servico_nome'] ?? '') ?>
+                                            <?php if (!empty($dep['data_avaliacao'])): ?>
+                                                <br>
+                                                <?= date('d/m/Y', strtotime($dep['data_avaliacao'])) ?>
+                                            <?php endif; ?>
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <!-- ...fallback estático se não houver depoimentos... -->
+                    <div class="col-12 text-center text-muted">
+                        Nenhum depoimento real disponível no momento.
                     </div>
-                </div>
-
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="testimonial-card">
-                        <div class="stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                        <p class="testimonial-text">
-                            "Como prestador, consegui triplicar minha clientela usando a plataforma. O sistema é fácil de usar e me conecta com clientes sérios."
-                        </p>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">JP</div>
-                            <div class="testimonial-info">
-                                <h5>João Pereira</h5>
-                                <small>Prestador - Pintor</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="testimonial-card">
-                        <div class="stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                        </div>
-                        <p class="testimonial-text">
-                            "Plataforma incrível! Consegui reformar minha casa inteira encontrando todos os profissionais em um só lugar. Recomendo!"
-                        </p>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">AC</div>
-                            <div class="testimonial-info">
-                                <h5>Ana Costa</h5>
-                                <small>Cliente desde 2022</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>

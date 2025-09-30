@@ -148,8 +148,8 @@ ob_start();
         <p class="text-muted mb-0">Gerencie as propostas que você recebeu para suas solicitações</p>
     </div>
     
+    <!-- Botões de visualização -->
     <div class="d-flex gap-2">
-        <!-- Controles de Visualização -->
         <div class="btn-group btn-group-toggle" role="group">
             <button type="button" class="btn btn-outline-secondary active" id="btn-cards" onclick="alterarVisualizacao('cards')">
                 <i class="bi bi-grid me-1"></i>Cards
@@ -706,7 +706,7 @@ function alterarVisualizacao(tipo) {
     }
 }
 
-// CORREÇÃO: Função para ativar/desativar modo comparação
+
 function toggleModoComparacao() {
     modoComparacao = !modoComparacao;
     const btnComparacao = document.getElementById("btn-comparacao");
@@ -910,6 +910,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const visualizacaoSalva = localStorage.getItem("visualizacao-propostas");
     if (visualizacaoSalva && ["cards", "lista", "timeline"].includes(visualizacaoSalva)) {
         alterarVisualizacao(visualizacaoSalva);
+    } else {
+        alterarVisualizacao("cards");
     }
     
     // Auto-submit dos filtros quando mudarem
@@ -924,4 +926,3 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 ';
-?>
