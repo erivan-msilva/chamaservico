@@ -10,8 +10,7 @@ class TipoServico {
     
     public function buscarTodos($filtros = []) {
         $sql = "SELECT ts.*, 
-                       COUNT(s.id) as total_solicitacoes,
-                       AVG(s.orcamento_estimado) as orcamento_medio
+                       COUNT(s.id) as total_solicitacoes
                 FROM tb_tipo_servico ts
                 LEFT JOIN tb_solicita_servico s ON ts.id = s.tipo_servico_id
                 WHERE 1=1";
@@ -54,22 +53,21 @@ class TipoServico {
     }
     
     public function criar($dados) {
-        $sql = "INSERT INTO tb_tipo_servico (nome, descricao, categoria, preco_medio, ativo, created_at, updated_at) 
-                VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
+        $sql = "INSERT INTO tb_tipo_servico (nome, descricao, categoria, ativo, created_at, updated_at) 
+                VALUES (?, ?, ?, ?, NOW(), NOW())";
         
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             $dados['nome'],
             $dados['descricao'],
             $dados['categoria'],
-            $dados['preco_medio'],
             $dados['ativo']
         ]);
     }
     
     public function atualizar($id, $dados) {
         $sql = "UPDATE tb_tipo_servico 
-                SET nome = ?, descricao = ?, categoria = ?, preco_medio = ?, ativo = ?, updated_at = NOW()
+                SET nome = ?, descricao = ?, categoria = ?, ativo = ?, updated_at = NOW()
                 WHERE id = ?";
         
         $stmt = $this->db->prepare($sql);
@@ -77,7 +75,6 @@ class TipoServico {
             $dados['nome'],
             $dados['descricao'],
             $dados['categoria'],
-            $dados['preco_medio'],
             $dados['ativo'],
             $id
         ]);
@@ -152,6 +149,9 @@ class TipoServico {
             $this->db->getConnection()->rollBack();
             return false;
         }
+    }
+}
+?>
     }
 }
 ?>

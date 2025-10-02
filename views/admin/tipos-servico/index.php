@@ -26,8 +26,7 @@ try {
             SUM(CASE WHEN ativo = 0 THEN 1 ELSE 0 END) as tipos_inativos,
             (SELECT COUNT(*) FROM tb_solicita_servico s 
              JOIN tb_tipo_servico ts ON s.tipo_servico_id = ts.id 
-             WHERE DATE(s.data_solicitacao) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)) as solicitacoes_mes,
-            (SELECT AVG(preco_medio) FROM tb_tipo_servico WHERE ativo = 1 AND preco_medio > 0) as preco_medio_geral
+             WHERE DATE(s.data_solicitacao) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)) as solicitacoes_mes
         FROM tb_tipo_servico
     ";
 
@@ -37,8 +36,7 @@ try {
         'total_tipos' => 0,
         'tipos_ativos' => 0,
         'tipos_inativos' => 0,
-        'solicitacoes_mes' => 0,
-        'preco_medio_geral' => 0
+        'solicitacoes_mes' => 0
     ];
 
     // Buscar tipos de serviços com filtros
@@ -96,8 +94,7 @@ try {
         'total_tipos' => 0,
         'tipos_ativos' => 0,
         'tipos_inativos' => 0,
-        'solicitacoes_mes' => 0,
-        'preco_medio_geral' => 0
+        'solicitacoes_mes' => 0
     ];
     $tiposServico = [];
     $categorias = [];
@@ -110,7 +107,7 @@ ob_start();
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-3 mb-4">
     <h1 class="h2 text-dark">
         <i class="bi bi-tools me-2"></i>
-        Tipos de Serviços
+        Tipos de Serviços -Admin
     </h1>
 
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -198,24 +195,6 @@ ob_start();
             </div>
         </div>
     </div>
-
-    <div class="col-lg-3 col-md-6">
-        <div class="stats-widget" style="border-left-color: #ffc107;">
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                    <div class="text-xs fw-bold text-warning text-uppercase mb-1">
-                        Preço Médio
-                    </div>
-                    <div class="h3 mb-0 fw-bold text-gray-800">
-                        R$ <?= number_format($estatisticas['preco_medio_geral'], 0, ',', '.') ?>
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <i class="bi bi-currency-dollar fs-2 text-warning"></i>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Filtros -->
@@ -291,7 +270,6 @@ ob_start();
                             <tr>
                                 <th>Nome</th>
                                 <th>Categoria</th>
-                                <th>Preço Médio</th>
                                 <th>Status</th>
                                 <th>Atividade</th>
                                 <th>Ações</th>
@@ -311,13 +289,6 @@ ob_start();
                                     <td>
                                         <?php if ($tipo['categoria']): ?>
                                             <span class="badge bg-info"><?= htmlspecialchars($tipo['categoria']) ?></span>
-                                        <?php else: ?>
-                                            <span class="text-muted">-</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if ($tipo['preco_medio']): ?>
-                                            <span class="text-success fw-bold">R$ <?= number_format($tipo['preco_medio'], 2, ',', '.') ?></span>
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
@@ -393,61 +364,53 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="<?= url('admin/tipos-servico/criar') ?>">
-                
+
                 <div class=" modal-body">
-                <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
+                    <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
 
-                <div class="row">
-                    <div class="col-md-8 mb-3">
-                        <label for="nome" class="form-label fw-bold">Nome *</label>
-                        <input type="text" class="form-control" id="nome" name="nome" required
-                            placeholder="Ex: Serviços Elétricos">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="categoria" class="form-label fw-bold">Categoria</label>
-                        <input type="text" class="form-control" id="categoria" name="categoria"
-                            placeholder="Ex: Elétrica" list="categoriasList">
-                        <datalist id="categoriasList">
-                            <?php foreach ($categorias as $categoria): ?>
-                                <option value="<?= htmlspecialchars($categoria) ?>">
-                                <?php endforeach; ?>
-                        </datalist>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="descricao" class="form-label fw-bold">Descrição</label>
-                    <textarea class="form-control" id="descricao" name="descricao" rows="3"
-                        placeholder="Descrição detalhada do tipo de serviço..."></textarea>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="preco_medio" class="form-label fw-bold">Preço Médio (R$)</label>
-                        <div class="input-group">
-                            <span class="input-group-text">R$</span>
-                            <input type="number" class="form-control" id="preco_medio" name="preco_medio"
-                                step="0.01" min="0" placeholder="0,00">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="nome" class="form-label fw-bold">Nome *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required
+                                placeholder="Ex: Serviços Elétricos">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="categoria" class="form-label fw-bold">Categoria</label>
+                            <input type="text" class="form-control" id="categoria" name="categoria"
+                                placeholder="Ex: Elétrica" list="categoriasList">
+                            <datalist id="categoriasList">
+                                <?php foreach ($categorias as $categoria): ?>
+                                    <option value="<?= htmlspecialchars($categoria) ?>">
+                                    <?php endforeach; ?>
+                            </datalist>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="ativo" class="form-label fw-bold">Status</label>
-                        <select class="form-select" id="ativo" name="ativo">
-                            <option value="1" selected>Ativo</option>
-                            <option value="0">Inativo</option>
-                        </select>
+
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label fw-bold">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="3"
+                            placeholder="Descrição detalhada do tipo de serviço..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="ativo" class="form-label fw-bold">Status</label>
+                            <select class="form-select" id="ativo" name="ativo">
+                                <option value="1" selected>Ativo</option>
+                                <option value="0">Inativo</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Salvar Tipo
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save me-1"></i>Salvar Tipo
-            </button>
-        </div>
-        </form>
     </div>
-</div>
 </div>
 
 <!-- Modal para Editar Tipo -->
@@ -484,14 +447,6 @@ ob_start();
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="editPrecoMedio" class="form-label fw-bold">Preço Médio (R$)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" class="form-control" id="editPrecoMedio" name="preco_medio"
-                                    step="0.01" min="0">
-                            </div>
-                        </div>
                         <div class="col-md-6 mb-3">
                             <label for="editAtivo" class="form-label fw-bold">Status</label>
                             <select class="form-select" id="editAtivo" name="ativo">
@@ -572,7 +527,6 @@ function editarTipo(id) {
     document.getElementById("editNome").value = tipo.nome;
     document.getElementById("editCategoria").value = tipo.categoria || "";
     document.getElementById("editDescricao").value = tipo.descricao || "";
-    document.getElementById("editPrecoMedio").value = tipo.preco_medio || "";
     document.getElementById("editAtivo").value = tipo.ativo;
     
     new bootstrap.Modal(document.getElementById("modalEditarTipo")).show();

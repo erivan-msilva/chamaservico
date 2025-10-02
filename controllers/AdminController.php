@@ -391,7 +391,6 @@ class AdminController {
         $nome = trim($_POST['nome'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
         $categoria = trim($_POST['categoria'] ?? '');
-        $preco_medio = $_POST['preco_medio'] ?? 0;
         
         if (empty($nome)) {
             $_SESSION['admin_flash'] = [
@@ -408,15 +407,15 @@ class AdminController {
             
             if ($id > 0) {
                 // Atualizar
-                $sql = "UPDATE tb_tipo_servico SET nome = ?, descricao = ?, categoria = ?, preco_medio = ? WHERE id = ?";
+                $sql = "UPDATE tb_tipo_servico SET nome = ?, descricao = ?, categoria = ? WHERE id = ?";
                 $stmt = $db->prepare($sql);
-                $result = $stmt->execute([$nome, $descricao, $categoria, $preco_medio, $id]);
+                $result = $stmt->execute([$nome, $descricao, $categoria, $id]);
                 $mensagem = $result ? 'Tipo de serviço atualizado com sucesso!' : 'Erro ao atualizar tipo de serviço!';
             } else {
                 // Criar novo
-                $sql = "INSERT INTO tb_tipo_servico (nome, descricao, categoria, preco_medio, ativo) VALUES (?, ?, ?, ?, 1)";
+                $sql = "INSERT INTO tb_tipo_servico (nome, descricao, categoria, ativo) VALUES (?, ?, ?, 1)";
                 $stmt = $db->prepare($sql);
-                $result = $stmt->execute([$nome, $descricao, $categoria, $preco_medio]);
+                $result = $stmt->execute([$nome, $descricao, $categoria]);
                 $mensagem = $result ? 'Tipo de serviço criado com sucesso!' : 'Erro ao criar tipo de serviço!';
             }
             
