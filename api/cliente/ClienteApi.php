@@ -12,12 +12,10 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 define('API_TOKEN', '781e5e245d69b566979b86e28d23f2c7');
 
 // Incluir dependências
-require_once '../config/config.php';
-require_once '../core/Database.php';
-require_once '../models/Pessoa.php';
-require_once '../models/SolicitacaoServico.php';
-require_once '../models/Proposta.php';
-require_once '../models/ClientePerfil.php';
+require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../core/Database.php';
+require_once __DIR__ . '/../../models/Pessoa.php';
+require_once __DIR__ . '/../../models/SolicitacaoServico.php';
 
 /**
  * Função para verificar se o token enviado é válido
@@ -65,7 +63,7 @@ function autenticarCliente($input)
             return [
                 'sucesso' => true,
                 'usuario' => $usuario,
-                'token' => API_TOKEN // Em produção, gerar token único
+                'token' => API_TOKEN
             ];
         } else {
             return ['erro' => 'Credenciais inválidas'];
@@ -86,7 +84,6 @@ function registrarCliente($input)
         $email = $input['email'] ?? '';
         $senha = $input['senha'] ?? '';
         $telefone = $input['telefone'] ?? '';
-        $tipo = 'cliente';
 
         if (empty($nome) || empty($email) || empty($senha)) {
             return ['erro' => 'Nome, email e senha são obrigatórios'];
@@ -102,7 +99,6 @@ function registrarCliente($input)
 
         $pessoa = new Pessoa();
 
-        // Verificar se email já existe
         if ($pessoa->emailExiste($email)) {
             return ['erro' => 'Este email já está cadastrado'];
         }
@@ -111,8 +107,7 @@ function registrarCliente($input)
             'nome' => $nome,
             'email' => $email,
             'senha' => $senha,
-            'tipo' => $tipo,
-            'telefone' => $telefone
+            'tipo' => 'cliente'
         ];
 
         $pessoaId = $pessoa->criar($dados);
@@ -138,10 +133,9 @@ function registrarCliente($input)
 function buscarPerfil($clienteId)
 {
     try {
-        $perfil = new ClientePerfil();
         $pessoa = new Pessoa();
-
         $dadosPessoa = $pessoa->buscarPorId($clienteId);
+        
         if (!$dadosPessoa) {
             return ['erro' => 'Cliente não encontrado'];
         }
@@ -152,7 +146,10 @@ function buscarPerfil($clienteId)
         unset($dadosPessoa['token_expiracao']);
 
         // Buscar endereços
-        $enderecos = $perfil->buscarEnderecos($clienteId);
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT * FROM tb_endereco WHERE pessoa_id = ? ORDER BY principal DESC");
+        $stmt->execute([$clienteId]);
+        $enderecos = $stmt->fetchAll();
 
         return [
             'sucesso' => true,
@@ -174,10 +171,12 @@ function listarSolicitacoes($clienteId, $filtros = [])
         $solicitacao = new SolicitacaoServico();
         $solicitacoes = $solicitacao->buscarPorUsuario($clienteId, $filtros);
 
-        // Adicionar contagem de propostas para cada solicitação
-        $proposta = new Proposta();
+        // Contar propostas para cada solicitação
+        $db = Database::getInstance();
         foreach ($solicitacoes as &$sol) {
-            $sol['total_propostas'] = $proposta->contarPropostasPorSolicitacao($sol['id']);
+            $stmt = $db->prepare("SELECT COUNT(*) FROM tb_proposta WHERE solicitacao_id = ?");
+            $stmt->execute([$sol['id']]);
+            $sol['total_propostas'] = $stmt->fetchColumn();
         }
 
         return [
@@ -204,12 +203,11 @@ function criarSolicitacao($input, $clienteId)
             'tipo_servico_id' => $input['tipo_servico_id'] ?? 0,
             'endereco_id' => $input['endereco_id'] ?? 0,
             'urgencia' => $input['urgencia'] ?? 'media',
-            'orcamento_estimado' => $input['orcamento_estimado'] ?? null,
-            'data_preferencial' => $input['data_preferencial'] ?? null,
-            'observacoes' => $input['observacoes'] ?? ''
+            'orcamento_estimado' => $input['orcamento_estimado'] ?? 0,
+            'data_atendimento' => $input['data_atendimento'] ?? null,
+            'status_id' => 1
         ];
 
-        // Validações básicas
         if (empty($dados['titulo']) || empty($dados['descricao'])) {
             return ['erro' => 'Título e descrição são obrigatórios'];
         }
@@ -246,8 +244,31 @@ function criarSolicitacao($input, $clienteId)
 function listarPropostas($clienteId, $filtros = [])
 {
     try {
-        $proposta = new Proposta();
-        $propostas = $proposta->buscarPropostasRecebidas($clienteId, $filtros);
+        $db = Database::getInstance();
+        
+        $sql = "SELECT p.*, pr.nome as prestador_nome, s.titulo as solicitacao_titulo
+                FROM tb_proposta p
+                JOIN tb_pessoa pr ON p.prestador_id = pr.id
+                JOIN tb_solicita_servico s ON p.solicitacao_id = s.id
+                WHERE s.cliente_id = ?";
+        
+        $params = [$clienteId];
+        
+        if (!empty($filtros['status'])) {
+            $sql .= " AND p.status = ?";
+            $params[] = $filtros['status'];
+        }
+        
+        if (!empty($filtros['solicitacao_id'])) {
+            $sql .= " AND p.solicitacao_id = ?";
+            $params[] = $filtros['solicitacao_id'];
+        }
+        
+        $sql .= " ORDER BY p.data_proposta DESC";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $propostas = $stmt->fetchAll();
 
         return [
             'sucesso' => true,
@@ -272,8 +293,26 @@ function aceitarProposta($input, $clienteId)
             return ['erro' => 'ID da proposta é obrigatório'];
         }
 
-        $proposta = new Proposta();
-        if ($proposta->aceitarProposta($propostaId, $clienteId)) {
+        $db = Database::getInstance();
+        
+        // Verificar se a proposta pertence ao cliente
+        $stmt = $db->prepare("SELECT p.*, s.cliente_id FROM tb_proposta p 
+                              JOIN tb_solicita_servico s ON p.solicitacao_id = s.id 
+                              WHERE p.id = ?");
+        $stmt->execute([$propostaId]);
+        $proposta = $stmt->fetch();
+        
+        if (!$proposta || $proposta['cliente_id'] != $clienteId) {
+            return ['erro' => 'Proposta não encontrada'];
+        }
+        
+        // Atualizar status da proposta
+        $stmt = $db->prepare("UPDATE tb_proposta SET status = 'aceita' WHERE id = ?");
+        if ($stmt->execute([$propostaId])) {
+            // Atualizar status da solicitação
+            $db->prepare("UPDATE tb_solicita_servico SET status_id = 2 WHERE id = ?")
+               ->execute([$proposta['solicitacao_id']]);
+            
             return [
                 'sucesso' => true,
                 'mensagem' => 'Proposta aceita com sucesso'
@@ -294,7 +333,7 @@ function buscarTiposServico()
 {
     try {
         $db = Database::getInstance();
-        $stmt = $db->prepare("SELECT id, nome FROM tb_tipo_servico WHERE ativo = 1 ORDER BY nome");
+        $stmt = $db->prepare("SELECT id, nome, descricao FROM tb_tipo_servico WHERE ativo = 1 ORDER BY nome");
         $stmt->execute();
         $tipos = $stmt->fetchAll();
 
@@ -323,21 +362,29 @@ function adicionarEndereco($input, $clienteId)
             'bairro' => $input['bairro'] ?? '',
             'cidade' => $input['cidade'] ?? '',
             'estado' => $input['estado'] ?? '',
-            'principal' => $input['principal'] ?? false
+            'principal' => $input['principal'] ?? 0
         ];
 
-        // Validações básicas
         if (empty($dados['cep']) || empty($dados['logradouro']) || empty($dados['numero'])) {
             return ['erro' => 'CEP, logradouro e número são obrigatórios'];
         }
 
-        $perfil = new ClientePerfil();
-        $enderecoId = $perfil->criarEndereco($dados);
-
-        if ($enderecoId) {
+        $db = Database::getInstance();
+        
+        // Se for principal, desmarcar outros
+        if ($dados['principal']) {
+            $db->prepare("UPDATE tb_endereco SET principal = 0 WHERE pessoa_id = ?")
+               ->execute([$clienteId]);
+        }
+        
+        $sql = "INSERT INTO tb_endereco (pessoa_id, cep, logradouro, numero, complemento, bairro, cidade, estado, principal) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        
+        if ($stmt->execute(array_values($dados))) {
             return [
                 'sucesso' => true,
-                'endereco_id' => $enderecoId,
+                'endereco_id' => $db->lastInsertId(),
                 'mensagem' => 'Endereço adicionado com sucesso'
             ];
         } else {
@@ -381,11 +428,8 @@ if (!$isPublicEndpoint && !verificarToken($headers)) {
 
 // Roteamento baseado na URI
 try {
-    // Extrair o endpoint da URI
     $pathParts = explode('/', trim(parse_url($uri, PHP_URL_PATH), '/'));
     $endpoint = end($pathParts);
-
-    // Extrair cliente_id do token/headers (em produção, extrair do JWT)
     $clienteId = $input['cliente_id'] ?? ($_GET['cliente_id'] ?? null);
 
     switch ($method) {
@@ -410,7 +454,7 @@ try {
                     }
                     $filtros = [
                         'status' => $_GET['status'] ?? '',
-                        'tipo_servico' => $_GET['tipo_servico'] ?? ''
+                        'busca' => $_GET['busca'] ?? ''
                     ];
                     $response = listarSolicitacoes($clienteId, $filtros);
                     break;
@@ -475,24 +519,6 @@ try {
             }
             break;
 
-        case 'PUT':
-            switch ($endpoint) {
-                case 'perfil':
-                    if (!$clienteId) {
-                        $response = ['erro' => 'ID do cliente é obrigatório'];
-                        break;
-                    }
-                    // TODO: Implementar atualização de perfil
-                    $response = ['erro' => 'Funcionalidade em desenvolvimento'];
-                    break;
-
-                default:
-                    $response = ['erro' => 'Endpoint não encontrado'];
-                    http_response_code(404);
-                    break;
-            }
-            break;
-
         case 'DELETE':
             switch ($endpoint) {
                 case 'enderecos':
@@ -506,8 +532,9 @@ try {
                         break;
                     }
 
-                    $perfil = new ClientePerfil();
-                    if ($perfil->excluirEndereco($enderecoId, $clienteId)) {
+                    $db = Database::getInstance();
+                    $stmt = $db->prepare("DELETE FROM tb_endereco WHERE id = ? AND pessoa_id = ?");
+                    if ($stmt->execute([$enderecoId, $clienteId])) {
                         $response = [
                             'sucesso' => true,
                             'mensagem' => 'Endereço excluído com sucesso'
@@ -535,5 +562,4 @@ try {
     http_response_code(500);
 }
 
-// Retornar resposta
 echo json_encode($response, JSON_UNESCAPED_UNICODE);

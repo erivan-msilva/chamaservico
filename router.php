@@ -132,79 +132,16 @@ class Router {
 
     private function showNotFound($path, $method) {
         http_response_code(404);
-        
-        // CORREÇÃO: URLs sem subdiretório hardcoded
-        $loginUrl = BASE_URL . '/login';
-        $homeUrl = BASE_URL . '/';
-        
-        echo "<!DOCTYPE html>
-        <html lang='pt-BR'>
-        <head>
-            <meta charset='UTF-8'>
-            <title>404 - Página não encontrada</title>
-            <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet'>
-        </head>
-        <body class='bg-light'>
-            <div class='container mt-5'>
-                <div class='card'>
-                    <div class='card-body text-center'>
-                        <h1 class='display-1 text-muted'>404</h1>
-                        <h2>Página não encontrada</h2>
-                        <p><strong>Rota solicitada:</strong> $method $path</p>
-                        <a href='$homeUrl' class='btn btn-primary'>Página Inicial</a>
-                        <a href='$loginUrl' class='btn btn-outline-primary'>Login</a>
-                        
-                        <hr>
-                        <details>
-                            <summary>Debug Info</summary>
-                            <div class='text-start mt-2'>
-                                <p><strong>BASE_URL:</strong> " . BASE_URL . "</p>
-                                <p><strong>Ambiente:</strong> " . AMBIENTE . "</p>
-                                <p><strong>Base Path:</strong> {$this->basePath}</p>
-                                <strong>Rotas disponíveis:</strong>
-                                <ul>";
-        
-        foreach ($this->routes as $method => $routes) {
-            foreach ($routes as $route => $config) {
-                echo "<li>$method $route → {$config['controller']}::{$config['method']}</li>";
-            }
-        }
-        
-        echo "              </ul>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>";
+        // Inclua sua view de erro 404 personalizada
+        include __DIR__ . '/views/erros/404.php';
+        exit;
     }
-
+     
     private function showError($message) {
         http_response_code(500);
-        
-        // CORREÇÃO: URL sem subdiretório hardcoded
-        $homeUrl = BASE_URL . '/';
-        
-        echo "<!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset='UTF-8'>
-            <title>Erro 500</title>
-            <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet'>
-        </head>
-        <body class='bg-light'>
-            <div class='container mt-5'>
-                <div class='card'>
-                    <div class='card-body text-center'>
-                        <h1 class='text-danger'>Erro 500</h1>
-                        <p>$message</p>
-                        <a href='" . BASE_URL . "' class='btn btn-primary'>Voltar ao Início</a>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>";
+        // Inclua sua view de erro 500 personalizada ou apenas exiba a mensagem
+        echo "<h1>Erro 500</h1><p>$message</p>";
+        exit;
     }
 }
 

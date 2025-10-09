@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Tempo de geração: 11/08/2025 às 22:44
--- Versão do servidor: 10.4.32-MariaDB
--- Versão do PHP: 8.2.12
+-- Host: localhost
+-- Tempo de geração: 02/10/2025 às 17:03
+-- Versão do servidor: 10.6.17-MariaDB
+-- Versão do PHP: 8.1.28
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `bd_servicos`
+-- Banco de dados: `td187899_bd_servicos`
 --
 
 -- --------------------------------------------------------
@@ -34,6 +34,7 @@ CREATE TABLE `tb_avaliacao` (
   `avaliado_id` int(11) NOT NULL,
   `nota` decimal(2,1) NOT NULL,
   `comentario` text DEFAULT NULL,
+  `recomendaria` tinyint(1) DEFAULT 0,
   `data_avaliacao` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -41,9 +42,13 @@ CREATE TABLE `tb_avaliacao` (
 -- Despejando dados para a tabela `tb_avaliacao`
 --
 
-INSERT INTO `tb_avaliacao` (`id`, `solicitacao_id`, `avaliador_id`, `avaliado_id`, `nota`, `comentario`, `data_avaliacao`) VALUES
-(1, 1, 1, 4, 5.0, 'Excelente profissional! Muito pontual e trabalho bem feito.', '2025-06-28 00:41:02'),
-(2, 2, 2, 5, 4.5, 'Bom trabalho, resolveu o problema rapidamente.', '2025-06-28 00:41:02');
+INSERT INTO `tb_avaliacao` (`id`, `solicitacao_id`, `avaliador_id`, `avaliado_id`, `nota`, `comentario`, `recomendaria`, `data_avaliacao`) VALUES
+(1, 1, 1, 4, 5.0, 'Excelente profissional! Muito pontual e trabalho bem feito.', 0, '2025-06-28 00:41:02'),
+(2, 2, 2, 5, 5.0, 'Bom trabalho, resolveu o problema rapidamente.', 0, '2025-06-28 00:41:02'),
+(3, 30, 3, 2, 5.0, 'asdasdasdasd', 1, '2025-09-03 11:28:52'),
+(4, 29, 1, 2, 5.0, 'muito bom kljljklhjklhjkhkhk', 0, '2025-09-03 19:49:31'),
+(5, 33, 1, 2, 5.0, 'recomendo o serviço do presador de serviço', 0, '2025-09-18 22:12:25'),
+(6, 26, 3, 2, 4.0, 'teste de avaliação para o senac', 0, '2025-09-29 18:07:42');
 
 -- --------------------------------------------------------
 
@@ -54,7 +59,7 @@ INSERT INTO `tb_avaliacao` (`id`, `solicitacao_id`, `avaliador_id`, `avaliado_id
 CREATE TABLE `tb_endereco` (
   `id` int(11) NOT NULL,
   `pessoa_id` int(11) DEFAULT NULL,
-  `cep` varchar(10) NOT NULL,
+  `cep` varchar(8) NOT NULL,
   `logradouro` varchar(100) NOT NULL,
   `numero` varchar(20) NOT NULL,
   `complemento` varchar(100) DEFAULT NULL,
@@ -69,20 +74,38 @@ CREATE TABLE `tb_endereco` (
 --
 
 INSERT INTO `tb_endereco` (`id`, `pessoa_id`, `cep`, `logradouro`, `numero`, `complemento`, `bairro`, `cidade`, `estado`, `principal`) VALUES
-(1, 2, '01310-100', 'Av. Paulista', '1500', NULL, 'Bela Vista', 'São Paulo', 'SP', 1),
-(2, 3, '04038-001', 'Rua Vergueiro', '2000', NULL, 'Vila Mariana', 'São Paulo', 'SP', 1),
-(3, 4, '05407-002', 'Rua Teodoro Sampaio', '500', NULL, 'Pinheiros', 'São Paulo', 'SP', 1),
-(4, 5, '03307-000', 'Av. Celso Garcia', '1000', NULL, 'Tatuapé', 'São Paulo', 'SP', 1),
-(5, 6, '02071-000', 'Av. Cruzeiro do Sul', '800', NULL, 'Santana', 'São Paulo', 'SP', 1),
-(6, 7, '04567-000', 'Av. Faria Lima', '1200', NULL, 'Itaim Bibi', 'São Paulo', 'SP', 1),
+(1, 2, '01310100', 'Av. Paulista', '1500', '34', 'Bela Vista', 'São Paulo', 'SP', 0),
+(2, 3, '04038001', 'Rua Vergueiro', '2000', NULL, 'Vila Mariana', 'São Paulo', 'SP', 0),
+(3, 4, '05407002', 'Rua Teodoro Sampaio', '500', NULL, 'Pinheiros', 'São Paulo', 'SP', 1),
+(4, 5, '03307000', 'Av. Celso Garcia', '1000', NULL, 'Tatuapé', 'São Paulo', 'SP', 1),
+(5, 6, '02071000', 'Av. Cruzeiro do Sul', '800', NULL, 'Santana', 'São Paulo', 'SP', 1),
+(6, 7, '04567000', 'Av. Faria Lima', '1200', NULL, 'Itaim Bibi', 'São Paulo', 'SP', 1),
 (7, 4, '72236800', 'casa 34', '25', '34', 'sol', 'ceilandia', 'DF', 0),
 (8, 4, '72236800', 'casa 34', '25', '34', 'sol', 'ceilandia', 'DF', 0),
-(9, 1, '72236-800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
-(10, 1, '72236-800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
-(11, 1, '72236-800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
-(12, 1, '72927-128', 'Quadra 14B', '3', 'd', 'Mansões Odisséia', 'Águas Lindas de Goiás', 'GO', 0),
-(13, 2, '72236-800', 'Setor Habitacional Sol Nascente', '22', '34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
-(14, 12, '72236-80', 'res.pinheiros quadra 22 l', '22', 'AP 03', 'sjsn', 'ceilândia', 'DF', 1);
+(9, 1, '72236800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
+(10, 1, '72236800', 'Setor Habitacional Sol Nascente', '2', 'casa 34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
+(12, 1, '72927128', 'Quadra 14B', '3', 'd', 'Mansões Odisséia', 'Águas Lindas de Goiás', 'GO', 1),
+(13, 2, '72236800', 'Setor Habitacional Sol Nascente', '22', '34', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
+(14, 12, '72236800', 'res.pinheiros quadra 22 l', '22', 'AP 03', 'sjsn', 'ceilândia', 'DF', 1),
+(15, 1, '72225016', 'Quadra QNN 1 Conjunto F', '25', '', 'Ceilândia Norte (Ceilândia)', 'Brasília', 'DF', 0),
+(20, 3, '72310409', 'Quadra QR 502 Conjunto 9', '26', 'casa', 'Samambaia Sul (Samambaia)', 'Brasília', 'DF', 0),
+(21, 22, '7223680', 'res.pinheiros quadra 22 l', '22', 'casa', 'Ceilândia Sul (Ceilândia)', 'ceilândia', 'DF', 1),
+(22, 21, '72236800', 'Setor Habitacional Sol Nascente', '1', 'apto', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
+(23, 23, '72236800', 'casa 34', '2', '2', 'sol', 'ceilandia', 'DF', 1),
+(24, 24, '72927128', 'Quadra 14B', '2', '2', 'Mansões Odisséia', 'Águas Lindas de Goiás', 'GO', 1),
+(26, 3, '72236800', 'Setor Habitacional Sol Nascente', '22', '3', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
+(28, 28, '72927128', 'Quadra 14B', '3', '', 'Mansões Odisséia', 'Águas Lindas de Goiás', 'GO', 0),
+(29, 3, '72236800', 'Setor Habitacional Sol Nascente', '2', '', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
+(30, 28, '72236800', 'Setor Habitacional Sol Nascente', '2', '', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
+(31, 2, '72236800', 'Setor Habitacional Sol Nascente', '22', '', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 1),
+(38, 28, '72927128', 'Quadra 14B', '10', '', 'Mansões Odisséia', 'Águas Lindas de Goiás', 'GO', 0),
+(41, 29, '71900100', 'Avenida das Castanheiras', '2', '', 'Norte (Águas Claras)', 'Brasília', 'DF', 1),
+(43, 28, '71909540', 'Rua 12', '9', '', 'Norte (Águas Claras)', 'Brasília', 'DF', 0),
+(44, 34, '72927128', 'Quadra 2', '2', '', 'Centro', 'Asa Sul', 'DF', 0),
+(56, 10, '70702900', 'SHN Quadra 2 Bloco A', '1', 'casa', 'Asa Norte', 'Brasília', 'DF', 0),
+(57, 10, '72236800', 'Setor Habitacional Sol Nascente', '243', 'apto', 'Ceilândia Sul (Ceilândia)', 'Brasília', 'DF', 0),
+(58, 28, '71900100', 'Avenida das Castanheiras', '2', '', 'Norte (Águas Claras)', 'Brasília', 'DF', 1),
+(59, 30, '72015938', 'CSB 3 Lote 05', '1', '', 'Taguatinga Sul (Taguatinga)', 'Brasília', 'DF', 1);
 
 -- --------------------------------------------------------
 
@@ -107,9 +130,38 @@ INSERT INTO `tb_imagem_solicitacao` (`id`, `solicitacao_id`, `caminho_imagem`, `
 (3, 12, 'servico_12_1751586091_0.png', '2025-07-03 20:41:31'),
 (4, 13, 'servico_13_1751634957_0.jpg', '2025-07-04 10:15:57'),
 (5, 15, 'servico_15_1751640608_0.jpg', '2025-07-04 11:50:08'),
-(6, 16, 'servico_16_1751640613_0.jpg', '2025-07-04 11:50:13'),
-(8, 18, 'servico_18_1751640663_0.jpg', '2025-07-04 11:51:03'),
-(11, 22, 'servico_22_1754482508_0.jpg', '2025-08-06 09:15:08');
+(11, 22, 'servico_22_1754482508_0.jpg', '2025-08-06 09:15:08'),
+(12, 24, 'servico_24_1755539102_0.png', '2025-08-18 14:45:02'),
+(13, 24, 'servico_24_1755539102_1.png', '2025-08-18 14:45:02'),
+(14, 24, 'servico_24_1755543151_0.png', '2025-08-18 15:52:31'),
+(15, 25, 'servico_25_1755547698_0.PNG', '2025-08-18 17:08:18'),
+(16, 26, 'servico_26_1755553547_0.jpg', '2025-08-18 18:45:47'),
+(17, 27, 'servico_27_1755556038_0.png', '2025-08-18 19:27:18'),
+(18, 28, 'servico_28_1755634391_0.JPG', '2025-08-19 17:13:11'),
+(19, 29, 'servico_29_1756836149_0.jpg', '2025-09-02 15:02:29'),
+(20, 29, 'servico_29_1756836149_1.jpg', '2025-09-02 15:02:29'),
+(21, 30, 'servico_30_1756903833_0.png', '2025-09-03 09:50:33'),
+(22, 31, 'servico_31_1756911789_0.jpg', '2025-09-03 12:03:09'),
+(23, 32, 'servico_32_1756922652_0.jpg', '2025-09-03 15:04:12'),
+(24, 32, 'servico_32_1756922652_1.png', '2025-09-03 15:04:12'),
+(25, 32, 'servico_32_1756922652_2.png', '2025-09-03 15:04:12'),
+(26, 33, 'servico_33_1756939865_0.jpg', '2025-09-03 19:51:05'),
+(27, 33, 'servico_33_1756939865_1.jpg', '2025-09-03 19:51:05'),
+(28, 34, 'servico_34_1757014627_0.png', '2025-09-04 16:37:07'),
+(29, 35, 'servico_35_1757014780_0.png', '2025-09-04 16:39:40'),
+(30, 36, 'servico_36_1757031088_0.png', '2025-09-04 21:11:28'),
+(31, 37, 'servico_37_1757106516_0.png', '2025-09-05 18:08:36'),
+(32, 37, 'servico_37_1757106516_1.jpg', '2025-09-05 18:08:36'),
+(33, 38, 'servico_38_1757114291_0.jpeg', '2025-09-05 20:18:11'),
+(34, 39, 'servico_39_1757527462_0.png', '2025-09-10 15:04:22'),
+(35, 40, 'servico_40_1758648982_0.png', '2025-09-23 14:36:22'),
+(36, 41, 'servico_41_1758649630_0.png', '2025-09-23 14:47:10'),
+(37, 42, 'servico_42_1758650243_0.png', '2025-09-23 14:57:23'),
+(38, 44, 'servico_44_1758805474_0.png', '2025-09-25 10:04:34'),
+(39, 45, 'servico_45_1758839547_0.png', '2025-09-25 19:32:27'),
+(40, 46, 'servico_46_1758839548_0.png', '2025-09-25 19:32:28'),
+(42, 49, 'servico_49_1759166501_0.png', '2025-09-29 14:21:41'),
+(43, 60, 'servico_60_1759278049_0.png', '2025-09-30 21:20:49');
 
 -- --------------------------------------------------------
 
@@ -152,6 +204,16 @@ CREATE TABLE `tb_negociacao_proposta` (
   `data_negociacao` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `tb_negociacao_proposta`
+--
+
+INSERT INTO `tb_negociacao_proposta` (`id`, `proposta_id`, `tipo`, `valor`, `prazo`, `observacoes`, `data_negociacao`) VALUES
+(1, 18, 'contra_proposta', 200.00, 4, 'eu pago 100 a mais pra você fazer em um dia', '2025-08-19 11:04:13'),
+(2, 18, 'resposta_prestador', 200.00, 4, 'ok eu faço', '2025-08-19 11:10:02'),
+(3, 20, 'contra_proposta', 50.00, 2, 'bora', '2025-08-19 18:27:15'),
+(4, 20, 'resposta_prestador', 50.00, 2, '', '2025-08-19 18:43:38');
+
 -- --------------------------------------------------------
 
 --
@@ -169,6 +231,87 @@ CREATE TABLE `tb_notificacao` (
   `referencia_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `tb_notificacao`
+--
+
+INSERT INTO `tb_notificacao` (`id`, `pessoa_id`, `titulo`, `mensagem`, `data_notificacao`, `lida`, `tipo`, `referencia_id`) VALUES
+(7, 12, 'Proposta recebida', 'Você recebeu uma proposta de R$ 150,00 para seu serviço \"cano furado\"', '2025-08-19 12:13:44', 0, 'nova_proposta', 22),
+(8, 12, 'Bem-vindo!', 'Complete seu perfil para ter uma melhor experiência no ChamaServiço', '2025-08-19 12:13:44', 0, 'sistema', NULL),
+(22, 1, 'Atualização do Serviço', 'O prestador concluiu o seu serviço \'Teste de serviço\'\n\nObservações: ok', '2025-08-19 19:32:08', 1, 'status_servico', 28),
+(23, 1, 'Atualização do Serviço', 'O prestador concluiu o seu serviço \'Teste de serviço\'', '2025-08-19 19:44:37', 1, 'status_servico', 28),
+(25, 10, '🎉 Proposta Aceita!', 'Sua proposta de R$ 150,00 para \'cano furado\' foi aceita!', '2025-08-25 17:04:10', 1, 'proposta_aceita', 14),
+(26, 10, '🎉 Proposta Aceita!', 'Parabéns! Sua proposta de R$ 150,00 para o serviço \'cano furado\' foi aceita por Ana Cliente!\n\n📋 Detalhes da Proposta:\n• Valor: R$ 150,00\n• Prazo: 1 dia(s)\n• Endereço: res.pinheiros quadra 22 l, 22 - sjsn, ceilândia\n\n📞 Entre em contato com o cliente para combinar os detalhes do serviço.\n✅ O serviço agora está em andamento!', '2025-08-25 17:04:10', 1, 'proposta_aceita', 14),
+(28, 1, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"limpeza de micro\". Acesse para visualizar os detalhes.', '2025-09-02 15:14:20', 1, 'nova_proposta', 29),
+(31, 1, 'Atualização do Serviço', ' \'limpeza de micro\'\n\nObservações: serviço concluido com sucesso', '2025-09-02 17:39:39', 1, 'status_servico', 29),
+(34, 1, 'Atualização do Serviço', ' \'limpeza de micro\'\n\nObservações: asdasdasdas', '2025-09-02 17:54:02', 1, 'status_servico', 29),
+(35, 1, 'Atualização do Serviço', ' \'limpeza de micro\'\n\nObservações: sdfsdfsdfsfs', '2025-09-02 17:57:30', 1, 'status_servico', 29),
+(37, 1, 'Atualização do Serviço', ' \'limpeza de micro\'\n\nObservações: realizado o serviço com sucesso', '2025-09-03 09:09:56', 1, 'status_servico', 29),
+(39, 3, 'Nova proposta recebida!', 'O prestador Marian Mendes da Silva enviou uma proposta para \'teste\'', '2025-09-03 09:23:57', 1, 'nova_proposta', 26),
+(42, 3, 'Atualização do Serviço', ' \'teste\'\n\nObservações: testetetetetetettetet', '2025-09-03 09:28:27', 1, 'status_servico', 26),
+(43, 3, 'Atualização do Serviço', ' \'teste\'\n\nObservações: concluidp', '2025-09-03 09:42:58', 1, 'status_servico', 26),
+(53, 3, 'Nova proposta recebida!', 'O prestador Marian Mendes da Silva enviou uma proposta para \'Dev Muito louco6\'', '2025-09-03 12:03:27', 1, 'nova_proposta', 31),
+(56, 1, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"Orientação para o Portfolio\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-03 12:09:52', 1, 'servico_concluido', 27),
+(57, 1, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"Orientação para o Portfolio teste\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-03 12:16:02', 1, 'servico_concluido', 15),
+(58, 3, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"Dev Muito louco6\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-03 12:16:35', 1, 'servico_concluido', 31),
+(59, 3, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"Dev Muito louco6\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-03 15:32:59', 1, 'servico_concluido', 31),
+(60, 1, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"limpeza de micro\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-03 19:43:35', 1, 'servico_concluido', 29),
+(62, 1, 'Nova proposta recebida!', 'O prestador Marian Mendes da Silva enviou uma proposta para \'preciso de uma jaca\'', '2025-09-03 19:52:58', 1, 'nova_proposta', 33),
+(65, 1, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"preciso de uma jaca\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-03 19:57:42', 1, 'servico_concluido', 33),
+(66, 3, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"teste\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-05 09:31:52', 1, 'servico_concluido', 26),
+(67, 3, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"pintar\". Clique para visualizar e responder.', '2025-09-05 14:17:14', 1, 'nova_proposta', 26),
+(69, 2, '⭐ Nova Avaliação Recebida!', 'Você recebeu uma avaliação de 5 estrela(s) para o serviço \'preciso de uma jaca\'\n\nComentário: recomendo o serviço do presador de serviço', '2025-09-18 22:12:25', 1, 'avaliacao_recebida', 33),
+(70, 28, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Chuveiro\". Clique para visualizar e responder.', '2025-09-23 14:37:15', 0, 'nova_proposta', 28),
+(71, 33, 'Proposta recusada', 'Sua proposta para \'\' foi recusada. Motivo: caro', '2025-09-23 14:38:18', 0, 'proposta_recusada', 28),
+(72, 28, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Chuveiro\". Clique para visualizar e responder.', '2025-09-23 14:42:30', 0, 'nova_proposta', 29),
+(73, 28, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"infra\". Clique para visualizar e responder.', '2025-09-23 14:47:47', 0, 'nova_proposta', 30),
+(74, 34, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Mudança\". Clique para visualizar e responder.', '2025-09-23 14:58:15', 0, 'nova_proposta', 31),
+(75, 33, 'Proposta recusada', 'Sua proposta para \'\' foi recusada', '2025-09-23 21:56:25', 0, 'proposta_recusada', 31),
+(76, 34, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Mudança\". Clique para visualizar e responder.', '2025-09-23 22:03:03', 0, 'nova_proposta', 32),
+(77, 3, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"manutenção de micro\". Clique para visualizar e responder.', '2025-09-25 10:06:08', 1, 'nova_proposta', 33),
+(78, 1, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Abóbora\". Clique para visualizar e responder.', '2025-09-25 19:33:59', 0, 'nova_proposta', 34),
+(79, 2, '🎉 Proposta Aceita!', 'Sua proposta de R$ 200,00 para \'manutenção de micro\' foi aceita!', '2025-09-25 20:52:58', 0, 'proposta_aceita', 33),
+(80, 2, '🎉 Proposta Aceita!', 'Sua proposta para \"\" foi aceita pelo cliente! Entre em contato para combinar os detalhes.', '2025-09-25 20:52:58', 0, 'proposta_aceita', 33),
+(81, 33, '🎉 Proposta Aceita!', 'Sua proposta de R$ 1.200,00 para \'infra\' foi aceita!', '2025-09-25 21:03:20', 0, 'proposta_aceita', 30),
+(82, 33, '🎉 Proposta Aceita!', 'Sua proposta para \"\" foi aceita pelo cliente! Entre em contato para combinar os detalhes.', '2025-09-25 21:03:20', 0, 'proposta_aceita', 30),
+(83, 2, 'Proposta recusada', 'Sua proposta para \'\' foi recusada. Motivo: adxffcsdfcvxcvb', '2025-09-26 19:55:33', 0, 'proposta_recusada', 26),
+(84, 28, '🎉 Proposta Aceita!', 'Sua proposta de R$ 120,00 para \'Chuveiro\' foi aceita!', '2025-09-26 21:16:42', 0, 'proposta_aceita', 29),
+(85, 28, '🎉 Proposta Aceita!', 'Sua proposta para \"\" foi aceita pelo cliente! Entre em contato para combinar os detalhes.', '2025-09-26 21:16:42', 0, 'proposta_aceita', 29),
+(86, 4, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Orientação para o Portfolio\". Clique para visualizar e responder.', '2025-09-29 10:41:10', 0, 'nova_proposta', 35),
+(87, 28, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"infra\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-29 13:41:55', 0, 'servico_concluido', 41),
+(88, 34, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Instalação led\". Clique para visualizar e responder.', '2025-09-29 13:51:09', 0, 'nova_proposta', 36),
+(89, 33, '🎉 Proposta Aceita!', 'Sua proposta de R$ 300,00 para \'Mudança\' foi aceita!', '2025-09-29 13:52:02', 0, 'proposta_aceita', 32),
+(90, 33, '🎉 Proposta Aceita!', 'Sua proposta para \"\" foi aceita pelo cliente! Entre em contato para combinar os detalhes.', '2025-09-29 13:52:02', 0, 'proposta_aceita', 32),
+(91, 1, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"pintar\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-09-29 14:25:23', 0, 'servico_concluido', 11),
+(92, 2, '⭐ Nova Avaliação Recebida!', 'Você recebeu uma avaliação de 4 estrela(s) para o serviço \'teste\'\n\nComentário: profissional foi super atencioso', '2025-09-29 18:07:42', 0, 'avaliacao_recebida', 26),
+(93, 34, '📋 Nova Proposta Recebida', 'Você recebeu uma nova proposta para \"Vazamento de água\". Clique para visualizar e responder.', '2025-09-30 21:32:01', 0, 'nova_proposta', 37),
+(94, 28, '✅ Serviço Concluído', 'O prestador {prestador} marcou o serviço \"Chuveiro\" como concluído. Confirme a conclusão e avalie o trabalho realizado.', '2025-10-01 21:55:24', 0, 'servico_concluido', 40);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `tb_password_reset_tokens`
+--
+
+CREATE TABLE `tb_password_reset_tokens` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `usado` tinyint(1) DEFAULT 0,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `used_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `tb_password_reset_tokens`
+--
+
+INSERT INTO `tb_password_reset_tokens` (`id`, `email`, `token`, `expires_at`, `usado`, `ip_address`, `user_agent`, `created_at`, `used_at`) VALUES
+(1, 'contatoerivan.ms@gmail.com', '624d621006e636148541f84bdf6c253aa9f9f7d5e781905d345c3db7ddc423fb', '2025-09-18 19:42:35', 0, '187.63.102.130', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2025-09-18 18:42:35', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -178,10 +321,10 @@ CREATE TABLE `tb_notificacao` (
 CREATE TABLE `tb_pessoa` (
   `id` int(11) NOT NULL,
   `nome` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
+  `email` varchar(150) NOT NULL,
   `senha` varchar(255) NOT NULL,
-  `cpf` varchar(14) DEFAULT NULL,
-  `telefone` varchar(20) DEFAULT NULL,
+  `cpf` varchar(11) DEFAULT NULL,
+  `telefone` varchar(15) DEFAULT NULL,
   `dt_nascimento` date DEFAULT NULL,
   `foto_perfil` varchar(255) DEFAULT NULL,
   `data_cadastro` datetime DEFAULT current_timestamp(),
@@ -196,19 +339,32 @@ CREATE TABLE `tb_pessoa` (
 -- Despejando dados para a tabela `tb_pessoa`
 --
 
-INSERT INTO `tb_pessoa` (`id`, `nome`, `email`, `senha`, `cpf`, `telefone`, `dt_nascimento`, `foto_perfil`, `data_cadastro`, `ultimo_acesso`, `ativo`, `tipo`) VALUES
-(1, 'Usuário Teste', 'teste@sistema.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '04783079188', '61992992708', '2015-04-05', 'perfil_4_1751502779.jpg', '2025-06-28 00:39:43', '2025-07-03 20:00:24', 1, 'cliente'),
-(2, 'Marian Mendes da Silva', 'contatoerivan.ms@gmail.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '11122233344', '61 992992709', '2012-10-15', 'view/prestador/uploads/perfil_2_1753818032.png', '2025-06-28 00:41:02', '2025-08-11 11:38:36', 1, 'prestador'),
-(3, 'Pedro Oliveira', 'pedro.oliveira@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '22233344455', '(11) 92222-2222', NULL, NULL, '2025-06-28 00:41:02', '2025-07-01 21:55:00', 1, 'prestador'),
-(4, 'Ana Costa', 'ana.costa@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '33344455566', '(11) 93333-3333', NULL, 'perfil_4_1751502779.jpg', '2025-06-28 00:41:02', '2025-07-03 20:28:28', 1, 'cliente'),
-(5, 'Carlos Eletricista', 'carlos.eletricista@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '44455566677', '(11) 94444-4444', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente'),
-(6, 'Roberto Encanador', 'roberto.encanador@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '55566677788', '(11) 95555-5555', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente'),
-(7, 'José Pintor', 'jose.pintor@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '66677788899', '(11) 96666-6666', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente'),
-(8, 'ERIVAN MENDES DA SILVA', 'mendesilva16@gmail.com', '$2y$12$RhVx53CVedN1nvIFxvmTxeN7l8i0XkqnI5f8YVJj5CvX1GAt1rzHG', NULL, NULL, NULL, NULL, '2025-06-30 22:23:02', '2025-06-30 22:23:25', 0, 'cliente'),
-(9, 'Teste Usuario', 'teste@email.com', '$2y$12$YgxIFf5AMkhi1bfuHymL/uMHXVRgAm5CJ9FyQsAJep3r32aWEyXAu', NULL, NULL, NULL, NULL, '2025-07-03 19:47:12', NULL, 1, 'cliente'),
-(10, 'João Prestador', 'prestador@email.com', '$2y$12$3IQ5AeifdmDV5Dk6a9ETDOFGVfwi4Y.ZbkTwzYOrZvF9Nv0LlYdQK', NULL, '61992992708', NULL, 'view/prestador/uploads/perfil_10_1754510364.png', '2025-07-03 20:08:29', '2025-07-03 20:09:37', 1, 'prestador'),
-(11, 'Maria Ambos', 'ambos@email.com', '$2y$12$l4lbdN2risQhHrgdIucrm.4X1Q27WpgcU3pJwwdWqEUl91ggR/0ti', NULL, NULL, NULL, NULL, '2025-07-03 20:08:30', NULL, 1, 'ambos'),
-(12, 'Ana Cliente', 'cliente@email.com', '$2y$12$YYlqRXQWY4/fd1P79YefEeCxEPbHc.uOY4Q4h56NZmvx05x.LAlgC', NULL, NULL, NULL, NULL, '2025-07-03 20:08:30', '2025-07-03 20:15:09', 1, 'cliente');
+INSERT INTO `tb_pessoa` (`id`, `nome`, `email`, `senha`, `cpf`, `telefone`, `dt_nascimento`, `foto_perfil`, `data_cadastro`, `ultimo_acesso`, `ativo`, `tipo`, `token_redefinicao`, `token_expiracao`) VALUES
+(1, 'Erivan', 'teste@sistema.com', '$2y$10$kwVKnkqqN11yIRt/WTydbeDhekKIwoGqiOULIaz2IkpaN0edqHJaG', '04783079187', '61992992708', '2015-04-05', 'perfil_1_1756923873.jpg', '2025-06-28 00:39:43', '2025-09-25 19:30:59', 1, 'cliente', NULL, NULL),
+(2, 'Marian Mendes da Silva', 'contatoerivan.ms@gmail.com', '$2y$10$LzZS7WEI4GJJYXEceIOxiOsXi0Ied8VJsK5tzFgghRO6253n7H0ma', '04783079188', '(61) 99299-2708', '2012-10-15', 'perfil_2_1755549983.jpg', '2025-06-28 00:41:02', '2025-09-25 21:30:35', 1, 'prestador', 'b39a319f1eaa0a4f7dc0bf1e8138c36d88aa1a3c20d12ffaa1804ff507d6be9b', '2025-09-25 20:37:40'),
+(3, 'Pedro Oliveira', 'pedro.oliveira@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '22233344455', '(11) 92222-2222', '1993-12-09', 'perfil_3_1755550038.jpg', '2025-06-28 00:41:02', '2025-10-01 19:59:45', 1, 'cliente', NULL, NULL),
+(4, 'Ana Costa', 'ana.costa@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '33344455566', '(11) 93333-3333', NULL, 'perfil_4_1751502779.jpg', '2025-06-28 00:41:02', '2025-08-18 10:55:48', 1, 'cliente', NULL, NULL),
+(5, 'Carlos Eletricista', 'carlos.eletricista@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '44455566677', '(11) 94444-4444', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente', NULL, NULL),
+(6, 'Roberto Encanador', 'roberto.encanador@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '55566677788', '(11) 95555-5555', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente', NULL, NULL),
+(7, 'José Pintor', 'jose.pintor@email.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', '66677788899', '(11) 96666-6666', NULL, NULL, '2025-06-28 00:41:02', NULL, 1, 'cliente', NULL, NULL),
+(9, 'Teste Usuario', 'teste@email.com', '$2y$12$YgxIFf5AMkhi1bfuHymL/uMHXVRgAm5CJ9FyQsAJep3r32aWEyXAu', NULL, NULL, NULL, NULL, '2025-07-03 19:47:12', NULL, 1, 'cliente', NULL, NULL),
+(10, 'João Prestador', 'prestador@email.com', '$2y$12$3IQ5AeifdmDV5Dk6a9ETDOFGVfwi4Y.ZbkTwzYOrZvF9Nv0LlYdQK', NULL, '61992992708', NULL, 'view/prestador/uploads/perfil_10_1754510364.png', '2025-07-03 20:08:29', '2025-09-29 16:07:46', 1, 'prestador', NULL, NULL),
+(11, 'Maria Ambos', 'ambos@email.com', '$2y$12$l4lbdN2risQhHrgdIucrm.4X1Q27WpgcU3pJwwdWqEUl91ggR/0ti', NULL, NULL, NULL, NULL, '2025-07-03 20:08:30', NULL, 1, 'ambos', NULL, NULL),
+(12, 'Ana Cliente', 'cliente@email.com', '$2y$12$YYlqRXQWY4/fd1P79YefEeCxEPbHc.uOY4Q4h56NZmvx05x.LAlgC', NULL, NULL, NULL, NULL, '2025-07-03 20:08:30', '2025-08-25 17:03:01', 1, 'cliente', NULL, NULL),
+(21, 'nelson ferreira', 'nelson@csc.com.br', '$2y$10$kgcQkNYGx0ch7ExVoNNDYOmCDSfdvzVzx0GfDrDS2q3Miu0zsyyE.', NULL, NULL, NULL, 'perfil_21_1756150675.png', '2025-08-18 14:36:46', '2025-08-25 16:43:57', 1, 'cliente', NULL, NULL),
+(22, 'ERIVAN MENDES DA SILVA', 'erivan@csc.com.br', '$2y$10$C9rCpBFNp36SYSGObw4DJekx9JK0GedZkcAcuiAMJs0gQylE0HraG', NULL, NULL, NULL, 'perfil_22_1755646728.png', '2025-08-19 20:37:58', '2025-08-19 20:38:12', 1, 'cliente', NULL, NULL),
+(23, 'samuel reis', 'samuel@csc.com.br', '$2y$10$P9kdGCKpCwRvsTw8DCwJJuiYabAvKuNtm9aPZJaHO12hU2ujwCQjW', NULL, NULL, NULL, NULL, '2025-08-25 17:05:46', '2025-08-25 17:05:55', 0, 'cliente', NULL, NULL),
+(24, 'Ana Costa', 'ana.costa@teste.com', '$2y$10$0jiofppK5UxAHkY3jAtGLOPsVw7f9.FB3BnpLnMt18F5JREQxmaXS', NULL, NULL, NULL, NULL, '2025-08-25 21:12:29', '2025-09-26 20:33:04', 1, 'cliente', NULL, NULL),
+(26, 'ERIVAN MENDES DA SILVA', 'erivan.silva@cscpaulooctavio.com.br', '$2y$10$2nUWJTIX82Q80PCbTBslOOUxNz.32ZmQtxzB1w5MLlyv3FzG2Ouum', NULL, NULL, NULL, NULL, '2025-09-03 16:37:02', '2025-09-03 16:37:12', 1, 'cliente', NULL, NULL),
+(27, 'Genilson Pereira', 'mendesilva16@gmail.com', '$2y$10$XO364Pm1nFOX0fA.MCvlA.sJKy4hsbJPi.oCbcRYcpXgBp2aWsrwm', NULL, NULL, NULL, NULL, '2025-09-03 17:53:06', NULL, 1, 'cliente', '239e69fc65c8221f3064798c3c46c03643f102013d8afaf952183fc2833f1a51', '2025-10-02 17:47:08'),
+(28, 'Caroline Pires', 'j.pires.cursos@gmail.com', '$2y$10$473qenFYEtSqfUCdmffOE.Fw93rgXaNr0zYw/Vx7d5SMzYy33DzG2', '54549656487', '(61) 99344-7792', '1897-05-10', NULL, '2025-09-04 19:20:52', '2025-10-01 21:54:20', 1, 'ambos', NULL, NULL),
+(29, 'Maria DEV', 'mariadev@teste.com', '$2y$10$vJ7e6UHDIHD4F1YFsI/n..T8EDCb0PdTGbip0DGr69oYqleppojcC', NULL, NULL, NULL, NULL, '2025-09-05 20:55:49', '2025-09-05 21:30:19', 1, 'cliente', NULL, NULL),
+(30, 'Sérgio', 'cliente@teste.com', '$2y$10$iheKspewumf65ZQsfYQkMewEQdWReOE/Mh0Lpd56uhOma2uKQlwXq', NULL, NULL, NULL, NULL, '2025-09-15 14:28:46', '2025-09-30 21:15:45', 1, 'cliente', NULL, NULL),
+(31, 'Sergio Prestador', 'sergio.5535@df.senac.br', '$2y$10$Au.PEbar/xJLOe2S98mw5.pb5/ACgI6m1glT95BF4h4Ny6cIsD9YC', NULL, NULL, NULL, NULL, '2025-09-15 14:32:02', '2025-09-30 21:14:25', 1, 'prestador', NULL, NULL),
+(32, 'julia cliente e prestador', 'julia@teste.com', '$2y$10$zNxtvihP0aEnJAHPz4UCq.P.tMF9qeAbEN/0TzYO8hk/YTVnLXoB6', NULL, NULL, NULL, NULL, '2025-09-15 14:33:19', '2025-09-15 14:34:58', 1, 'ambos', NULL, NULL),
+(33, 'Prestador', 'Jessicabral@hotmail.com', '$2y$10$kwVKnkqqN11yIRt/WTydbeDhekKIwoGqiOULIaz2IkpaN0edqHJaG', NULL, NULL, NULL, NULL, '2025-09-23 14:34:01', '2025-09-29 10:14:26', 1, 'prestador', NULL, NULL),
+(34, 'cliente', 'Jessicabral@outlook.com', '$2y$10$IVc/ntqiVAdUadQT6Qtq7eAinhX1ZTsA6JfuBfnunSpnkBpQLUbci', NULL, NULL, NULL, NULL, '2025-09-23 14:52:56', '2025-09-29 10:15:00', 1, 'cliente', NULL, NULL),
+(35, 'Teste', 'jessica.cabral@m4u.com.br', '$2y$10$asrj2Zy0915Zi5hcck0qAu9c3LZdIRyMtwL/bgANNEsUulhRxZs2m', NULL, NULL, NULL, NULL, '2025-10-01 21:33:33', NULL, 1, 'cliente', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -235,8 +391,31 @@ CREATE TABLE `tb_proposta` (
 
 INSERT INTO `tb_proposta` (`id`, `solicitacao_id`, `prestador_id`, `valor`, `descricao`, `prazo_execucao`, `data_proposta`, `status`, `data_aceite`, `data_recusa`) VALUES
 (1, 1, 4, 180.00, 'Instalação completa com teste de funcionamento e garantia de 6 meses.', 1, '2025-06-28 00:41:02', 'aceita', NULL, NULL),
-(13, 11, 10, 300.00, 'eu faço em três dias e divido no cartão ', 3, '2025-08-06 09:38:53', 'pendente', NULL, NULL),
-(14, 22, 10, 150.00, 'favor entrar em contato comigo 6199....', 1, '2025-08-06 11:38:45', 'pendente', NULL, NULL);
+(13, 11, 10, 300.00, 'eu faço em três dias e divido no cartão ', 3, '2025-08-06 09:38:53', 'aceita', '2025-08-19 17:12:08', NULL),
+(14, 22, 10, 150.00, 'favor entrar em contato comigo 6199....', 1, '2025-08-06 11:38:45', 'aceita', '2025-08-25 17:04:10', NULL),
+(15, 3, 2, 250.00, 'eu faço em e dias e dou garantia de 3 meses', 3, '2025-08-18 16:52:19', 'cancelada', NULL, NULL),
+(16, 3, 2, 100.00, 'eu faço e divido', 2, '2025-08-18 16:58:36', 'cancelada', NULL, NULL),
+(17, 25, 2, 10.00, 'eu faço em dois dias e ainda divido', 2, '2025-08-18 17:41:59', 'cancelada', NULL, NULL),
+(18, 15, 2, 200.00, 'ok', 4, '2025-08-18 20:17:40', 'aceita', '2025-08-19 16:49:35', NULL),
+(19, 27, 2, 5.00, 'faço esse serviço e divido em 3 vezes', 2, '2025-08-19 10:42:58', 'aceita', '2025-08-19 11:03:27', NULL),
+(20, 28, 2, 50.00, 'divido esse valor', 2, '2025-08-19 17:40:09', 'aceita', '2025-08-19 18:54:07', NULL),
+(21, 29, 2, 50.00, 'eu consigo fazer em um dia e divido o valor no cartão vamos fechasr asjdasdasdasdasd', 1, '2025-09-02 15:14:20', 'aceita', '2025-09-02 17:32:57', NULL),
+(22, 26, 2, 100.00, 'dfsfgsdfgggggggggggdfgsdfghertwertwertwertwert', 5, '2025-09-03 09:23:57', 'aceita', '2025-09-03 09:27:13', NULL),
+(23, 30, 2, 90.00, 'eu formato e limpo em um dia e divido no cartão', 1, '2025-09-03 09:51:25', 'aceita', '2025-09-03 09:51:48', NULL),
+(24, 31, 2, 10.00, 'sdfsfdsdfgsdfgsdfgsdfgsdfg', 2, '2025-09-03 12:03:27', 'aceita', '2025-09-03 12:03:50', NULL),
+(25, 33, 2, 50.00, 'khjgjkhfgkjgkljglgkhjgjkg', 5, '2025-09-03 19:52:58', 'aceita', '2025-09-03 19:56:12', NULL),
+(26, 35, 2, 3.00, 'asdasdfsdfasdfasdfasdfasdfasdfasdf', 3, '2025-09-05 14:17:14', 'recusada', NULL, '2025-09-26 19:55:33'),
+(27, 37, 28, 50.00, 'Teste', 2, '2025-09-05 20:15:10', 'cancelada', NULL, NULL),
+(28, 40, 33, 200.00, 'Faço hoje', 1, '2025-09-23 14:37:15', 'recusada', NULL, '2025-09-23 14:38:18'),
+(29, 40, 28, 120.00, 'tes', 3, '2025-09-23 14:42:30', 'aceita', '2025-09-26 21:16:42', NULL),
+(30, 41, 33, 1200.00, 'Teste', 3, '2025-09-23 14:47:47', 'aceita', '2025-09-25 21:03:20', NULL),
+(31, 42, 33, 4000.00, 'Teste', 100, '2025-09-23 14:58:15', 'recusada', NULL, '2025-09-23 21:56:25'),
+(32, 43, 33, 300.00, 'Faço', 2, '2025-09-23 22:03:03', 'aceita', '2025-09-29 13:52:02', NULL),
+(33, 44, 2, 200.00, 'consigo fazer por 200 reais e divido em duas vezes no cartão', 1, '2025-09-25 10:06:08', 'aceita', '2025-09-25 20:52:58', NULL),
+(34, 46, 2, 100.00, 'divido no cartão', 4, '2025-09-25 19:33:59', 'pendente', NULL, NULL),
+(35, 5, 33, 300.00, 'Consigo realizar em 2 dias', 2, '2025-09-29 10:41:10', 'pendente', NULL, NULL),
+(36, 48, 33, 210.00, 'Realizo em 1 dia', 1, '2025-09-29 13:51:09', 'pendente', NULL, NULL),
+(37, 59, 28, 250.00, 'Preciso de material', 2, '2025-09-30 21:32:01', 'pendente', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -249,7 +428,7 @@ CREATE TABLE `tb_solicita_servico` (
   `cliente_id` int(11) NOT NULL,
   `tipo_servico_id` int(11) NOT NULL,
   `endereco_id` int(11) NOT NULL,
-  `titulo` varchar(100) NOT NULL,
+  `titulo` varchar(150) NOT NULL,
   `descricao` text NOT NULL,
   `orcamento_estimado` decimal(10,2) DEFAULT NULL,
   `data_solicitacao` datetime DEFAULT current_timestamp(),
@@ -257,7 +436,7 @@ CREATE TABLE `tb_solicita_servico` (
   `status_id` int(11) NOT NULL,
   `urgencia` enum('baixa','media','alta') DEFAULT 'media',
   `data_cancelamento` datetime DEFAULT NULL,
-  `motivo_cancelamento` text DEFAULT NULL
+  `motivo_cancelamento` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -267,21 +446,52 @@ CREATE TABLE `tb_solicita_servico` (
 INSERT INTO `tb_solicita_servico` (`id`, `cliente_id`, `tipo_servico_id`, `endereco_id`, `titulo`, `descricao`, `orcamento_estimado`, `data_solicitacao`, `data_atendimento`, `status_id`, `urgencia`, `data_cancelamento`, `motivo_cancelamento`) VALUES
 (1, 1, 1, 1, 'Instalação de chuveiro elétrico', 'Preciso instalar um chuveiro elétrico novo no banheiro. Já tenho o chuveiro.', 200.00, '2025-06-28 00:41:02', NULL, 3, 'media', NULL, NULL),
 (2, 2, 2, 2, 'Vazamento na torneira da cozinha', 'Torneira da cozinha está vazando. Precisa de reparo urgente.', 150.00, '2025-06-28 00:41:02', NULL, 3, 'alta', NULL, NULL),
-(3, 3, 4, 3, 'Pintura de quarto', 'Pintura completa de um quarto de 12m². Tinta já comprada.', 400.00, '2025-06-28 00:41:02', NULL, 1, 'baixa', NULL, NULL),
+(3, 3, 4, 3, 'Pintura de quarto', 'Pintura completa de um quarto de 12m². Tinta já comprada.', 400.00, '2025-06-28 00:41:02', NULL, 1, 'media', NULL, NULL),
 (4, 4, 6, 7, 'Orientação para o Portfolio', 'teste', 300.00, '2025-07-02 23:53:47', '2025-07-10 16:53:00', 1, 'media', NULL, NULL),
 (5, 4, 6, 8, 'Orientação para o Portfolio', 'teste', 300.00, '2025-07-02 23:57:50', NULL, 1, 'media', NULL, NULL),
-(7, 1, 3, 9, 'Orientação para teste', 'teste de', NULL, '2025-07-03 20:06:20', NULL, 6, 'alta', '2025-07-04 09:17:53', 'Propostas muito caras'),
-(8, 1, 3, 10, 'Orientação para teste', 'teste de', NULL, '2025-07-03 20:07:41', NULL, 6, 'alta', '2025-07-04 09:18:15', 'Não preciso mais do serviço'),
-(9, 1, 3, 11, 'Orientação para teste', 'teste de', NULL, '2025-07-03 20:07:43', NULL, 6, 'alta', '2025-07-04 16:43:16', ''),
 (10, 1, 6, 9, 'carol e só um teste', 'bora pra cima', 800.00, '2025-07-03 20:23:27', '2025-07-11 11:00:00', 6, 'media', '2025-07-04 09:17:27', ''),
-(11, 1, 6, 12, 'pintar', 'sei la', 7999.99, '2025-07-03 20:35:46', '2025-08-15 14:00:00', 1, 'alta', NULL, NULL),
+(11, 1, 6, 12, 'pintar', 'sei la', 7999.99, '2025-07-03 20:35:46', '2025-08-15 14:00:00', 5, 'alta', NULL, NULL),
 (12, 1, 3, 12, 'cano furado teste', 'preciso de remendar um cano furado', 100.00, '2025-07-03 20:41:31', '2025-07-04 09:00:00', 1, 'media', NULL, NULL),
 (13, 2, 6, 13, 'Orientação para o Portfolio', 'teste', 200.00, '2025-07-04 10:15:57', '2025-07-18 09:00:00', 6, 'media', '2025-07-04 10:20:54', 'Propostas muito caras'),
-(14, 2, 2, 13, 'preciso de instalar um quadro eletrico', 'preciso de instalar um quadro eletrico no quarto', 500.00, '2025-07-04 10:21:46', '2025-07-12 09:00:00', 1, 'alta', NULL, NULL),
-(15, 1, 6, 10, 'Orientação para o Portfolio teste', 'bora faz', 400.00, '2025-07-04 11:50:08', '2025-08-08 09:00:00', 1, 'alta', NULL, NULL),
-(16, 1, 6, 10, 'Orientação para o Portfolio teste', 'bora faz', 700.00, '2025-07-04 11:50:13', '2025-07-30 09:00:00', 6, 'alta', '2025-08-05 21:13:22', ''),
-(18, 1, 6, 9, 'Abóbora ', 'fddg', 500.00, '2025-07-04 11:51:03', '2025-07-11 10:00:00', 6, 'media', '2025-07-04 16:43:38', 'Quero refazer com detalhes diferentes'),
-(22, 12, 3, 14, 'cano furado', 'estou com vazamento de agua na minha residencia', 200.00, '2025-08-06 09:15:08', '2025-08-09 10:00:00', 1, 'alta', NULL, NULL);
+(14, 2, 6, 13, 'preciso de instalar um quadro eletrico', 'preciso de instalar um quadro eletrico no quarto', 500.00, '2025-07-04 10:21:46', '2025-07-12 09:00:00', 1, 'alta', NULL, NULL),
+(15, 1, 6, 10, 'Orientação para o Portfolio teste', 'bora faz', 400.00, '2025-07-04 11:50:08', '2025-08-08 09:00:00', 13, 'alta', NULL, NULL),
+(22, 12, 3, 14, 'cano furado', 'estou com vazamento de agua na minha residencia', 200.00, '2025-08-06 09:15:08', '2025-08-09 10:00:00', 16, 'alta', NULL, NULL),
+(24, 1, 2, 12, 'senac', 'dev', NULL, '2025-08-18 14:45:02', NULL, 1, 'media', NULL, NULL),
+(25, 3, 6, 2, 'teste', 'teste', 100.00, '2025-08-18 17:08:18', '2025-08-23 17:08:00', 1, 'alta', NULL, NULL),
+(26, 3, 3, 20, 'teste', 'teste', 500.00, '2025-08-18 18:45:47', '2025-08-22 18:45:00', 5, 'alta', NULL, NULL),
+(27, 1, 8, 15, 'Orientação para o Portfolio', 'teste', 500.00, '2025-08-18 19:27:18', '2025-08-21 19:27:00', 13, 'alta', NULL, NULL),
+(28, 1, 0, 15, 'Teste de serviço', 'olha', NULL, '2025-08-19 17:13:11', '2025-08-20 21:17:00', 4, 'baixa', NULL, NULL),
+(29, 1, 11, 15, 'limpeza de micro', 'quero limpar meu pc', 100.00, '2025-09-02 15:02:29', '2025-09-10 20:00:00', 13, 'alta', NULL, NULL),
+(30, 3, 11, 20, 'formatação de maquina', 'preciso formatar a minha maquina e fazer limopeza', 49.99, '2025-09-03 09:50:33', '2025-09-12 12:53:00', 13, 'alta', NULL, NULL),
+(31, 3, 11, 20, 'Dev Muito louco6', 'asdasdasdasd', 10.00, '2025-09-03 12:03:09', '2025-09-12 13:03:00', 5, 'media', NULL, NULL),
+(32, 3, 11, 20, 'Dev Muito louco', 'asdasdasdasdasda', NULL, '2025-09-03 15:04:12', '2025-09-05 17:05:00', 1, 'alta', NULL, NULL),
+(33, 1, 5, 10, 'preciso de uma jaca', 'quero umaslmdnfjklsdjfklgjkldfg', 10.00, '2025-09-03 19:51:05', '2025-09-11 20:00:00', 5, 'alta', NULL, NULL),
+(34, 3, 11, 2, 'Dev Muito louco', 'teste hospedagem', NULL, '2025-09-04 16:37:07', '2025-09-13 19:39:00', 1, 'alta', NULL, NULL),
+(35, 3, 13, 2, 'pintar', 'sdfffffffffff', NULL, '2025-09-04 16:39:40', '2025-09-06 18:40:00', 1, 'alta', NULL, NULL),
+(36, 28, 6, 28, 'Socorro Deeeus', 'teste', 100.00, '2025-09-04 21:11:28', '2025-09-11 23:10:00', 1, 'media', NULL, NULL),
+(37, 1, 13, 15, 'aula de carat', 'preciso de uma aula de carater para meu filho de 4 anos', 10.00, '2025-09-05 18:08:36', '2025-09-12 20:11:00', 1, 'alta', NULL, NULL),
+(38, 28, 6, 28, 'Socorro Deeeus', 'teste', 120.00, '2025-09-05 20:18:11', '2025-09-09 22:19:00', 1, 'alta', NULL, NULL),
+(39, 28, 7, 38, 'teste', 'teste', 10.50, '2025-09-10 15:04:22', '2025-09-15 11:12:00', 1, 'media', NULL, NULL),
+(40, 28, 2, 43, 'Chuveiro', 'chuveiro eletrico', 100.00, '2025-09-23 14:36:22', '2025-09-23 16:35:00', 5, 'alta', NULL, NULL),
+(41, 28, 12, 30, 'infra', 'wewe', 1000.00, '2025-09-23 14:47:10', '2025-09-24 14:46:00', 5, 'baixa', NULL, NULL),
+(42, 34, 5, 44, 'Mudança', 'hgg', 366.00, '2025-09-23 14:57:23', '2025-09-24 18:56:00', 1, 'baixa', NULL, NULL),
+(43, 34, 7, 44, 'Mudança', 'nbnb', 366.00, '2025-09-23 22:01:46', '2025-09-30 02:01:00', 4, 'media', NULL, NULL),
+(44, 3, 11, 26, 'manutenção de micro', 'preciso trocar a tela de um notebook', 100.00, '2025-09-25 10:04:34', '2025-10-03 15:10:00', 4, 'media', NULL, NULL),
+(45, 1, 3, 12, 'Abóbora', 'sdfgsdzfgdfg', 1.00, '2025-09-25 19:32:27', '2025-09-26 23:34:00', 1, 'media', NULL, NULL),
+(46, 1, 3, 12, 'Abóbora', 'sdfgsdzfgdfg', 1.00, '2025-09-25 19:32:28', '2025-09-26 23:34:00', 1, 'media', NULL, NULL),
+(48, 34, 2, 44, 'Instalação led', 'Instalação LED em armário', 200.00, '2025-09-29 13:50:17', '2025-09-30 16:03:00', 1, 'baixa', NULL, NULL),
+(49, 34, 13, 44, 'Aula de reforço', 'Aula de reforço para aluno do 6º ano', 100.00, '2025-09-29 14:21:41', '2025-10-01 08:00:00', 1, 'alta', NULL, NULL),
+(50, 34, 3, 44, 'Vazamento de água', 'Verificar vazamento de água', 200.00, '2025-09-29 14:28:55', '2025-09-30 15:15:00', 1, 'alta', NULL, NULL),
+(51, 34, 3, 44, 'Vazamento de água', 'Vazamento de água', 150.00, '2025-09-29 14:32:34', '2025-09-30 10:00:00', 1, 'alta', NULL, NULL),
+(52, 34, 13, 44, 'Dfsdfds', 'Sdfsdfdsfds', 100.00, '2025-09-29 14:35:55', '2025-09-30 10:05:00', 1, 'alta', NULL, NULL),
+(53, 34, 3, 44, 'Wewe', 'Wewewe', 50.00, '2025-09-29 14:38:02', '2025-09-30 08:20:00', 1, 'alta', NULL, NULL),
+(54, 34, 12, 44, 'Fsfsdf', 'Sdfsdfs', 21.00, '2025-09-29 14:40:46', '2025-09-30 08:50:00', 1, 'alta', NULL, NULL),
+(55, 34, 6, 44, 'Dsdsadasd', 'Adsadsad', 121.00, '2025-09-29 14:49:09', '2021-01-15 10:02:00', 1, 'alta', NULL, NULL),
+(56, 34, 3, 44, 'Wewe', 'Wewewe', 50.00, '2025-09-29 14:52:06', '2025-09-30 08:20:00', 1, 'alta', NULL, NULL),
+(57, 34, 3, 44, 'Wewe', 'Wewewe', 50.00, '2025-09-29 14:52:57', '2025-09-30 08:20:00', 1, 'alta', NULL, NULL),
+(58, 34, 3, 44, 'Wewe', 'Wewewe', 50.00, '2025-09-29 15:11:44', '2025-09-30 08:20:00', 1, 'alta', NULL, NULL),
+(59, 34, 3, 44, 'Vazamento de água', 'Vazamento de água', 150.00, '2025-09-29 15:15:22', '2025-10-30 08:30:00', 1, 'alta', NULL, NULL),
+(60, 30, 6, 59, 'Instalar ar condicionado', 'Instalar ar condicionado', 100.00, '2025-09-30 21:20:49', '2025-10-07 21:20:00', 1, 'alta', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -291,7 +501,7 @@ INSERT INTO `tb_solicita_servico` (`id`, `cliente_id`, `tipo_servico_id`, `ender
 
 CREATE TABLE `tb_status_solicitacao` (
   `id` int(11) NOT NULL,
-  `nome` varchar(50) NOT NULL,
+  `nome` varchar(100) NOT NULL,
   `descricao` text DEFAULT NULL,
   `cor` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -329,29 +539,34 @@ INSERT INTO `tb_status_solicitacao` (`id`, `nome`, `descricao`, `cor`) VALUES
 --
 
 CREATE TABLE `tb_tipo_servico` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `nome` varchar(255) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
+  `nome` varchar(100) NOT NULL,
   `descricao` text DEFAULT NULL,
-  `categoria` varchar(255) DEFAULT NULL,
-  `preco_medio` decimal(10,2) DEFAULT NULL,
+  `categoria` varchar(100) DEFAULT NULL,
   `ativo` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Despejando dados para a tabela `tb_tipo_servico`
 --
 
-INSERT INTO `tb_tipo_servico` (`id`, `nome`, `descricao`, `categoria`, `preco_medio`, `ativo`, `created_at`, `updated_at`) VALUES
-(1, 'Limpeza Residencial', 'Serviços de limpeza completa para residências', 'Limpeza', 80.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(2, 'Serviços Elétricos', 'Instalações e reparos elétricos residenciais', 'Elétrica', 120.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(3, 'Encanamento', 'Serviços de instalação e reparo hidráulico', 'Hidráulica', 100.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(4, 'Pintura teste', 'Serviços de pintura residencial e comercial', 'Reforma', 150.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(5, 'Jardinagem', 'Manutenção e cuidados com jardins', 'Jardinagem', 70.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(6, 'Ar Condicionado', 'Instalação e manutenção de ar condicionado', 'Climatização', 180.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(7, 'Mudanças', 'Serviços de mudança residencial e comercial', 'Transporte', 300.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(8, 'Montagem de Móveis', 'Montagem e desmontagem de móveis', 'Montagem', 60.00, 1, '2025-06-28 00:14:18', '2025-06-28 00:14:18');
+INSERT INTO `tb_tipo_servico` (`id`, `nome`, `descricao`, `categoria`, `ativo`, `created_at`, `updated_at`) VALUES
+(1, 'Limpeza Residencial', 'Serviços de limpeza completa para residências', 'Limpeza', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(2, 'Serviços Elétricos', 'Instalações e reparos elétricos residenciais', 'Elétrica', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(3, 'Encanamento', 'Serviços de instalação e reparo hidráulico', 'Hidráulica', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(4, 'Pintura teste', 'Serviços de pintura residencial e comercial', 'Reforma', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(5, 'Jardinagem', 'Manutenção e cuidados com jardins', 'Jardinagem', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(6, 'Ar Condicionado', 'Instalação e manutenção de ar condicionado', 'Climatização', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(7, 'Mudanças', 'Serviços de mudança residencial e comercial', 'Transporte', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(8, 'Montagem de Móveis', 'Montagem e desmontagem de móveis', 'Montagem', 1, '2025-06-27 21:14:18', '2025-06-27 21:14:18'),
+(11, 'técnico em informática', 'serviço de suporte técnico', 'tecnologia', 1, '2025-08-30 08:27:11', '2025-08-30 08:27:40'),
+(12, 'Infraestrutura de redes', 'cabeamento estruturado', 'tecnologia', 1, '2025-09-01 08:48:31', '2025-09-01 08:48:31'),
+(13, 'Aula', 'aula particular de piano', 'piano', 1, '2025-09-03 20:02:34', '2025-09-03 20:02:34'),
+(14, 'telefonia', 'manutenção de telefonia', 'voip', 1, NULL, NULL),
+(15, 'passar fios', 'passagem de fio por canaletas', 'Elétrica', 1, NULL, NULL),
+(17, 'teste123', 'teste 123', 'eletrica', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -360,9 +575,9 @@ INSERT INTO `tb_tipo_servico` (`id`, `nome`, `descricao`, `categoria`, `preco_me
 --
 
 CREATE TABLE `tb_usuario` (
-  `id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `nome` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
+  `email` varchar(150) NOT NULL,
   `senha` varchar(255) NOT NULL,
   `nivel` enum('admin','moderador','suporte') NOT NULL,
   `ultimo_acesso` datetime DEFAULT NULL,
@@ -374,37 +589,7 @@ CREATE TABLE `tb_usuario` (
 --
 
 INSERT INTO `tb_usuario` (`id`, `nome`, `email`, `senha`, `nivel`, `ultimo_acesso`, `ativo`) VALUES
-(1, 'Admin Sistema', 'admin@chamaservico.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', 'admin', '2025-08-08 16:30:00', 1);
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `users`
---
-
-CREATE TABLE `users` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `tipo` varchar(255) NOT NULL DEFAULT 'cliente',
-  `email_verified_at` timestamp NULL DEFAULT NULL,
-  `password` varchar(255) NOT NULL,
-  `remember_token` varchar(100) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Despejando dados para a tabela `users`
---
-
-INSERT INTO `users` (`id`, `name`, `email`, `tipo`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'João Cliente', 'cliente@exemplo.com', 'cliente', NULL, '$2y$12$9nKfBPgSgvCjcqhzKUDvSevBv7gtvALN8XUvRUvxrBbi39S5k1WO2', NULL, '2025-06-28 00:14:17', '2025-06-28 00:14:17'),
-(2, 'Maria Prestadora', 'prestador@exemplo.com', 'prestador', NULL, '$2y$12$R4tiTxocGM8kutZxE29nce53JgNgHktRi2vmFoOrxCvesbqQ3giiC', NULL, '2025-06-28 00:14:17', '2025-06-28 00:14:17'),
-(3, 'Carlos Ambos', 'ambos@exemplo.com', 'ambos', NULL, '$2y$12$rDrbnmVsDenCJtCO0jGDQOFTYggPW53r2Wp4DA5CCsWGLMD7NCA.m', NULL, '2025-06-28 00:14:17', '2025-06-28 00:14:17'),
-(4, 'Ana Silva', 'joao@exemplo.com', 'cliente', NULL, '$2y$12$T5g7riKUVm6aKRNDNEQq4.MoQ3tdK60BVpsLwUPaT1PSjLFAY80tK', NULL, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(5, 'Pedro Santos', 'pedro@exemplo.com', 'prestador', NULL, '$2y$12$edmXvMHFOt/wdbc/SfFqJOUFpdcSQmrlKaoS3.A4Q7Sis81WIAhjK', NULL, '2025-06-28 00:14:18', '2025-06-28 00:14:18'),
-(6, 'Erivan Mendes', 'contatoerivan.ms@gmail.com', 'prestador', NULL, '$2y$12$XjyY6Ik4FTZezSL5kTtRGODM8K46yaCWZUvyrkDCn6IMXENgTf0rS', NULL, '2025-06-28 02:29:44', '2025-06-28 02:29:44');
+(1, 'Admin Sistema', 'admin@chamaservico.com', '$2y$12$5CbWdHHDDvgmhmTT5Dn2quXVmzDyhsapz8ttRMkKmrxQufjPyY05a', 'admin', '2025-10-01 21:37:20', 1);
 
 --
 -- Índices para tabelas despejadas
@@ -457,6 +642,17 @@ ALTER TABLE `tb_notificacao`
   ADD KEY `pessoa_id` (`pessoa_id`);
 
 --
+-- Índices de tabela `tb_password_reset_tokens`
+--
+ALTER TABLE `tb_password_reset_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token` (`token`),
+  ADD KEY `idx_token` (`token`),
+  ADD KEY `idx_email` (`email`),
+  ADD KEY `idx_expires` (`expires_at`),
+  ADD KEY `idx_usado` (`usado`);
+
+--
 -- Índices de tabela `tb_pessoa`
 --
 ALTER TABLE `tb_pessoa`
@@ -502,13 +698,6 @@ ALTER TABLE `tb_usuario`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Índices de tabela `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `users_email_unique` (`email`);
-
---
 -- AUTO_INCREMENT para tabelas despejadas
 --
 
@@ -516,19 +705,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT de tabela `tb_avaliacao`
 --
 ALTER TABLE `tb_avaliacao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `tb_endereco`
 --
 ALTER TABLE `tb_endereco`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT de tabela `tb_imagem_solicitacao`
 --
 ALTER TABLE `tb_imagem_solicitacao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT de tabela `tb_mensagem`
@@ -540,31 +729,37 @@ ALTER TABLE `tb_mensagem`
 -- AUTO_INCREMENT de tabela `tb_negociacao_proposta`
 --
 ALTER TABLE `tb_negociacao_proposta`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `tb_notificacao`
 --
 ALTER TABLE `tb_notificacao`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+
+--
+-- AUTO_INCREMENT de tabela `tb_password_reset_tokens`
+--
+ALTER TABLE `tb_password_reset_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de tabela `tb_pessoa`
 --
 ALTER TABLE `tb_pessoa`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de tabela `tb_proposta`
 --
 ALTER TABLE `tb_proposta`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de tabela `tb_solicita_servico`
 --
 ALTER TABLE `tb_solicita_servico`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT de tabela `tb_status_solicitacao`
@@ -576,19 +771,13 @@ ALTER TABLE `tb_status_solicitacao`
 -- AUTO_INCREMENT de tabela `tb_tipo_servico`
 --
 ALTER TABLE `tb_tipo_servico`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de tabela `tb_usuario`
 --
 ALTER TABLE `tb_usuario`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT de tabela `users`
---
-ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Restrições para tabelas despejadas

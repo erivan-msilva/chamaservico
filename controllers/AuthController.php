@@ -74,8 +74,7 @@ class AuthController
                 $admin = $this->verificarLoginAdmin($email, $senha);
                 if ($admin) {
                     Session::loginAdmin($admin['id'], $admin['nome'], $admin['email'], $admin['nivel']);
-                    header('Location: /admin/dashboard');  // CORRIGIDO: URL absoluta
-                    exit;
+                    header('Location: /admin/dashboard');  
                 }
 
                 Session::setFlash('error', 'Email ou senha incorretos!', 'danger');
@@ -96,7 +95,7 @@ class AuthController
     private function verificarLoginAdmin($email, $senha)
     {
         try {
-            // CORREÇÃO: Usar Database diretamente em vez de $this->model->db
+            //  Usar Database diretamente em vez de $this->model->db
             require_once 'core/Database.php';
             $db = Database::getInstance();
 

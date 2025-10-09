@@ -18,7 +18,7 @@ class Session {
     private static $adminTimeout = 3600; // 1 hora para admin
     
     /**
-     * MÉTODO CORRIGIDO: login - Fazer login do usuário
+     * MÉTODO : login - Fazer login do usuário
      */
     public static function login($userId, $userName, $userEmail, $userType, $userData = []) {
         $_SESSION['user_id'] = $userId;
@@ -142,7 +142,7 @@ class Session {
     }
 
     /**
-     * MÉTODO CORRIGIDO: requireLogin - Exigir login básico
+     * requireLogin - Exigir login básico
      */
     public static function requireLogin() {
         if (!self::isLoggedIn()) {
@@ -183,7 +183,7 @@ class Session {
     }
 
     /**
-     * MÉTODO CORRIGIDO: requirePrestadorAccess
+     * requirePrestadorAccess
      * Alias para requirePrestadorLogin para compatibilidade
      */
     public static function requirePrestadorAccess() {
