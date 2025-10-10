@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Cliente - Documentação | ChamaServiço</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        .api-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+        .method-get { background: #10b981; color: white; }
+        .method-post { background: #3b82f6; color: white; }
+        .method-delete { background: #ef4444; color: white; }
+        .code-box {
+            background: #1e1e1e;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .token-box {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        h2 { color: #667eea; margin-top: 30px; }
+        h3 { color: #374151; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="api-container">
+            <div class="text-center mb-5">
+                <i class="bi bi-code-square" style="font-size: 4rem; color: #667eea;"></i>
+                <h1 class="mt-3">API Cliente - ChamaServiço</h1>
+                <p class="text-muted">Documentação completa para integração</p>
+            </div>
+
+            <div class="token-box">
+                <h5><i class="bi bi-key-fill me-2"></i>Token de Autenticação</h5>
+                <p class="mb-2">Para testar os endpoints autenticados, use o token abaixo no header:</p>
+                <div class="code-box">Authorization: Bearer 781e5e245d69b566979b86e28d23f2c7</div>
+            </div>
+
+            <h2><i class="bi bi-unlock me-2"></i>Endpoints Públicos (Sem Autenticação)</h2>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-get">GET</span>
+                    Listar Tipos de Serviço
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/tipos-servico</code></p>
+                <p><strong>Descrição:</strong> Retorna todos os tipos de serviço disponíveis.</p>
+                
+                <h6>Exemplo de Request:</h6>
+                <div class="code-box">
+GET https://chamaservico.tds104-senac.online/api/cliente/ClienteApi.php/tipos-servico
+                </div>
+
+                <h6>Exemplo de Response:</h6>
+                <div class="code-box">
+{
+    "sucesso": true,
+    "tipos_servico": [
+        {
+            "id": 1,
+            "nome": "Eletricista",
+            "descricao": "Serviços elétricos residenciais"
+        },
+        {
+            "id": 2,
+            "nome": "Encanador",
+            "descricao": "Reparos hidráulicos"
+        }
+    ]
+}
+                </div>
+
+                <button class="btn btn-primary btn-sm mt-2" onclick="testarEndpoint('tipos-servico')">
+                    <i class="bi bi-play-fill"></i> Testar Agora
+                </button>
+                <div id="result-tipos-servico"></div>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-post">POST</span>
+                    Login de Cliente
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/login</code></p>
+                <p><strong>Descrição:</strong> Autentica um cliente e retorna seus dados + token.</p>
+                
+                <h6>Body (JSON):</h6>
+                <div class="code-box">
+{
+    "email": "cliente@example.com",
+    "senha": "senha123"
+}
+                </div>
+
+                <h6>Exemplo de Response:</h6>
+                <div class="code-box">
+{
+    "sucesso": true,
+    "usuario": {
+        "id": 1,
+        "nome": "João Silva",
+        "email": "cliente@example.com",
+        "tipo": "cliente"
+    },
+    "token": "781e5e245d69b566979b86e28d23f2c7"
+}
+                </div>
+
+                <button class="btn btn-primary btn-sm mt-2" onclick="testarLogin()">
+                    <i class="bi bi-play-fill"></i> Testar com Dados Demo
+                </button>
+                <div id="result-login"></div>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-post">POST</span>
+                    Registrar Novo Cliente
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/registro</code></p>
+                <p><strong>Descrição:</strong> Cria uma nova conta de cliente.</p>
+                
+                <h6>Body (JSON):</h6>
+                <div class="code-box">
+{
+    "nome": "Maria Santos",
+    "email": "maria@example.com",
+    "senha": "senha123",
+    "telefone": "(11) 99999-9999"
+}
+                </div>
+
+                <h6>Exemplo de Response:</h6>
+                <div class="code-box">
+{
+    "sucesso": true,
+    "cliente_id": 5,
+    "mensagem": "Cliente cadastrado com sucesso"
+}
+                </div>
+            </div>
+
+            <h2><i class="bi bi-lock me-2"></i>Endpoints Autenticados</h2>
+            <p class="text-muted">Requerem o header <code>Authorization: Bearer [TOKEN]</code></p>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-get">GET</span>
+                    Buscar Perfil do Cliente
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/perfil?cliente_id={id}</code></p>
+                
+                <h6>Headers:</h6>
+                <div class="code-box">
+Authorization: Bearer 781e5e245d69b566979b86e28d23f2c7
+                </div>
+
+                <h6>Exemplo de Response:</h6>
+                <div class="code-box">
+{
+    "sucesso": true,
+    "perfil": {
+        "id": 1,
+        "nome": "João Silva",
+        "email": "cliente@example.com",
+        "telefone": "(11) 98765-4321"
+    },
+    "enderecos": [...]
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-get">GET</span>
+                    Listar Solicitações
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/solicitacoes?cliente_id={id}</code></p>
+                
+                <h6>Parâmetros opcionais:</h6>
+                <ul>
+                    <li><code>status</code> - Filtrar por status</li>
+                    <li><code>busca</code> - Buscar por título/descrição</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-post">POST</span>
+                    Criar Nova Solicitação
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/solicitacoes</code></p>
+                
+                <h6>Body (JSON):</h6>
+                <div class="code-box">
+{
+    "cliente_id": 1,
+    "titulo": "Reparo elétrico urgente",
+    "descricao": "Tomada com problema",
+    "tipo_servico_id": 1,
+    "endereco_id": 1,
+    "urgencia": "alta",
+    "orcamento_estimado": 200.00
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-get">GET</span>
+                    Listar Propostas Recebidas
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/propostas?cliente_id={id}</code></p>
+                
+                <h6>Parâmetros opcionais:</h6>
+                <ul>
+                    <li><code>status</code> - Filtrar por status (pendente, aceita, recusada)</li>
+                    <li><code>solicitacao_id</code> - Propostas de uma solicitação específica</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-post">POST</span>
+                    Aceitar Proposta
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/aceitar-proposta</code></p>
+                
+                <h6>Body (JSON):</h6>
+                <div class="code-box">
+{
+    "cliente_id": 1,
+    "proposta_id": 5
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-post">POST</span>
+                    Adicionar Endereço
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/enderecos</code></p>
+                
+                <h6>Body (JSON):</h6>
+                <div class="code-box">
+{
+    "cliente_id": 1,
+    "cep": "01310-100",
+    "logradouro": "Av. Paulista",
+    "numero": "1000",
+    "complemento": "Apto 101",
+    "bairro": "Bela Vista",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "principal": 1
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <h3>
+                    <span class="method method-delete">DELETE</span>
+                    Excluir Endereço
+                </h3>
+                <p><strong>URL:</strong> <code>/api/cliente/ClienteApi.php/enderecos</code></p>
+                
+                <h6>Body (JSON):</h6>
+                <div class="code-box">
+{
+    "cliente_id": 1,
+    "endereco_id": 3
+}
+                </div>
+            </div>
+
+            <hr class="my-5">
+
+            <h2><i class="bi bi-shield-check me-2"></i>Códigos de Status HTTP</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Significado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge bg-success">200</span></td>
+                        <td>Sucesso</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-warning">401</span></td>
+                        <td>Não autorizado (token inválido)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-warning">404</span></td>
+                        <td>Endpoint não encontrado</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-warning">405</span></td>
+                        <td>Método não permitido</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-danger">500</span></td>
+                        <td>Erro interno do servidor</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <hr class="my-5">
+
+            <div class="text-center">
+                <p class="text-muted">
+                    <i class="bi bi-house me-1"></i>
+                    <a href="/">Voltar para a Home</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testarEndpoint(endpoint) {
+            const resultDiv = document.getElementById(`result-${endpoint}`);
+            resultDiv.innerHTML = '<div class="mt-3"><div class="spinner-border spinner-border-sm me-2"></div>Carregando...</div>';
+            
+            try {
+                const response = await fetch(`/api/cliente/ClienteApi.php/${endpoint}`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="alert alert-${data.sucesso ? 'success' : 'danger'} mt-3">
+                        <h6>Response (Status ${response.status}):</h6>
+                        <pre class="mb-0" style="background:#1e1e1e; color:#dcdcdc; padding:10px; border-radius:5px; overflow-x:auto;">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger mt-3">
+                        <strong>Erro:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testarLogin() {
+            const resultDiv = document.getElementById('result-login');
+            resultDiv.innerHTML = '<div class="mt-3"><div class="spinner-border spinner-border-sm me-2"></div>Testando...</div>';
+            
+            try {
+                const response = await fetch('/api/cliente/ClienteApi.php/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@chamaservico.com',
+                        senha: 'demo123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="alert alert-${data.sucesso ? 'success' : 'warning'} mt-3">
+                        <h6>Response (Status ${response.status}):</h6>
+                        <pre class="mb-0" style="background:#1e1e1e; color:#dcdcdc; padding:10px; border-radius:5px; overflow-x:auto;">${JSON.stringify(data, null, 2)}</pre>
+                        ${!data.sucesso ? '<p class="mt-2 mb-0"><small>💡 Você pode criar uma conta de teste usando o endpoint /registro</small></p>' : ''}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger mt-3">
+                        <strong>Erro:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

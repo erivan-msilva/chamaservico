@@ -1,5 +1,5 @@
 <?php
-require_once 'config/session.php';
+require_once __DIR__ . '/../config/session.php';
 
 class HomeController
 {
@@ -7,25 +7,25 @@ class HomeController
     {
         // SEMPRE exibir a página inicial pública, mesmo se logado
         $title = 'ChamaServiço - Conectando você aos melhores prestadores';
-        include 'views/public/HomePage.php';
+        include __DIR__ . '/../views/public/HomePage.php';
     }
 
     public function acessoNegado()
     {
         // CORRIGIDO: Caminho correto do arquivo
-        include 'views/erros/acesso_negado.php';
+        include __DIR__ . '/../views/erros/acesso_negado.php';
     }
 
     public function notFound()
     {
         http_response_code(404);
-        include 'views/erros/404.php';
+        include __DIR__ . '/../views/erros/404.php';
     }
 
     public function serverError($errorMessage = null)
     {
         http_response_code(500);
-        include 'views/erros/500.php';
+        include __DIR__ . '/../views/erros/500.php';
     }
 
     public function adminNotFound()

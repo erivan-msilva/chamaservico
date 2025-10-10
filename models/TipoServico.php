@@ -1,5 +1,5 @@
 <?php
-require_once 'core/Database.php';
+require_once __DIR__ . '/../core/Database.php';
 
 class TipoServico {
     private $db;
@@ -149,9 +149,6 @@ class TipoServico {
             $this->db->getConnection()->rollBack();
             return false;
         }
-    }
-}
-?>
     }
 }
 ?>

@@ -5,17 +5,19 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Não mostrar erros em produção
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+// Desabilitar exibição de erros em produção
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 
 // Definir token estático para exemplo
 define('API_TOKEN', '781e5e245d69b566979b86e28d23f2c7');
 
-// Incluir dependências
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/../../core/Database.php';
-require_once __DIR__ . '/../../models/Pessoa.php';
-require_once __DIR__ . '/../../models/SolicitacaoServico.php';
+// Incluir dependências - CAMINHO CORRETO
+$baseDir = dirname(dirname(__DIR__));
+require_once $baseDir . '/config/config.php';
+require_once $baseDir . '/core/Database.php';
+require_once $baseDir . '/models/Pessoa.php';
+require_once $baseDir . '/models/SolicitacaoServico.php';
 
 /**
  * Função para verificar se o token enviado é válido
@@ -401,6 +403,7 @@ $headers = getallheaders() ?: [];
 
 // Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit(0);
 }
 
@@ -428,9 +431,28 @@ if (!$isPublicEndpoint && !verificarToken($headers)) {
 
 // Roteamento baseado na URI
 try {
-    $pathParts = explode('/', trim(parse_url($uri, PHP_URL_PATH), '/'));
-    $endpoint = end($pathParts);
+    // Extrair endpoint da URI de forma mais robusta
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    $pathParts = explode('/', trim(parse_url($requestUri, PHP_URL_PATH), '/'));
+    
+    // Pegar o último segmento válido
+    $endpoint = '';
+    for ($i = count($pathParts) - 1; $i >= 0; $i--) {
+        if (!empty($pathParts[$i]) && $pathParts[$i] !== 'ClienteApi.php') {
+            $endpoint = $pathParts[$i];
+            break;
+        }
+    }
+    
+    // Se não encontrou endpoint, verificar se é a raiz da API
+    if (empty($endpoint)) {
+        $endpoint = 'tipos-servico'; // default para teste
+    }
+    
     $clienteId = $input['cliente_id'] ?? ($_GET['cliente_id'] ?? null);
+
+    // Log para debug
+    error_log("API Request - Method: $method, Endpoint: $endpoint, ClienteId: $clienteId");
 
     switch ($method) {
         case 'GET':
@@ -557,9 +579,12 @@ try {
             break;
     }
 } catch (Exception $e) {
-    error_log("Erro na API: " . $e->getMessage());
-    $response = ['erro' => 'Erro interno do servidor'];
+    error_log("Erro na API: " . $e->getMessage() . " - " . $e->getTraceAsString());
+    $response = [
+        'erro' => 'Erro interno do servidor',
+        'detalhes' => AMBIENTE === 'desenvolvimento' ? $e->getMessage() : null
+    ];
     http_response_code(500);
 }
 
-echo json_encode($response, JSON_UNESCAPED_UNICODE);
+echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
