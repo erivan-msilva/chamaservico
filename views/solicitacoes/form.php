@@ -439,7 +439,6 @@ ob_start();
             <div class="modal-body p-4">
                 <input type="hidden" name="csrf_token" value="<?= Session::generateCSRFToken() ?>">
                 <input type="hidden" name="acao" value="adicionar">
-                <input type="hidden" name="from_modal" value="true">
 
                 <!-- Alerta de sucesso/erro -->
                 <div id="alertModal" style="display: none;"></div>
@@ -1069,7 +1068,11 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
     imageInput.addEventListener("change", (e) => {
-        handleFiles(e.target.files);
+        if (e.target.files && e.target.files.length > 0) {
+            handleFiles(e.target.files);
+            // Limpar o input para permitir selecionar os mesmos arquivos novamente
+            e.target.value = "";
+        }
     });
     
     function showAlert(type, message) {
@@ -1097,9 +1100,18 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     function handleFiles(files) {
+        // Validar se files existe
+        if (!files || files.length === 0) {
+            console.log("DEBUG: Nenhum arquivo selecionado");
+            return;
+        }
+        
+        console.log(`DEBUG: Processando ${files.length} arquivo(s)`);
+        
         // Limpar alertas anteriores
         uploadAlerts.innerHTML = "";
         
+        // Verificar limite total
         if (files.length + selectedFiles.length > 5) {
             showAlert("error", "Máximo 5 imagens permitidas!");
             return;
@@ -1109,26 +1121,45 @@ document.addEventListener("DOMContentLoaded", function() {
         let errorCount = 0;
         
         Array.from(files).forEach(file => {
+            console.log(`DEBUG: Validando arquivo: ${file.name} (${file.type}, ${formatFileSize(file.size)})`);
+            
+            // Verificar se já existee
+            const jaExiste = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+            if (jaExiste) {
+                console.log(`DEBUG: Arquivo ${file.name} já está na lista`);
+                showAlert("error", `Arquivo "${file.name}" já foi adicionado.`);
+                errorCount++;
+                return;
+            }
+            
+            // Validar tipo
             if (!file.type.startsWith("image/")) {
+                console.log(`DEBUG: Tipo inválido: ${file.type}`);
                 showAlert("error", `Arquivo "${file.name}" não é uma imagem válida.`);
                 errorCount++;
                 return;
             }
             
+            // Validar tamanho
             if (file.size > 5 * 1024 * 1024) {
+                console.log(`DEBUG: Arquivo muito grande: ${file.size} bytes`);
                 showAlert("error", `Arquivo "${file.name}" é muito grande (máximo 5MB).`);
                 errorCount++;
                 return;
             }
             
+            // Adicionar arquivo válido
             selectedFiles.push(file);
             createPreview(file);
             validFiles++;
+            console.log(`DEBUG: Arquivo ${file.name} adicionado com sucesso`);
         });
         
         if (validFiles > 0) {
             showAlert("success", `${validFiles} imagem(ns) adicionada(s) com sucesso!`);
         }
+        
+        console.log(`DEBUG: Total de arquivos selecionados: ${selectedFiles.length}`);
         
         updateFileInput();
         updatePhotosSummary();
@@ -1139,20 +1170,51 @@ document.addEventListener("DOMContentLoaded", function() {
         reader.onload = (e) => {
             const col = document.createElement("div");
             col.className = "col-md-6 col-lg-4";
-            col.innerHTML = `
-                <div class="preview-image">
-                    <img src="${e.target.result}" alt="Preview">
-                    <button type="button" class="remove-btn" onclick="removePreview(this, \'${file.name}\')">
-                        <i class="bi bi-x"></i>
-                    </button>
-                    <div class="preview-info">
-                        <div class="preview-name">${file.name}</div>
-                        <div class="preview-size">${formatFileSize(file.size)}</div>
-                    </div>
-                </div>
-            `;
+            col.setAttribute("data-filename", file.name);
+            
+            // Criar elementos programaticamente para evitar problemas com aspas
+            const previewDiv = document.createElement("div");
+            previewDiv.className = "preview-image";
+            
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.alt = "Preview";
+            
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "remove-btn";
+            removeBtn.innerHTML = \'<i class="bi bi-x"></i>\';
+            removeBtn.onclick = function() {
+                removePreview(this, file.name);
+            };
+            
+            const infoDiv = document.createElement("div");
+            infoDiv.className = "preview-info";
+            
+            const nameDiv = document.createElement("div");
+            nameDiv.className = "preview-name";
+            nameDiv.textContent = file.name;
+            
+            const sizeDiv = document.createElement("div");
+            sizeDiv.className = "preview-size";
+            sizeDiv.textContent = formatFileSize(file.size);
+            
+            infoDiv.appendChild(nameDiv);
+            infoDiv.appendChild(sizeDiv);
+            
+            previewDiv.appendChild(img);
+            previewDiv.appendChild(removeBtn);
+            previewDiv.appendChild(infoDiv);
+            
+            col.appendChild(previewDiv);
             previewContainer.appendChild(col);
             previewContainer.style.display = "block";
+            
+            console.log(`DEBUG: Preview criado para ${file.name}`);
+        };
+        reader.onerror = (error) => {
+            console.error(`DEBUG: Erro ao ler arquivo ${file.name}:`, error);
+            showAlert("error", `Erro ao processar "${file.name}"`);
         };
         reader.readAsDataURL(file);
     }
@@ -1169,9 +1231,19 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     
     function updateFileInput() {
-        const dt = new DataTransfer();
-        selectedFiles.forEach(file => dt.items.add(file));
-        imageInput.files = dt.files;
+        try {
+            // Usar DataTransfer para atualizar o input com os arquivos selecionados
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => {
+                dt.items.add(file);
+            });
+            imageInput.files = dt.files;
+            console.log(`DEBUG: Input atualizado com ${imageInput.files.length} arquivo(s)`);
+        } catch (error) {
+            console.error("DEBUG: Erro ao atualizar input de arquivos:", error);
+            // Fallback: alguns navegadores não suportam DataTransfer
+            // Neste caso, os arquivos ainda estão em selectedFiles e serão enviados via FormData
+        }
     }
     
     function updatePhotosSummary() {
@@ -1188,6 +1260,243 @@ document.addEventListener("DOMContentLoaded", function() {
     // Definir urgência inicial baseada no valor do campo hidden
     const urgenciaInicial = document.getElementById("urgenciaHidden").value;
     document.querySelector(`[data-value="${urgenciaInicial}"]`).classList.add("active");
+    
+    // ===== CONFIGURAÇÃO E INICIALIZAÇÃO DO MODAL DE ENDEREÇO =====
+    
+    // Buscar CEP no modal (usando ViaCEP diretamente - igual a /cliente/perfil/enderecos)
+    const btnBuscarCepModal = document.getElementById("btnBuscarCepModal");
+    const cepModalInput = document.getElementById("cepModal");
+    
+    if (btnBuscarCepModal && cepModalInput) {
+        btnBuscarCepModal.addEventListener("click", buscarCepModal);
+        cepModalInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                buscarCepModal();
+            }
+        });
+        
+        // Formatação automática do CEP
+        cepModalInput.addEventListener("input", function(e) {
+            let value = e.target.value.replace(/\D/g, "");
+            if (value.length > 5) {
+                value = value.substring(0, 5) + "-" + value.substring(5, 8);
+            }
+            e.target.value = value;
+            
+            // Limpar status ao digitar
+            const status = document.getElementById("cepStatusModal");
+            if (status) status.textContent = "";
+        });
+    }
+    
+    async function buscarCepModal() {
+        const cepInput = document.getElementById("cepModal");
+        const btnBuscar = document.getElementById("btnBuscarCepModal");
+        const status = document.getElementById("cepStatusModal");
+        
+        const cep = cepInput.value.replace(/\D/g, "");
+        
+        if (cep.length !== 8) {
+            showCepStatus("CEP deve ter 8 dígitos", "danger");
+            return;
+        }
+        
+        // Loading state
+        showCepStatus("Buscando endereço...", "primary");
+        btnBuscar.disabled = true;
+        btnBuscar.innerHTML = \'<div class="spinner-border spinner-border-sm"></div>\';
+        
+        try {
+            // Buscar direto na API ViaCEP (mesma forma que funciona em /cliente/perfil/enderecos)
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+            
+            if (data.erro) {
+                showCepStatus("CEP não encontrado", "warning");
+            } else {
+                // Preencher campos
+                document.getElementById("logradouroModal").value = data.logradouro || "";
+                document.getElementById("bairroModal").value = data.bairro || "";
+                document.getElementById("cidadeModal").value = data.localidade || "";
+                document.getElementById("estadoModal").value = data.uf || "";
+                
+                showCepStatus("Endereço preenchido automaticamente!", "success");
+                document.getElementById("numeroModal").focus();
+            }
+        } catch (error) {
+            console.error("Erro:", error);
+            showCepStatus("Erro ao buscar CEP. Verifique sua conexão.", "danger");
+        } finally {
+            btnBuscar.disabled = false;
+            btnBuscar.innerHTML = \'<i class="bi bi-search"></i>\';
+        }
+    }
+    
+    function showCepStatus(message, type) {
+        const status = document.getElementById("cepStatusModal");
+        if (status) {
+            status.textContent = message;
+            status.className = `text-${type} small mt-1`;
+        }
+    }
+    
+    // Submissão do formulário de endereço (usando o mesmo endpoint que /cliente/perfil/enderecos)
+    const formEnderecoModal = document.getElementById("formEnderecoModal");
+    if (formEnderecoModal) {
+        formEnderecoModal.addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const btnSalvar = document.getElementById("btnSalvarEndereco");
+            const alertModal = document.getElementById("alertModal");
+            
+            // Validar formulário
+            const requiredFields = [
+                { name: "cep", label: "CEP" },
+                { name: "logradouro", label: "Logradouro" },
+                { name: "numero", label: "Número" },
+                { name: "bairro", label: "Bairro" },
+                { name: "cidade", label: "Cidade" },
+                { name: "estado", label: "Estado" }
+            ];
+            
+            let isValid = true;
+            const errors = [];
+            
+            requiredFields.forEach(field => {
+                const input = formEnderecoModal.querySelector(`input[name="${field.name}"]`);
+                if (!input || !input.value.trim()) {
+                    errors.push(field.label);
+                    if (input) input.classList.add("is-invalid");
+                    isValid = false;
+                } else {
+                    if (input) input.classList.remove("is-invalid");
+                }
+            });
+            
+            // Validações específicas
+            const cep = formEnderecoModal.querySelector("input[name=cep]").value.replace(/\D/g, "");
+            if (cep.length !== 8) {
+                errors.push("CEP deve ter 8 dígitos");
+                isValid = false;
+            }
+            
+            const estado = formEnderecoModal.querySelector("input[name=estado]").value.trim();
+            if (estado.length !== 2) {
+                errors.push("Estado deve ter 2 caracteres");
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                showModalAlert("danger", `Preencha os campos obrigatórios: ${errors.join(", ")}`);
+                return;
+            }
+            
+            // Loading state
+            btnSalvar.disabled = true;
+            btnSalvar.innerHTML = \'<i class="spinner-border spinner-border-sm me-2"></i>Salvando...\';
+            alertModal.style.display = "none";
+            
+            try {
+                const formData = new FormData(formEnderecoModal);
+                
+                // DEBUG: Mostrar dados sendo enviados
+                console.log("=== DEBUG: Dados do Formulário ===");
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+                
+                // Submeter para a mesma rota que funciona na página de endereços
+                const response = await fetch("<?= BASE_URL ?>/cliente/perfil/enderecos", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                });
+                
+                console.log("DEBUG: Response status:", response.status);
+                console.log("DEBUG: Response headers:", response.headers.get("content-type"));
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("DEBUG: Erro HTTP", response.status, errorText.substring(0, 500));
+                    throw new Error(`Erro ${response.status}: Não foi possível cadastrar o endereço`);
+                }
+                
+                const responseText = await response.text();
+                console.log("DEBUG: Response (primeiros 200 chars):", responseText.substring(0, 200));
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    console.log("DEBUG: JSON parsed:", data);
+                } catch (parseError) {
+                    console.error("DEBUG: Erro ao parsear JSON:", parseError);
+                    console.error("DEBUG: Response completo:", responseText);
+                    throw new Error("Resposta inválida do servidor");
+                }
+                
+                if (data.sucesso) {
+                    showModalAlert("success", data.mensagem);
+                    
+                    if (data.endereco) {
+                        const select = document.getElementById("endereco_id");
+                        const option = document.createElement("option");
+                        option.value = data.endereco.id;
+                        option.selected = true;
+                        
+                        const texto = `${data.endereco.logradouro}, ${data.endereco.numero} - ${data.endereco.cidade}/${data.endereco.estado}`;
+                        option.textContent = data.endereco.principal ? `${texto} (Principal)` : texto;
+                        
+                        select.appendChild(option);
+                        select.classList.add("border-success");
+                        setTimeout(() => select.classList.remove("border-success"), 3000);
+                        
+                        updateSummary();
+                    }
+                    
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById("modalEndereco"));
+                        if (modal) modal.hide();
+                        formEnderecoModal.reset();
+                    }, 2000);
+                } else {
+                    showModalAlert("danger", data.mensagem || "Erro ao salvar endereço");
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                showModalAlert("danger", `Erro ao salvar endereço: ${error.message}`);
+            } finally {
+                btnSalvar.disabled = false;
+                btnSalvar.innerHTML = \'<i class="bi bi-save me-2"></i>Salvar Endereço\';
+            }
+        });
+    }
+    
+    function showModalAlert(type, message) {
+        const alertModal = document.getElementById("alertModal");
+        if (alertModal) {
+            alertModal.className = `alert alert-${type} alert-dismissible fade show`;
+            alertModal.innerHTML = `
+                <i class="bi bi-${type === "success" ? "check-circle" : "exclamation-triangle"} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            alertModal.style.display = "block";
+        }
+    }
+    
+    // Limpeza ao fechar modal
+    const modalEndereco = document.getElementById("modalEndereco");
+    if (modalEndereco) {
+        modalEndereco.addEventListener("hidden.bs.modal", function() {
+            formEnderecoModal.reset();
+            document.getElementById("alertModal").style.display = "none";
+            document.getElementById("cepStatusModal").textContent = "";
+            formEnderecoModal.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+        });
+    }
 });
 </script>
 ';

@@ -33,6 +33,7 @@ class SolicitacaoController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Processar criação da solicitação
             $dados = $this->capturarDadosSolicitacao();
             try {
                 $this->validarDadosSolicitacao($dados);

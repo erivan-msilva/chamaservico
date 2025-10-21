@@ -443,6 +443,94 @@ class PerfilController
             exit;
         }
     }
+
+    /**
+     * API para buscar endereço pelo CEP usando ViaCEP
+     */
+    public function buscarCep()
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $cep = $_GET['cep'] ?? '';
+            $cep_clean = preg_replace('/\D/', '', $cep);
+
+            if (strlen($cep_clean) !== 8) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'CEP inválido. Informe 8 dígitos.'
+                ]);
+                exit;
+            }
+
+            $url = "https://viacep.com.br/ws/{$cep_clean}/json/";
+
+            // Tentar file_get_contents primeiro
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10,
+                    'header' => 'User-Agent: ChamaServico/1.0'
+                ]
+            ]);
+            $response = @file_get_contents($url, false, $context);
+
+            // Fallback para cURL se file_get_contents falhar
+            if ($response === false && function_exists('curl_init')) {
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'ChamaServico/1.0');
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $response = curl_exec($ch);
+                $curlError = curl_error($ch);
+                curl_close($ch);
+
+                if ($response === false) {
+                    throw new Exception("Erro cURL: {$curlError}");
+                }
+            }
+
+            if ($response === false || empty($response)) {
+                throw new Exception('Não foi possível conectar ao serviço de CEP.');
+            }
+
+            $data = json_decode($response, true);
+
+            if (!$data || isset($data['erro'])) {
+                http_response_code(404);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'CEP não encontrado.'
+                ]);
+                exit;
+            }
+
+            $endereco = [
+                'cep' => $cep_clean,
+                'logradouro' => $data['logradouro'] ?? '',
+                'bairro' => $data['bairro'] ?? '',
+                'cidade' => $data['localidade'] ?? '',
+                'estado' => $data['uf'] ?? ''
+            ];
+
+            echo json_encode([
+                'success' => true,
+                'endereco' => $endereco,
+                'message' => 'CEP encontrado com sucesso!'
+            ]);
+            exit;
+
+        } catch (Exception $e) {
+            error_log("PerfilController::buscarCep - Erro: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erro ao buscar CEP: ' . $e->getMessage()
+            ]);
+            exit;
+        }
+    }
 }
 ?>
 
