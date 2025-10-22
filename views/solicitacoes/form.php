@@ -281,10 +281,10 @@ ob_start();
                                             </button>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Alertas de Upload -->
                                     <div id="uploadAlerts" class="mt-3"></div>
-                                    
+
                                     <div class="form-text mt-2">
                                         <i class="bi bi-info-circle text-info"></i>
                                         Máximo 5 fotos • Formatos: JPG, PNG, GIF • Até 5MB cada
@@ -309,7 +309,7 @@ ob_start();
                                         <h4 class="mt-3 mb-2">Quase pronto!</h4>
                                         <p class="text-muted">Revise suas informações no resumo ao lado e publique sua solicitação.</p>
                                     </div>
-                                    
+
                                     <div class="alert alert-info border-0">
                                         <h6 class="fw-bold mb-2">
                                             <i class="bi bi-lightbulb me-2"></i>
@@ -361,7 +361,7 @@ ob_start();
                                         <span>Não selecionado</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="summary-item mb-3">
                                     <div class="summary-label">Título:</div>
                                     <div class="summary-value" id="summary-titulo">
@@ -369,14 +369,14 @@ ob_start();
                                         <span>Não informado</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="summary-item mb-3">
                                     <div class="summary-label">Urgência:</div>
                                     <div class="summary-value" id="summary-urgencia">
                                         <span class="badge bg-warning">🟡 Média</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="summary-item mb-3">
                                     <div class="summary-label">Endereço:</div>
                                     <div class="summary-value" id="summary-endereco">
@@ -384,7 +384,7 @@ ob_start();
                                         <span>Não selecionado</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="summary-item mb-3">
                                     <div class="summary-label">Orçamento:</div>
                                     <div class="summary-value" id="summary-orcamento">
@@ -613,8 +613,15 @@ ob_start();
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Seletor de Urgência */
@@ -795,20 +802,20 @@ ob_start();
             max-width: 100%;
             padding: 0 1rem;
         }
-        
+
         .step-label {
             font-size: 0.75rem;
         }
-        
+
         .urgency-selector {
             grid-template-columns: 1fr;
         }
-        
+
         .wizard-navigation {
             flex-direction: column;
             gap: 1rem;
         }
-        
+
         .wizard-navigation button {
             width: 100%;
         }
@@ -820,7 +827,7 @@ ob_start();
             height: 40px;
             font-size: 1rem;
         }
-        
+
         .progress-line {
             left: 40px;
             right: 40px;

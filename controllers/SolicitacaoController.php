@@ -20,6 +20,14 @@ class SolicitacaoController
         include 'views/solicitacoes/listar.php';
     }
 
+    /**
+     * NOVO: Função helper para detectar requisições AJAX
+     */
+    private function isAjaxRequest()
+    {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+    }
+
     public function criar()
     {
         $tiposServico = $this->model->getTiposServico();
@@ -33,21 +41,57 @@ class SolicitacaoController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Processar criação da solicitação
-            $dados = $this->capturarDadosSolicitacao();
+
+            // NOVO: Detectar se é AJAX
+            $isAjax = $this->isAjaxRequest();
+
             try {
+                // NOVO: Adicionada validação de CSRF (Importante para segurança)
+                if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                    throw new Exception('Token de segurança inválido!');
+                }
+
+                $dados = $this->capturarDadosSolicitacao();
                 $this->validarDadosSolicitacao($dados);
                 $solicitacaoId = $this->model->criar($dados);
 
                 if ($solicitacaoId) {
                     $uploadSuccess = $this->processarUploadImagens($solicitacaoId);
+
+                    // NOVO: Resposta JSON para AJAX
+                    if ($isAjax) {
+                        header('Content-Type: application/json');
+                        echo json_encode([
+                            'sucesso' => true,
+                            'mensagem' => 'Solicitação criada com sucesso!' . (!$uploadSuccess ? ' (Algumas imagens falharam no upload)' : ''),
+                            // Redireciona para a nova solicitação criada
+                            'redirectUrl' => url('solicitacoes/visualizar?id=' . $solicitacaoId)
+                        ]);
+                        exit;
+                    }
+
+                    // Antigo: Fallback para não-AJAX
                     $this->definirMensagemUpload($uploadSuccess);
                     header('Location: ' . url('solicitacoes'));
                     exit;
                 } else {
-                    Session::setFlash('error', 'Erro ao criar solicitação!', 'danger');
+                    // Se o model->criar() falhar
+                    throw new Exception('Erro ao criar solicitação (Model retornou false).');
                 }
             } catch (Exception $e) {
+
+                // NOVO: Resposta de ERRO JSON para AJAX
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    http_response_code(400); // Envia um status de "Bad Request"
+                    echo json_encode([
+                        'sucesso' => false,
+                        'mensagem' => $e->getMessage() // Envia a mensagem de erro real
+                    ]);
+                    exit;
+                }
+
+                // Antigo: Fallback para não-AJAX
                 Session::setFlash('error', $e->getMessage(), 'danger');
             }
         }
@@ -72,8 +116,11 @@ class SolicitacaoController
             'endereco_id' => $_POST['endereco_id'] ?? null,
             'titulo' =>  ucfirst(trim($_POST['titulo'] ?? '')),
             'descricao' => ucfirst(trim($_POST['descricao'] ?? '')),
-            'orcamento_estimado' => $_POST['orcamento_estimado'] ?? null,
-            'data_atendimento' => $_POST['data_atendimento'] ?? null,
+
+            // CORRIGIDO: Usar !empty() para tratar strings vazias como NULL
+            'orcamento_estimado' => !empty($_POST['orcamento_estimado']) ? $_POST['orcamento_estimado'] : null,
+            'data_atendimento' => !empty($_POST['data_atendimento']) ? $_POST['data_atendimento'] : null,
+
             'urgencia' => $_POST['urgencia'] ?? ''
         ];
     }
@@ -83,7 +130,10 @@ class SolicitacaoController
         $camposObrigatorios = ['tipo_servico_id', 'endereco_id', 'titulo', 'descricao'];
         foreach ($camposObrigatorios as $campo) {
             if (empty($dados[$campo])) {
-                throw new Exception("O campo {$campo} é obrigatório!");
+                // Altera o nome do campo para algo mais legível
+                $campoLegivel = str_replace('_id', '', $campo);
+                $campoLegivel = str_replace('_', ' de ', $campoLegivel);
+                throw new Exception("O campo '" . ucfirst($campoLegivel) . "' é obrigatório!");
             }
         }
     }
@@ -97,7 +147,7 @@ class SolicitacaoController
         }
     }
 
-    // Novo: Processar upload de múltiplas imagens
+    // Processar upload de múltiplas imagens (Sem alterações)
     private function processarUploadImagens($solicitacaoId)
     {
         if (!isset($_FILES['imagens']) || empty($_FILES['imagens']['name'][0])) {
@@ -106,7 +156,6 @@ class SolicitacaoController
 
         $uploadDir = 'uploads/solicitacoes/';
 
-        // Criar diretório se não existir
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -116,14 +165,12 @@ class SolicitacaoController
         $maxFileSize = 5 * 1024 * 1024; // 5MB
 
         for ($i = 0; $i < count($_FILES['imagens']['name']); $i++) {
-            // Verificar se o arquivo foi enviado
             if ($_FILES['imagens']['error'][$i] === UPLOAD_ERR_OK) {
                 $fileName = $_FILES['imagens']['name'][$i];
                 $fileTmpName = $_FILES['imagens']['tmp_name'][$i];
                 $fileSize = $_FILES['imagens']['size'][$i];
                 $fileType = $_FILES['imagens']['type'][$i];
 
-                // Validações
                 if (!in_array($fileType, $allowedTypes)) {
                     $uploadSuccess = false;
                     continue;
@@ -134,14 +181,11 @@ class SolicitacaoController
                     continue;
                 }
 
-                // Gerar nome único para o arquivo
                 $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
                 $newFileName = 'servico_' . $solicitacaoId . '_' . time() . '_' . $i . '.' . $fileExtension;
                 $filePath = $uploadDir . $newFileName;
 
-                // Mover arquivo para o diretório
                 if (move_uploaded_file($fileTmpName, $filePath)) {
-                    // Salvar no banco de dados
                     if (!$this->model->salvarImagem($solicitacaoId, $newFileName)) {
                         $uploadSuccess = false;
                     }
@@ -171,26 +215,63 @@ class SolicitacaoController
         $enderecos = $this->model->getEnderecosPorUsuario($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                Session::setFlash('error', 'Token de segurança inválido!', 'danger');
-                header('Location: ' . url('solicitacoes/editar?id=' . $id));
-                exit;
-            }
 
-            $acao = $_POST['acao'] ?? 'atualizar';
+            // NOVO: Detectar se é AJAX
+            $isAjax = $this->isAjaxRequest();
 
-            switch ($acao) {
-                case 'deletar_imagem':
-                    $this->deletarImagem($id, $userId);
-                    break;
+            try {
+                if (!Session::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+                    throw new Exception('Token de segurança inválido!');
+                }
 
-                case 'adicionar_imagens':
-                    $this->adicionarNovasImagens($id);
-                    break;
+                $acao = $_POST['acao'] ?? 'atualizar';
 
-                default:
-                    $this->atualizarDadosSolicitacao($id, $userId);
-                    break;
+                switch ($acao) {
+                    case 'deletar_imagem':
+                        // Este fluxo ainda usa redirect, pois é um botão separado
+                        $this->deletarImagem($id, $userId);
+                        break;
+
+                    case 'adicionar_imagens':
+                        // Este fluxo também usa redirect
+                        $this->adicionarNovasImagens($id);
+                        break;
+
+                    default: // 'atualizar'
+                        // Modificado para lançar exceção em caso de erro
+                        $this->atualizarDadosSolicitacao($id, $userId);
+
+                        // Se chegamos aqui, foi sucesso
+                        if ($isAjax) {
+                            header('Content-Type: application/json');
+                            echo json_encode([
+                                'sucesso' => true,
+                                'mensagem' => 'Solicitação atualizada com sucesso!',
+                                'redirectUrl' => url('solicitacoes/visualizar?id=' . $id)
+                            ]);
+                            exit;
+                        }
+
+                        // Fallback para não-AJAX
+                        Session::setFlash('success', 'Solicitação atualizada com sucesso!', 'success');
+                        header('Location: ' . url('solicitacoes'));
+                        exit;
+                }
+            } catch (Exception $e) {
+                // NOVO: Capturar erro do 'atualizar' ou 'csrf'
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    http_response_code(400);
+                    echo json_encode([
+                        'sucesso' => false,
+                        'mensagem' => $e->getMessage()
+                    ]);
+                    exit;
+                }
+
+                // Fallback para não-AJAX
+                Session::setFlash('error', $e->getMessage(), 'danger');
+                // Deixa o script continuar para incluir o form.php com a mensagem de erro
             }
         }
 
@@ -208,13 +289,11 @@ class SolicitacaoController
             'urgencia' => $_POST['urgencia']
         ];
 
-        if ($this->model->atualizar($id, $dados, $userId)) {
-            Session::setFlash('success', 'Solicitação atualizada com sucesso!', 'success');
-            header('Location: ' . url('solicitacoes'));
-            exit;
-        } else {
-            Session::setFlash('error', 'Erro ao atualizar solicitação!', 'danger');
+        // NOVO: Lançar exceção em vez de definir flash e redirecionar
+        if (!$this->model->atualizar($id, $dados, $userId)) {
+            throw new Exception('Erro ao atualizar solicitação!');
         }
+        // Em caso de sucesso, apenas retorna
     }
 
     private function deletarImagem($solicitacaoId, $userId)
@@ -257,6 +336,9 @@ class SolicitacaoController
             exit;
         }
 
+        // NOVO: Buscar imagens para a visualização
+        $solicitacao['imagens'] = $this->model->buscarImagensPorSolicitacao($id);
+
         include 'views/solicitacoes/visualizar.php';
     }
 
@@ -287,13 +369,13 @@ class SolicitacaoController
     public function redirectToClient()
     {
         $currentPath = $_SERVER['REQUEST_URI'];
-        
+
         // Remove o BASE_URL da URI atual se presente
         $cleanPath = str_replace(BASE_URL, '', $currentPath);
-        
+
         // Remove '/solicitacoes' e substitui por '/cliente/solicitacoes' 
         $newPath = str_replace('/solicitacoes', '/cliente/solicitacoes', $cleanPath);
-        
+
         // Usar a função url() para gerar a URL correta
         header('Location: ' . url(ltrim($newPath, '/')), true, 301);
         exit;
@@ -317,9 +399,7 @@ class SolicitacaoController
         }
 
         // Buscar imagens anexadas
-        require_once 'models/SolicitacaoServico.php';
-        $solicitacaoModel = new SolicitacaoServico();
-        $imagens = $solicitacaoModel->buscarImagensPorSolicitacao($solicitacaoId);
+        $imagens = $this->model->buscarImagensPorSolicitacao($solicitacaoId);
 
         if (empty($imagens)) {
             http_response_code(404);
@@ -351,13 +431,26 @@ class SolicitacaoController
             exit;
         }
 
+        // Corrigido o caminho para as imagens
+        $baseUploadDir = __DIR__ . '/../uploads/solicitacoes/';
+
         foreach ($imagens as $img) {
-            $filePath = __DIR__ . '/../uploads/solicitacoes/' . basename($img['caminho_imagem']);
+            // Apenas o nome do arquivo
+            $fileName = basename($img['caminho_imagem']);
+            $filePath = $baseUploadDir . $fileName;
+
             if (file_exists($filePath)) {
-                $zip->addFile($filePath, basename($img['caminho_imagem']));
+                $zip->addFile($filePath, $fileName);
             }
         }
         $zip->close();
+
+        if (filesize($zipFile) == 0) {
+            http_response_code(500);
+            echo "Erro: O arquivo ZIP foi criado, mas está vazio. Verifique os caminhos e permissões dos arquivos de imagem.";
+            unlink($zipFile);
+            exit;
+        }
 
         // Enviar arquivo ZIP para download
         header('Content-Type: application/zip');
@@ -370,4 +463,3 @@ class SolicitacaoController
         exit;
     }
 }
-?>
