@@ -1413,14 +1413,16 @@ document.addEventListener("DOMContentLoaded", function() {
                     console.log(`${key}: ${value}`);
                 }
                 
-                // Submeter para a mesma rota que funciona na página de endereços
-                const response = await fetch("<?= BASE_URL ?>/cliente/perfil/enderecos", {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                });
+// Submeter para a mesma rota que funciona na página de endereços
+' . "\n" . '             const urlDestino = ' . json_encode(url("cliente/perfil/enderecos")) . ';' . "\n" . '
+
+const response = await fetch(urlDestino, {
+    method: "POST",
+    body: formData,
+    headers: {
+        "X-Requested-With": "XMLHttpRequest"
+    }
+});
                 
                 console.log("DEBUG: Response status:", response.status);
                 console.log("DEBUG: Response headers:", response.headers.get("content-type"));
